@@ -1,0 +1,40 @@
+useDynLib(gwas.lasso, .registration = TRUE)
+
+import(nlme)
+import(snpStats)
+
+# functions
+export(bls.simulate)
+export(bls.simple)
+export(bls.plink)
+export(bls.plink.tped)
+export(bls.snpmat)
+export(summary.BLS.ret)
+export(print.sum.BLS.ret)
+export(plot.BLS.ret)
+export(bls.best.qval);
+
+export(gls.simulate)
+export(gls.simple)
+export(gls.plink)
+export(gls.plink.tped)
+export(gls.snpmat)
+export(summary.GLS.ret)
+export(print.sum.GLS.ret)
+export(plot.GLS.ret)
+export(gls.best.qval);
+
+export(fgwas.scan)
+export(plot.fgwas.ret0)
+export(summary.fgwas.ret0)
+
+export(load_plink_binary)
+export(bls.best.qval)
+export(gls.best.qval)
+export(bls.qval.cutoff)
+export(gls.qval.cutoff)
+
+# variables
+#export(SSD_FILE_OPEN.isOpen,SSD_FILE_OPEN.FileName)
+
+

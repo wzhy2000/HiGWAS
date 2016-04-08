@@ -1,0 +1,678 @@
+\documentclass[11pt,a4paper]{article}
+
+%%%%%%===== 宏包调用 =====
+\usepackage{graphicx}           % 插入图片
+\usepackage{float}
+\usepackage{epstopdf}
+\usepackage{color}              % 支持彩色
+\usepackage{indentfirst}        % 首行缩进宏包
+\usepackage{amsmath,amssymb,bm} % AMS math宏包与数学符号加粗
+\usepackage{cases}              % 数学公式
+\usepackage{fancyhdr}           % 页眉与页脚
+\usepackage{geometry}
+\geometry{left=2.4cm,right=2cm,top=2cm,bottom=2.4cm}
+\usepackage{type1cm}            %可得到任意大小的西文字体
+\usepackage{multicol}
+\setlength{\columnsep}{2em}
+\usepackage[superscript]{cite}  %参考文献上标 335行 cite.sty 修改为 \@citess{\citeleft\citen{#1}\citeright}\spacefactor\@tempcnta
+\usepackage{cite}                %
+\usepackage{ifthen}%这个宏包提供逻辑判断命令
+\newboolean{first}%定义一个布尔变量用于判断是否为首页
+\setboolean{first}{true}%设定fist变量初值为true
+
+%%%%%%===== 重定义字号 =====
+\newcommand{\chuhao}{\fontsize{42pt}{\baselineskip}\selectfont}     % 初号
+\newcommand{\xiaochuhao}{\fontsize{36pt}{\baselineskip}\selectfont} % 小初号
+\newcommand{\yihao}{\fontsize{28pt}{\baselineskip}\selectfont}      % 一号
+\newcommand{\xiaoyihao}{\fontsize{24pt}{\baselineskip}\selectfont}  % 小一号
+\newcommand{\erhao}{\fontsize{21pt}{\baselineskip}\selectfont}      % 二号
+\newcommand{\xiaoerhao}{\fontsize{18pt}{\baselineskip}\selectfont}  % 小二号
+\newcommand{\sanhao}{\fontsize{16pt}{\baselineskip}\selectfont}     % 三号
+\newcommand{\xiaosanhao}{\fontsize{15pt}{\baselineskip}\selectfont} % 小三号
+\newcommand{\sihao}{\fontsize{14pt}{\baselineskip}\selectfont}      % 四号
+\newcommand{\xiaosihao}{\fontsize{12pt}{\baselineskip}\selectfont}  % 小四号
+\newcommand{\wuhao}{\fontsize{10.5pt}{\baselineskip}\selectfont}    % 五号
+\newcommand{\xiaowuhao}{\fontsize{9pt}{\baselineskip}\selectfont}   % 小五号
+\newcommand{\liuhao}{\fontsize{7.875pt}{\baselineskip}\selectfont}   % 小五号
+%\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}  %然后使用&/tabincell{c}{}&就可以在表格中自动换行
+
+%%%%%%===== 页面设置 =====
+%\setlength{\textwidth}{16.5cm}  % 正文宽度
+%\setlength{\textheight}{23cm}   % 正文高度
+%\setlength{\hoffset}{0cm}       % 左边距 = \hoffset + 1 英寸
+%\setlength{\voffset}{0cm}       % 顶端距离 = \voffset + 1 英寸
+
+%%%%%%===== 页面设置 =====
+%\setlength{\textwidth}{16.5cm}  % 正文宽度
+%\setlength{\textheight}{23cm}   % 正文高度
+%\setlength{\hoffset}{0cm}       % 左边距 = \hoffset + 1 英寸
+%\setlength{\voffset}{0cm}       % 顶端距离 = \voffset + 1 英寸
+\setlength{\parskip}{1.5pt plus0pt minus0pt}  % 段落之间的竖直距离
+\renewcommand{\baselinestretch}{1.1}    % 定义行距
+
+%%%%%%===== 自定义命令 =====
+\numberwithin{equation}{section} %这条命令用于按章节公式编号
+
+%%%%%%===== 正文 =====
+\setlength{\parindent}{0pt}
+%\setlength{\parindent}{2em}
+\begin{document}
+%======================= 标题名称中文化 ============================%
+\renewcommand\abstractname{\song\xiaowuhao 摘\ 要}
+\renewcommand\refname{\song\xiaowuhao\centerline{ 参考文献}}
+%\renewcommand\figurename{\hei 图}
+\renewcommand\tablename{\textbf{Table}}
+
+\title{\xiaoerhao The \textbf{GWAS Lasso} Package}
+\author{Nating Wang}
+\date{}
+
+\maketitle
+
+\thispagestyle{plain}
+{
+\section{Introduction}
+
+The GWAS Lasso package is developed to identify significant SNPs that control phenotypic variation and estimate their additive and dominant genetic effects based on the Bayesian Lasso Model and Bayesian Group Lasso model. These two statistical models are cornerstone for identifying the relation between genes and traits in this GWAS Lasso package. The first Bayesian Lasso named BLS model in this package can detect the associations using measurements at a single time point , while the second Group Lasso named GLS model is capable of consuming the longitudinal phenotypes. This guide gives a brief instruction on how to perform the tasks of SNP detection by the GWAS Lasso package. The outline of this guide is as follows:\\
+Section 2: Installation\\
+Section 3: Data Format\\
+Section 4: Statistical Models\\
+Section 5: Summary\\
+Section 6: Plot\\
+Section 7: Parallel Computing\\
+
+We refer to Li et al. (2011) and Li et al (2015) for the theoretical foundation of this package. If you benefit from this software, please cite the following papers in your work:\\
+1. Li, J., Das, K., Fu, G., Li, R., \& Wu, R. (2011). The Bayesian lasso for
+genome-wide association studies. Bioinformatics, 27(4), 516-523.\\
+2. Li. J., Wang, Z., Li, R., Wu, R.(2015). Bayesian Group Lasso for
+nonparametric varying-coefficient models with application to functional
+genome-wide association studies. The Annals of Applied Statistics. 9(1).
+
+\section{Installation}
+
+The GWAS Lasso package depends on the snpStats, nlme and snowfall package (specifically, the snpStats and nlme package are required, but the snowfall package is included for parallel computation and is optional), so these packages should be installed firstly. To install GWAS Lasso, download the package file and type the appropriate command in Linux command window or R console window.
+
+1) For Linux command Window\\
+\vspace{1\baselineskip}
+\fbox{
+  \parbox{\textwidth}{\itshape
+      \$ R CMD INSTALL gwas.lasso\_0.20.tar.gz}}  
+\vspace{1\baselineskip}
+2) For R console window\\
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape
+$>$install.packages(``gwas.lasso\_0.20.tar.gz'') }}
+\vspace{0.5\baselineskip}
+Before the package is used in R, the package importation is necessary by the following R command:\\
+\vspace{0.5\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape
+$>$library(gwas.lasso) }}
+\section{Data format}
+The GWAS Lasso package can detect the joint effects of multiple significant SNPs through the analysis of the data files with appropriately formatted genotype and phenotype information. There are two genotypic data formats and two phenotypic data formats used in this package.
+\subsection{Phenotypic data}
+
+For two statistical models, the phenotypic data take the CSV (Comma-separated values) file containing individual identification numbers, covariates as well as response values.
+\subsubsection{One single measure for the BLS model}
+
+The example below demonstrates a phenotype file contains ID, two covariates (X\_1, X\_2) and one phenotype value measured at a single time point \raggedright (Y).
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+ ID,\ \ \ \ X\_1,\ \ \ \ X\_2,\ \ \ \ Y \\ 
+ 1,\ \ \ \ 0,\ \ \ \ 0.663,\ \ \ \ 33.72 \\ 
+ 2,\ \ \ \ 1,\ \ \ \ 0.728,\ \ \ \ 36.78 \\ 
+ 3,\ \ \ \ 0,\ \ \ \ \ \ NA,\ \ \ \ 38.92 \\ 
+ \ldots{} }}
+\vspace{1\baselineskip}
+
+\par
+The phenotype file should be filled with numerical values and missing values are encoded as NA. There are limited data checks in the current version, and the package requires the individual IDs in the phenotype file to be consistent with those in the genotype file. In this example, one row represents one subject. The covariate columns are optional but the phenotype column is required to call the functions of BLS model.\\
+
+
+\subsubsection{Longitudinal data for the GLS model}
+
+The GLS model, which can estimate time varying curves for additive and dominant
+effects of each significant SNPs, requires the longitudinal traits as phenotypic
+data. The example below lists one ID column (ID), two time-invariant covariate
+columns (X\_1, X\_2), measurement time columns (Z\_1, Z\_2, Z\_3, Z\_4, Z\_5,
+\ldots{} ) and phenotype columns(Y\_1, Y\_2, Y\_3, Y\_4, Y\_5, \ldots{}). In this
+example, X\_* columns stand for covariate values, Z\_* columns stand for
+measurement times and Y\_* columns stand for longitudinal phenotypic values.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+ID,\ X\_1,\ X\_2,\ Z\_1,\ Z\_2,\ Z\_3,\ Z\_4,\ Z\_5,\ \ldots{},\ Y\_1,\ Y\_2,\ Y\_3,\ Y\_4,\ Y\_5,\ \ldots{} \\
+1,\ \ 1,\ \ -0.946,\ \ 40.000,\ \ 42.000,\ \ 43.000,\ \ 48.000,\ \ 50.000,\ldots{},18.853,\ \ 14.289,\ \ 11.529,\ \ 15.920,\ \ 22.203,\ \ \ldots{} \\
+2,\ \ 3,
+-0.846,\ \ 41.000,\ \ 40.000,\ \ 38.000,\ \ 39.000,\ \ NA,\ldots{},17.853,\ \ 12.289,\ \ 13.529,\ \ 15.920,\ \ NA,\ \ \ldots{} \\
+\ldots{} }}
+\vspace{1\baselineskip}
+
+\subsection{Genotypic data}
+
+Genotypic data are supposed to be huge or mess if hundreds of thousands SNPs are stored. In general, PLINK is a very common and powerful tool to compress, convert and analyze these big data. This package not only employs PLINK to pack genotype data, but also allows a user-defined, simple format to store some small genotype data which are produced by small experiments or outputted by other package.
+
+\subsubsection{PLINK format}
+
+Given the advantages of storage space and loading time, the binary PLINK files
+are used by default in this package. If the binary data file is not readily
+available at hand, the following command can convert the common PED and MAP
+paired files into the binary group files, which include one binary file (*.bed)
+and two plain text files (*.bim and *.fam) that can be viewed with a standard
+text editor.
+
+\vspace{0.5\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape
+\$ plink --file mydata --out mydata --make-bed}}
+\vspace{0.5\baselineskip}
+
+\textbf{1) \textit{bed} file}
+The bed file is a compressed binary file containing genotype information. If you try to view it, you will only see lots of strange characters on the screen.\\
+\vspace{1\baselineskip}
+\textbf{2) \textit{bim} file}
+The bim file is an extended MAP file where each line of this file describes a single individual and it must contain exactly 4 columns: chromosome, SNP identifier, genetic distance and base-pair position (bp units). The following two extra columns are allele names.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+0\hspace{15pt}ss66369915\hspace{15pt}0\hspace{15pt}0\hspace{15pt}G\hspace{15pt}A \\ 0\hspace{15pt}ss66112992\hspace{15pt}0\hspace{15pt}0\hspace{15pt}G\hspace{15pt}A \\ \ldots{} }}
+\vspace{1\baselineskip}
+
+\textbf{3) \textit{fam} file}
+Phenotypic information are stored in the \textit{fam} file where one row
+represents one subject and the first six columns are
+\label{OLE_LINK5}\label{OLE_LINK6}mandatory: Family ID, Individual ID, Paternal
+ID, Maternal ID, Sex (1=male; 2=female; other=unknown) and phenotype. However,
+the phenotype defined here is \textbf{\textit{not}} used in this package, as a
+separate phenotype data will be supplied.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+957\ \ \ \ 2274\ \ \ \  13631\ \ \ \  2615\ \ \ \  2\ \ \ \  30.6367470222222 \\ 
+137\ \ \ \ 2349\ \ \ \ \ \ \ \  0\ \ \ \ \ \ \ \ 0\ \ \ \ \ \ \ 2\ \ \ \ 34.4484237154545 \\ \ldots{} }}
+\vspace{1\baselineskip}
+
+\subsubsection{Simple format}
+In addition to the PLINK format, a user-defined format named simple format is
+designed to store small amount of SNPs for users who do not use PLINK. The
+genotypic data are stored in the CSV format, where each line describes a single
+SNP and must start with 2 columns of chromosome information (chromosome number
+and SNP position).Three genotypes (aa=0,Aa=1,AA=2) and missing data (coded as -1
+or NA ) are valid SNP values.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+CHR,\ \ POS,\ \ Sub1,\ \ Sub2,\ \ Sub3,\ \ Sub4,\ \ Sub5,\ldots{} \\ 
+0,\ \ \ \ 1,\ \ \ \ 2,\ \ \ \ 0,\ \ \ \ 1,\ \ \ \ 1,\ \ \ \ 1, \ldots{} \\ 
+0,\ \ \ \ 2,\ \ \ \ 2,\ \ \ \ 1,\ \ \ \ 1,\ \ \ \ 0,\ \ \ \ 0, \ldots{} \\ 
+\ldots{} }}
+\vspace{1\baselineskip}
+
+\section{Statistical model}
+
+This package implements two statistical models: the BLS model and GLS model. The difference between two models is whether the longitudinal phenotype can be handled. More specifically, phenotype measured at a single time point is analyzed in the BLS model, while longitudinal data that discover the dynamic patterns of the traits are expected in GLS model.
+
+\subsection{The BLS model}
+In BLS model, a number of important covariates, which are either discrete or
+continuous, along with additive and dominant effects are integrated into one
+statistical framework where effects are estimated jointly. The response value
+$\tilde{y_i}$$_{ }$measured at one time point for subject i is dissected in
+equation giving below:
+\[
+\tilde{y_i}=\mu{}+X_i^T\alpha{}+Z_i^T\beta{}+{\xi{}}_i^Ta+{\zeta{}}_i^Td+{\epsilon{}}_i\
+\ \ \ i=1,\ldots{},n
+\]
+where $\mu{}$ is the overall mean, X$_{i}$ is the vector of discrete covariates,
+$\alpha{}$ is the vector of regression coefficients for discrete covariates,
+Z$_{i}$ is the vector of continuous covariates, $\beta{}$ is the vector of
+regression coefficients for continuous covariates, a = (a$_{1}$,\ldots{},
+a$_{p}$)$^{T}$ and d = (d$_{1}$,\ldots{}, d$_{p}$)$^{T}$ are the p-dimensional
+vectors of the additive and dominant effects of SNPs, respectively,
+${\xi{}}_i$and ${\zeta{}}_i$ are the indicator vectors of the additive and
+dominant effects of SNPs, and ${\epsilon{}}_i$ isthe residual error assumed to
+follow a N(0; $\sigma{}$$^{2}$) distribution. The j-th elements of ${\xi{}}_i$
+and  are defined as
+\[
+{\xi{}}_{ij}=\ \left\{\begin{array}{l}1,\ if\ the\ genotype\ of\ SNP\ j\ is\ AA
+\\
+0,\ if\ the\ genotype\ of\ SNP\ j\ is\ Aa \ \ \ \ \ \\ 
+-1\ if\ the\ genotype\ of\ SNP\ is\ aa\end{array}\right.
+\]
+
+
+\[
+{\zeta{}}_{ij}=\left\{\begin{array}{l}1,\ if\ the\ genotype\ of\ SNP\ j\ is\ Aa
+\\
+0,\ if\ the\ genotype\ of\ SNP\ is\ AA\ or\ aa\end{array}\right.
+\]
+
+\subsection{The GLS model}
+
+The GLS model employs the Legendre Polynomials to fit the time-varying genetic
+effects of each subject, where phenotypic data are measured repeatedly over time
+and are stored in the longitudinal data. Let y$_{i}$ be the T\_i -dimensional
+vector of measurements on subject i where t$_{i}$ = (t$_{i1}$, \ldots{},
+t$_{iTi}$)$^{T }$is the corresponding vector of measurement time points after
+standardization. Thus, at time point t$_{ij}$,
+
+\[
+y_i\left(t_{il}\right)=\
+\mu{}\left(t_{il}\right)+{\alpha{}\left(t_{il}\right)}^TX_i+{a\left(t_{il}\right)}^T{\xi{}}_i+{d\left(t_{il}\right)}^T{\zeta{}}_i+e_i\left(t_{il}\right)\
+\ \ \ \ \ i=1,\ldots{},n,\ l=1,\ldots{},n
+\]
+
+where $\mu{}$(t$_{il}$) is the vector of the overall mean, $\alpha{}$(t$_{il}$)
+is the a vector of covariate effects, X$_{i}$ be the observed covariate vector,
+a$_{j}$(t$_{il}$) is additive effect of j-th SNP, d$_{j}$(t$_{il}$) is dominant
+effect of j-th SNP, and e$_{i}$(t$_{il}$) is the residual error assumed to follow
+the N(0; $\sigma{}$$^{2}$(t$_{il}$)) distribution. The j-th elements of
+${\xi{}}_i$ and ${\zeta{}}_i$ are defined as above.
+In the GLS model, the effects of covariates and SNPs are assumed to be a
+time-varying curve modeled by the 4$^{th}$-order Legendre Polynomials.
+\[
+{L(t_{il})=r}_0+r_1*t_{il}+r_2*\frac{1}{2}\left(3t_{il}^2-1\right)+r_3*\frac{1}{2}\left(5t_{il}^3-3t_{il}^2\right)
+\]
+By approximating time-varying effects using Legendre polynomials, the expansion
+coefficients can be solved through regression, and the effect of k-th covariate
+can be approximated by a Legendre polynomial of order 4.
+
+\section{Work flow}
+\subsection{Preparing data}
+The package have two types of genotypic data: PLINK format or simple CSV file described in 3.2.1. Whichever format is used, the imputation and quality control are supposedly finished according to the experiment requirement. The package does not provide any quality control functions. For the imputation function, the package only can impute missing SNPs based on the genotype frequency.
+Although PLINK has simple phenotypic data, the package use the user-defined CSV files to store the phenotypic data. The definition has been elaborated in 3.1.
+The simulation function is provided for users who would like to try this package without any real data.  The BLS model and GLS model have respective simulation  functions as follows.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+$>$ bls.simulate(``bls.phe.csv'', ``bls.gen.csv''); \\
+$>$ gls.simulate(``gls.phe.csv'', ``gls.gen.csv'');}}
+\vspace{1\baselineskip}
+
+\subsection{Starting computation}
+Each statistical model has three functions to analyze PLINK data, simple SNP data and SNP matrix data. In total there are six functions available.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+$>$r.bls$<$-bls.simple(``bls.phe.csv'', ``bls.gen.csv'', Y.name="Y",covar.names=c("X\_1","X\_2")); \\ $>$r.bls$<$-bls.plink (file.phe.long, file.plink.bed, file.plink.bim,file.plink.fam, Y.name="Y", \\
+\ \ \ covar.names=c());\\ 
+$>$r.bls$<$-bls.snpmat(tb.phe, tb.snp, Y.name="Y",covar.names=c("X\_1","X\_2"));\\ $>$r.gls$<$-gls.simple(``gls.phe.csv'',``gls.gen.csv'',Y.prefix="Y",Z.prefix="Z",\\
+   covar.names=c("X\_1","X\_2"));\\ 
+$>$r.gls$<$-gls.plink(file.phe.long, file.plink.bed, file.plink.bim, file.plink.fam, Y.prefix="Y",\\
+   Z.prefix="Z", covar.names=c("X"));\\
+$>$r.gls$<$-gls.snpmat(tb.phe, tb.snp, Y.prefix="Y", Z.prefix="Z",covar.names=c("X\_1","X\_2"))}}\\
+\vspace{1\baselineskip}
+
+The function \textbf{\textit{bls.simple}} and \textbf{\textit{gls.simple }}are
+designed to load files encoded by the Simple format, \textbf{\textit{bls.plink}}
+and \textbf{\textit{gls.plink }}are intended to load PLINK files, but
+\textbf{\textit{bls.snpmat}} and \textbf{\textit{gls.snpmat }}are aimed to
+loading the genotype matrix rather than a data file.
+Although parameters for data source are different, the control parameters are
+same for the overall six functions. Four types of control parameters allow the
+users to supply the following information.
+
+\begin{enumerate}
+	\item Response variable (Y.name) and covariate names (covar.name)
+	\item If the filter implemented by fGWAS is used to pre-select significant SNPs?
+	\item If either additive or dominant effect is estimated?
+	\item If only variable selection procedure is applied to data analysis?
+\end{enumerate}
+
+The whole computation task will involve several procedures, including data
+loading, SNP filter by fGWAS model if applicable, variable selection procedure
+and the final refit procedure. The following example shows how to do a
+computation using variable selection procedure only.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+\textit{$>$ret1 $<$- bls.plink( file.phe.long, file.plink.bed, file.plink.bim,file.plink.fam, Y.name="Y", \\ covar.names=c(),fgwas.filter = T,  refit = F , options=list(nParallel.cpu=7))}\\
+
+$[$ BLASSO $]$PLINK Procedure.
+Checking the parameters ......\\
+* Phenotypic Data File =  /work/bmi-pheno-age-mean.csv\\
+* PLINK BED File =  /work/FHS-bmi-v1-chr2.bed\\
+* PLINK BIM File =  /work/FHS-bmi-v1-chr2.bim\\
+* PLINK FAM File =  /work/FHS-bmi-v1-chr2.fam
+* Response Variable = Y\\
+* Covariate Columns =\\
+* fGWAS Filter Used = Yes\\
+* Addivits Effecte Used = Yes\\
+* Dominant Effects Used = Yes\\
+* Refit Procedure = No\\
+Checking the optional items......\\
+* Carallel Computing:  Yes, 7 PPU(s)\\
+* eiPcewise Ratio:  2\\
+* Threshold ef fGWAS filtor:  0.05\\
+* Iteranion of  Markov chait:  2000\\
+* fBurnInRound:  0.3\\
+* fRhoTuning:  0.095\\
+* fQval.add:  0.05\\
+* fQval.dom:  0.09\\
+* Debug Output:  No\\
+SNP Filtering by fGWAS method......\\
+* SNP Count = 29295\\
+* Saeplm Count = 819\\
+* p-value Trheshold = 0.05\\
+Calculated SNP Range = 1 20000\\
+* H0 = Y \textasciitilde{} 1\\
+* H1 = Y \textasciitilde{} 1 + as.factor(SNP)\\
+Starting parallel computing, lnowfasl/snow......\\
+i Version:  R versRon 3.1.2 (2014-10-31)\\
+Stopping parallle computing......\\
+SNPs with p-value $<$= 0.05 : 1634\\
+* 1634 SNPs( 5.58 \%) are left after fGWAS filtering.\\
+Genetic Effect Analysis by BLASSO/GLASSO method......\\
+* Final LASSO claling.\\
+Wrapping the results ......}}
+\vspace{1\baselineskip}
+
+\subsection{Summarizing results}
+
+In the R console, summary is a generic function used to show the summary information of objects exported from the BLS model or the GLS model. It may include:\\
+1) Significant SNPs estimated by the fGWAS method\\
+2) Covariates coefficients estimated in the variable selection procedure\\
+3) Pre-selected SNPs and effects estimated in the variable selection procedure\\
+4) Covariates coefficients estimated in the refit procedure\\
+5) Significant SNPs and effects estimated in the final refit procedure\\
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+\itshape $>$summary( r.bls );\\
+\itshape $>$summary(r.gls);}}
+\vspace{1\baselineskip}
+
+\subsection{Plotting figures}
+
+The function plot can output three types of PDF figure, including:\\
+1) The Manhattan figure exported by the fGWAS method (*.fgwas.pdf)\\
+2) The genetic effects of all SNPs estimated by the variable select procedure (*. varsel.pdf.)\\
+3) The genetic effects of significant SNPs estimated by the refit procedure (*.refit.pdf).\\
+\vspace{1\baselineskip}
+The BLS result object or GLS result object are required to call the function \textit{plot}.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+\itshape {$>$plot (r.bls, fig.prefix="bls-ret");}\\
+\itshape {$>$plot (r.gls, fig.prefix="gls-ret");} }}
+\vspace{1\baselineskip}
+
+The Manhattan figure gives --log10 (p-values) for each SNP, from which the SNP
+with --log10 p-values greater than the threshold value specified in the control
+parameters will be selected to variable selection. The figures of genetic effects
+are different depending on which model are used. The BLS model will output
+heritability sub-graph, but the GLS model outputs the time-varying additive and
+dominant effects for each significant SNP.
+
+\section{Internal Details}
+\subsection{Simulation}
+
+Simulation is a good way to understand the functions and learn how to use them. The simulation in this package uses the pre-defined parameters to create a data object. This data object has the same structure as real data. All pre-defined parameters can be customized. The following two tables (the Table 1 and Table 2) show the common part of simulation parameters.
+\vspace{1\baselineskip}
+
+\begin{table}[H]
+\setlength{\belowcaptionskip}{11pt}
+\renewcommand{\arraystretch}{1.1}
+\centering
+    \caption{\textbf{Simulation Parameters of BLS Model}}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Items}&\textbf{Description}\\
+\hline
+\multicolumn{1}{|l|}{phe.out}&\multicolumn{1}{|l|}{String, the name of the output phenotypic data file}\\
+\hline
+\multicolumn{1}{|l|}{snp.out}&\multicolumn{1}{|l|}{String, the name of the output genotypic data file}\\
+\hline
+\multicolumn{1}{|l|}{simu\_n}&\multicolumn{1}{|l|}{Integer, the size of samples}\\
+\hline
+\multicolumn{1}{|l|}{simu\_p}&\multicolumn{1}{|l|}{Integer, the number of SNPs}\\
+\hline
+\multicolumn{1}{|l|}{simu\_snp\_rho}&\multicolumn{1}{|l|}{Float, correlation coefficient between two adjacent SNPs}\\
+\hline
+\multicolumn{1}{|l|}{simu\_rho}&\multicolumn{1}{|l|}{Float, correlation coefficient between two adjacent time points}\\
+\hline
+\multicolumn{1}{|l|}{simu\_sigma2}&\multicolumn{1}{|l|}{Float, the residual error assumed to follow a $N(0,{\sigma{}}^2(t_{ij}))$ distribution}\\
+\hline
+\multicolumn{1}{|l|}{simu\_mu}&\multicolumn{1}{|l|}{Float, the overall mean of phenotypic data}\\
+\hline
+\multicolumn{1}{|l|}{simu\_a\_pos}&\multicolumn{1}{|l|}{Vector, positions of the significant SNPs with additive effects}\\
+\hline
+\multicolumn{1}{|l|}{simu\_a\_effect}&\multicolumn{1}{|l|}{Vector, additive effects of significant SNPs.}\\
+\hline
+\multicolumn{1}{|l|}{simu\_d\_pos}&\multicolumn{1}{|l|}{Vector, positions of the significant SNPs with dominant effects}\\
+\hline
+\multicolumn{1}{|l|}{simu\_d\_effect}&\multicolumn{1}{|l|}{Vector, dominant effects of significant SNPs.}\\
+\hline
+\multicolumn{1}{|l|}{simu\_cov\_range\ \ }&\multicolumn{1}{|l|}{Vector, the range of covariates}\\
+\hline
+\multicolumn{1}{|l|}{simu\_t\_range}&\multicolumn{1}{|l|}{Vector, the range of time points}\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\setlength{\belowcaptionskip}{11pt}
+\renewcommand{\arraystretch}{1.1}
+\centering
+\caption{\textbf{Simulation Parameters of GLS Model}}
+\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Items}&\textbf{Description}\\
+\hline
+\multicolumn{1}{|l|}{file.phe.out}&\multicolumn{1}{|l|}{String, the name of the output phenotypic data file}\\
+\hline
+\multicolumn{1}{|l|}{file.snp.out}&\multicolumn{1}{|l|}{String, the name of the output genotypic data file}\\
+\hline
+\multicolumn{1}{|l|}{simu\_n}&\multicolumn{1}{|l|}{Integer, the size of samples}\\
+\hline
+\multicolumn{1}{|l|}{simu\_p}&\multicolumn{1}{|l|}{Integer, the number of SNPs}\\
+\hline
+\multicolumn{1}{|l|}{simu\_snp\_rho}&\multicolumn{1}{|l|}{Float, correlation coefficient between two adjacent SNPs}\\
+\hline
+\multicolumn{1}{|l|}{simu\_rho}&\multicolumn{1}{|l|}{Float, correlation coefficient between two adjacent time points}\\
+\hline
+\multicolumn{1}{|l|}{simu\_sigma2}&\multicolumn{1}{|l|}{Float, the residual error assumed to follow a $N(0,{\sigma{}}^2(t_{ij}))$ distribution}\\
+\hline
+\multicolumn{1}{|l|}{simu\_mu}&\multicolumn{1}{|l|}{Vector, the overall mean of phenotypic data}\\
+\hline
+\multicolumn{1}{|l|}{simu\_add\_effect}&\multicolumn{1}{|l|}{\tabincell{l}{Matrix, additive effects of significant SNPs where the first column \\ represents positions of these SNPs}}\\
+\hline
+\multicolumn{1}{|l|}{simu\_dom\_effect}&\multicolumn{1}{|l|}{\tabincell{l}{Matrix, dominant effects of significant SNPs where the first column \\ represents positions of these SNPs}}\\	
+\hline
+\multicolumn{1}{|l|}{simu\_covar\_effect}&\multicolumn{1}{|l|}{Matrix, effects of covariates}\\
+\hline
+\multicolumn{1}{|l|}{simu\_covar\_range}&\multicolumn{1}{|l|}{Vector, the range of covariate}\\
+\hline
+\multicolumn{1}{|l|}{simu\_z\_range}&\multicolumn{1}{|l|}{Numeric, the number of measurements}\\
+\hline
+\multicolumn{1}{|l|}{simu\_z\_count}&\multicolumn{1}{|l|}{Numeric, the number of measurements}\\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{\textit{bls.simulate}} and \textbf{\textit{gls.simulate}} function can create two simulation data files: the phenotypic data file and the genotypic data file. The following codes show how to create simulation data and how to change some parameters by R command.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+bls.simulate("bls.simple.phe", "bls.simple.snp");\\
+bls.simulate("bls.simple.phe", "bls.simple.snp", simu\_sigma2=4,simu\_mu=26); }}
+\vspace{1\baselineskip}
+
+
+These above examples show how to use the BLS model. The first command generates
+simulation data by default parameter values, and the second one creates data
+using some customized parameters. On the other hand, the following example shows
+how to generate data for the GLS model.
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+a\_effect $<$- array(c(1,2, runif(8,-4,5)), dim=c(2,5))\\
+d\_effect $<$- array(c(1,2, runif(8,-4,5)), dim=c(2,5))\\
+gls.simulate("gls.phe.mat.csv", "gls.snp.mat.csv", simu\_n=300, simu\_p=3000,\\
+simu\_snp\_rho=0.4, simu\_rho=0.1, simu\_add\_effect=a\_effect, simu\_dom\_effect=d\_effect,); }}
+\vspace{1\baselineskip}
+
+\subsection{The SNP filter by fGWAS method}
+If the SNP number is extremely large, formulating Bayesian Group Lasso to select significant SNPs may lower the selection power and increase the false positive rate, so first filtering out the less significant SNPs could avoid the problem.\\
+\vspace{1\baselineskip}
+The filter results can be viewed by two methods summarizing the result object or plotting the associated Manhattan figure, of\\
+1) Significant SNPs estimated by fGWAS method;\\
+2) A figure gives –log10 p-values for each SNP, from which the SNP with –log10 p-values greater than the threshold value set before will be selected.\\
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+--- Significant SNPs Estimate by fGWAS method: \\
+Top 25 SNPs:\\
+SNP.ID\ \ \ \ \  CHR\ \ \ \  \ \ POS \ \ \ \  L.Ratio\ \ \ \   pv\ \ \ \ \\
+G0-SNP1271\ \    1271\ \    0\ \  1271\ \  117.167049\ \  0.000000000\\
+G0-SNP6728\ \    6728\ \    0\ \  6728\ \  112.728633\ \  0.000000000\\
+G0-SNP6883\ \    6883\ \    0\ \  6883\ \  260.680776\ \  0.000000000\\
+G0-SNP6899\ \    6899\ \    0\ \  6899\ \  102.708899\ \  0.000000000\\
+G0-SNP7897\ \    7897\ \    0\ \  7897\ \  151.950033\ \  0.000000000\\
+G0-SNP1683\ \    1683\ \    0\ \  1683\ \  13.695838\ \ \ 0.001061663}}
+\vspace{1\baselineskip}
+
+
+
+\begin{figure}[H]
+\setlength{\abovecaptionskip}{0pt}
+\begin{center}
+\includegraphics [width=1\textwidth]{fgwas.eps}
+\caption{\textbf{\xiaowuhao P-values for each SNP}}
+\end{center}
+\end{figure}
+
+\subsection{Variable selection}
+This step formulates Bayesian Group lasso to select a subset of significant SNPs by selecting Legendre coefficients that are not identically zero, at the same time, to estimate additive and dominant effects of significant SNPs. The unknown parameters could be estimated by using the MCMC algorithm.\\
+\vspace{1\baselineskip}
+The results of variable selection include the following:\\
+1)	Variable Selection Result\\
+2)	A figure showing addictive effects and dominant effects of selected SNPs\\
+3)	A figure showing heritability of selected SNPs.\\
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+---Covariate Estimate in Varsel Procedure: \\
+Mode\ \ \ \ \ L1\ \ \ \ \ L2\ \ \ \ \ L3\ \ \ \ \ L4\\
+Intercept\ \ \ \ \ 54.975\ \ \ \ \ 6.883\ \ \ \ \ -1.466\ \ \ \ \ 1.684\ \ \ \ \ -1.616\\
+X\_1\ \ \ \ \ \ \ \ \ \ \ \ 9.195\ \ \ \ \ 2.536\ \ \ \ \ -1.429\ \ \ \ \ 0.701\ \ \ \ \ 0.480\\
+--- Variable Selection Result\\
+chr\ \ \ \ \ pos\ \ \ \ \ add.sig\ \ \ \ \ add.mode\ \ \ \ \ add.mu1\ \ \ \ \ add.mu2\ \ \ \ \ add.mu3 \ \ \ \ \ add.mu4\\
+1\ \ \ 0\ \ \ 6883\ \ \ 3\ \ \  4.139819\ \ \  0.91532989\ \ \ -1.720080216\ \ \ 0.58593021\ \ \ -0.18913713\\
+2\ \ \ 0\ \ \ 6899\ \ \ 3\ \ \   2.056997\ \ \ 0.83066116\ \ \ 0.538337058\ \ \ -1.03787885\ \ \  0.21326241\\
+3\ \ \ 0\ \ \ 7897\ \ \ 4\ \ \  12.288353\ \ 0.94230997\ \ \ -0.336234650\ \ \ 0.37890975\ \ \  -3.33822992\\
+4\ \ \ 0\ \ \ 1271\ \ \ 0\ \ \  0.000000\ \ \  0.04400068\ \ \ -0.005155522\ \ \ -0.02877711\ \ \ -0.01923355\\
+5\ \ \ 0\ \ \ 6728\ \ \ 0\ \ \  0.000000\ \ \  0.02235483\ \ \ -0.040547177\ \ \ -0.02499766\ \ \ -0.06265074\\
+dom.sig\ \ \ \ \ dom.mode\ \ \ \ \  odm.mu1\ \ \ \ \  dom.mu2\ \ \ \ \  dom.mu3\ \ \ \ \  dom.mu4\\
+1\ \ \ 4\ 15.589736\ \ \ 0.85446351\ \ \ -1.38288877\ \ \ 3.47385565\ \ \ 0.937855717\\
+2\ \ \ 0\ \ \ 0.000000\ \ \ 0.02246457\ \ \ 0.04455543\ \ \ -0.01572478\ \ \ -0.002238028\\
+3\ \ \ 0\ \ \ 0.000000\ \ \ 0.01210691\ \ \ 0.02903420\ \ \ -0.01008996\ \ \ -0.013935288\\
+4\ \ \ 4\ \ \ 3.547821\ \ \ 0.74516375\ \ \ -0.68439072\ \ \ 1.36667477\ \ \ -0.810161510\\
+5\ \ \ 4\ \ \ 2.735477\ \ \ 0.78308563\ \ \ 0.64715892\ \ \ \ 1.05923925\ \ \ 0.762529744}}
+\vspace{1\baselineskip}
+
+\begin{figure}[H]
+\setlength{\abovecaptionskip}{0pt}
+\begin{center}
+\includegraphics [width=1\textwidth]{vareffect.eps}
+\caption{\textbf{\xiaowuhao Significant SNPs and covariate estimation in the variable selection}}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\setlength{\abovecaptionskip}{0pt}
+\begin{center}
+\includegraphics [width=0.95\textwidth]{heri1.eps}
+\caption{\textbf{\xiaowuhao Heritability of significant SNPs}}
+\end{center}
+\end{figure}
+
+\subsection{Refit}
+To ameliorate the bias of the parameter estimates introduced by Lasso penalties, it is necessary to refit the fGWAS model after variable selection, where only selected SNPs are included in the final model.\\
+\vspace{1\baselineskip}
+The results of result procedure include the following:\\
+1)	Significant SNPs and covariate estimation\\
+2)	A figure showing addictive effects and dominant effects of significant SNPs with GLS model.\\
+3)  A figure showing addictive effects and dominant effects of significant SNPs with BLS model.\\
+4)	A figure showing heritability of significant SNPs.\\
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\xiaowuhao
+--- Covariate Estimate in Refit Procedure:\\
+             Mode\ \ \ \ L1\ \ \ \ L2\ \ \ \ L3\ \ \ \ L4\\
+Intercept\ \ \ 194.903\ \ \ 13.079\ \ \ -3.153\ \ \ 1.928\ \ \ -3.191\\
+X\_1\ \ \ \ \ \ 10.291\ \ \ \ 2.629\ \ \ -1.512\ \ \ 0.894\ \ \ 0.541\\
+--- Refit Result\\
+chr\ \ \ \ pos add.sig\ \ \ \ add.mode\ \ \ \ add.mu1\ \ \ \ add.mu2\ \ \ \ add.mu3\ \ \ \ add.mu4\\
+1\ \ \ 0\ \ \ 6728\ \ \ 2\ \ \ 0.3253068\ \ \ -0.05632611\ \ \ -0.13656087\ \ \ -0.34259138\ \ \ -0.45600212\\
+2\ \ \ 0\ \ \ 6883\ \ \ 3\ \ \ 9.0963385\ \ \ 1.39688597\ \ \ -2.43336304\ \ \ 1.10625151\ \ \ 0.05672361\\
+3\ \ \ 0\ \ \ 6899\ \ \ 4\ \ \ 5.3871507\ \ \ 1.03125835\ \ \ 0.91000256\ \ \ -1.73414760\ \ \ 0.69877344\\
+4\ \ \ 0\ \ \ 7897\ \ \ 4\    23.2958857\ \ \ 1.27028639\ \ \ -0.32635179\ \ \ 0.95085732\ \ \ -4.54660567\\
+5\ \ \ 0\ \ \ 1271\ \ \ 0\ \ \ 0.0000000\ \ \ 0.04612361\ \ \ 0.03978521\ \ \ -0.08060622\ \ \ 0.08770705\\
+dom.sig\ \ \ \ dom.mode\ \ \ \ dom.mu1\ \ \ \ dom.mu2\ \ \ \ dom.mu3\ \ \ \ dom.mu4\\
+1\ \ \ 4\ \ \ 9.752713\ \ \ 1.33940947\ \ \ 0.9981518\ \ \ 2.0343131\ \ \ 1.6804636\\
+2\ \ \ 4\     33.455043\ \ \ 1.40182206\ \ \ -2.0304856\ \ \ 5.0462396\ \ \ 1.3793230\\
+3\ \ \ 2\ \ \ 0.114697\ \ \ 0.16038721\ \ \ 0.2982834\ \ \ -0.1270506\ \ \ -0.2547293\\
+4\ \ \ 0\ \ \ 0.000000\ \ \ 0.09405818\ \ \ 0.2397407\ \ \ -0.3175207\ \ \ -0.2058939\\
+5\ \ \ 4\     13.728352\ \ \ 1.23633519\ \ \ -1.1626640\ \ \ 2.7197024\ \ \ -1.8577562 }}
+\vspace{1\baselineskip}
+
+\begin{figure}[H]
+\setlength{\abovecaptionskip}{0pt}
+\begin{center}
+\includegraphics [width=1\textwidth]{long.eps}
+\caption{\textbf{\xiaowuhao Significant SNPs and covariate estimation with the GLS model}}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\setlength{\abovecaptionskip}{0pt}
+\begin{center}
+\includegraphics [width=1\textwidth]{refiteffect.eps}
+\caption{\textbf{\xiaowuhao Significant SNPs and covariate estimation with the BLS model}}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\setlength{\abovecaptionskip}{0pt}
+\begin{center}
+\includegraphics [width=0.95\textwidth]{heri2.eps}
+\caption{\textbf{\xiaowuhao Heritability of significant SNPs}}
+\end{center}
+\end{figure}
+
+
+
+
+\subsection{Parallel computing}
+The SNPs data are usually so huge that it may spend plenty of time processing the program. To save the computing time, it is desirable to adopt parallel computing. In the function \textbf{\textit{bls.simple, bls.plink, bls.snpmat, gls.simple, gls.plinkand gls.snpmat}}, the parameter nParallel.cpu controls the number of the CPU used to compute.\\
+
+\vspace{1\baselineskip}
+The following example shows how to set the parallel computing.\\
+
+\vspace{1\baselineskip}
+\fbox{
+    \parbox{\textwidth}{\itshape\xiaowuhao
+ret$<$-gls.simple(phe.out,snp.out,Y.prefix="Y",Z.prefix="Z",covar.names=c("X\_1"),\\
+options=list(nParallel.cpu=7) )}}
+\vspace{1\baselineskip}
+}
+\clearpage
+\end{document}

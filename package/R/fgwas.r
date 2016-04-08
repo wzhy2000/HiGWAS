@@ -154,16 +154,20 @@ fgwas_filter<-function( n.snp, n.ind, f_get_snpmat, snp.obj, phe.mat, Y.name, Z.
 		r.fgwas <- rbind( r.fgwas, r.fgwas0$r);
 	}
 	
-	
-	r.filter0 <- get_sigsnp_nomulti_correction( f_get_snpmat, snp.obj, r.fgwas, n.snp, n.ind, fgwas.cutoff, only.sig.snp=only.sig.snp, include.na.pvalue=include.na.pvalue );
-	if( r.filter0$error )
-		stop( r.filter0$err.info );
+	if (!is.null(fgwas.cutoff))
+	{
+		r.filter0 <- get_sigsnp_nomulti_correction( f_get_snpmat, snp.obj, r.fgwas, n.snp, n.ind, fgwas.cutoff, only.sig.snp=only.sig.snp, include.na.pvalue=include.na.pvalue );
+		if( r.filter0$error )
+			stop( r.filter0$err.info );
 
-	snp.mat <- r.filter0$snp.mat;
-	
-	f.per <- round( NROW(snp.mat)/n.snp*100, digits=2);
-	if(verbose) cat("*", NROW(snp.mat), "SNPs(", f.per ,"%) are detected by the fGWAS method.\n" );
+		snp.mat <- r.filter0$snp.mat;
 
+		f.per <- round( NROW(snp.mat)/n.snp*100, digits=2);
+		if(verbose) cat("*", NROW(snp.mat), "SNPs(", f.per ,"%) are detected by the fGWAS method.\n" );
+	}
+	else
+		snp.mat <- NULL;
+		
 	return(list(error=F, snp.mat=snp.mat, r.fgwas=r.fgwas) );
 }
 
@@ -512,7 +516,7 @@ get_sigsnp_nomulti_correction<-function( f_get_snpmat, snp.obj, r.fgwas, n.snp, 
 }
 
 
-fgwas.scan<-function( phe.mat, snp.mat, Y.name, Z.name=NULL, covar.names, options=list(nParallel.cpu=1), longitudinal=FALSE)
+fgwas.snpmat<-function( phe.mat, snp.mat, Y.name, Z.name=NULL, covar.names, options=list(nParallel.cpu=1), longitudinal=FALSE)
 {
 	n.snp <- NROW(snp.mat);
 	n.ind <- NROW(phe.mat);
@@ -596,4 +600,77 @@ find_fgwas_pvalue<-function( fgwas.ret, snp.names)
 		pv[ which(!is.na(idx)) ] <-  fgwas.ret[ idx[!is.na(idx)], 7 ];
 	
 	return(pv);
+}
+
+fgwas.plink <- function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y.prefix, Z.prefix=NULL, covar.names, options=list(nParallel.cpu=1), force.split=FALSE, plink.command=NULL, longitudinal=FALSE)
+{
+	cat( "[ fGWAS PLINK ] Procedure.\n");
+	cat( "Checking the parameters ......\n");
+
+	if ( missing(file.phe) || missing(file.plink.bed) || missing(file.plink.bim) || missing(file.plink.fam) || 
+		missing(Y.prefix) || missing(Z.prefix) || missing(covar.names) )
+		stop("! file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y.prefix, Z.prefix and covar.names must be assigned with the valid values.");
+
+	if ( !(is.character(Y.prefix) && length(Y.prefix)==1 ) )
+		stop("! The parameter of Y.prefix should be assigned with a prefix of outcome column in the phenotypic data.");
+	if ( !(is.character(Z.prefix) && length(Z.prefix)==1 ) )
+		stop("! The parameter of Z.prefix should be assigned with a prefix of time column in the phenotypic data.");
+	if ( !missing("covar.names") && length(covar.names)>0 && !is.character(covar.names) )
+		stop("! The parameter of covar.names should be assigned with covariate names in the phenotypic data.");
+	if ( !(is.logical(force.split) && length(force.split)==1 ) )
+		stop("! The parameter of force.split should be a logical value(TRUE or FALSE).");
+
+	cat("* Phenotypic Data File = ",  file.phe, "\n");
+	cat("* PLINK BED File = ",  file.plink.bed, "\n");
+	cat("* PLINK BIM File = ",  file.plink.bim, "\n");
+	cat("* PLINK FAM File = ",  file.plink.fam, "\n")
+	cat("* PLINK Command = ",   plink.command, "\n")
+	cat("* Force Split by PLINK Command = ", force.split, "\n")
+	cat("* Longitudinal data = ", longitudinal, "\n")
+	
+	## only 1 option in this functions
+	if( is.null(options$nParallel.cpu) ) options$nParallel.cpu <- 1;
+	options$fgwas.cutoff <- NULL;
+
+	cat( "Checking the optional items......\n");
+	show_options( options);
+
+	options$params <- list( file.phe       = file.phe, 
+				file.plink.bed = file.plink.bed, 
+				file.plink.bim = file.plink.bim, 
+				file.plink.fam = file.plink.fam,				
+				Y.prefix       = Y.prefix, 
+				Z.prefix       = Z.prefix, 
+				longitudinal   = longitudinal,
+				covar.names    = covar.names);
+	
+	r.fgwas0 <- list();
+	
+	if( force.split || !try_load_plink( file.plink.bed,  file.plink.bim, file.plink.fam ) )
+	{
+		# It is bigdata which need to split it into chromosome unit
+		# The following will split the data and force to do fGWAS filter.
+
+		r <- plink_fgwas_bigdata ( file.plink.bed,  file.plink.bim, file.plink.fam, file.phe, plink.command, 
+									Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, ifelse(longitudinal, "GLS", "BLS"));
+
+	}	
+	else
+	{
+		pd <- list();
+		pd <- load_plink_binary( file.plink.bed,  file.plink.bim, file.plink.fam, file.phe );
+		if( is.null(pd) )
+			stop("Failed to load PLINK dataset!");
+
+		# call fGWAS.R to do FILTER and the gls__snpmat
+		r <- plink_fgwas_filter( pd, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, ifelse(longitudinal, "GLS", "BLS"));
+	}
+
+	if( r$error ) stop(r$err.info);
+	if( !is.null( options$fgwas.rdata ) ) 
+		save(r, file=options$fgwas.rdata);
+
+	r <- r$r.fgwas;
+	class(r)<-c("fgwas.ret0", "matrix");
+	return(r);
 }

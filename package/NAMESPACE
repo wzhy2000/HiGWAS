@@ -24,7 +24,8 @@ export(print.sum.GLS.ret)
 export(plot.GLS.ret)
 export(gls.best.qval);
 
-export(fgwas.scan)
+export(fgwas.snpmat)
+export(fgwas.plink)
 export(plot.fgwas.ret0)
 export(summary.fgwas.ret0)
 

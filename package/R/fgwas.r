@@ -28,9 +28,9 @@ plink_fgwas_bigdata <- function( file.plink.bed,  file.plink.bim, file.plink.fam
 	cat( "SNP Filtering by fGWAS method......\n");
 	cat("* p-value Threshold :", fgwas.cutoff, "\n" );
 	
-	snp.mat <- c();
 	phe.mat <- NULL;
-	r.fgwas <- c();
+	snp.mat.list <- list();
+	r.fgwas.list <- list();
 	
 	for(chr in chrs)
 	{
@@ -70,13 +70,16 @@ plink_fgwas_bigdata <- function( file.plink.bed,  file.plink.bim, file.plink.fam
 		cat(" ", NROW(chr.filter$snp.mat), "SNPs are significant at the pvalue level in ", chr, "(th) chromosome/group.\n");	
 		
 		phe.mat <- chr.pd$phe.mat;
-		snp.mat <- rbind(snp.mat, chr.filter$snp.mat);
-		r.fgwas <- rbind(r.fgwas, chr.filter$r.fgwas);
+		snp.mat.list[[i]] <- chr.filter$snp.mat;
+		r.fgwas.list[[i]] <- chr.filter$r.fgwas;
 		
 		try(unlink(paste(tmp, ".bed", sep="")));
 		try(unlink(paste(tmp, ".bim", sep="")));
 		try(unlink(paste(tmp, ".fam", sep="")));
 	}
+
+	snp.mat <- do.call( rbind, snp.mat.list);
+	r.fgwas <- do.call( rbind, r.fgwas.list);
 
 	cat("*", NROW(snp.mat), " SNPs are detected by fGWAS method.\n")
 	
@@ -130,7 +133,7 @@ fgwas_filter<-function( n.snp, n.ind, f_get_snpmat, snp.obj, phe.mat, Y.name, Z.
 	
 	if( class(phe.mat)=="matrix") phe.mat <- as.data.frame(phe.mat);
 
-	r.fgwas <- c();
+	r.fgwas.list <- c();
 	snp.mat <- c();
 	
 	for(i in 1:length(snp.sect0))
@@ -150,9 +153,13 @@ fgwas_filter<-function( n.snp, n.ind, f_get_snpmat, snp.obj, phe.mat, Y.name, Z.
 
 		#adjust SNP.IDX field.
 		r.fgwas0$r[,1] <- r.fgwas0$r[,1] + snp.sect0[i]-1;
-
-		r.fgwas <- rbind( r.fgwas, r.fgwas0$r);
+		
+		r.fgwas.list[[i]] <- r.fgwas0$r;
+	
+		gc();
 	}
+
+	r.fgwas <- do.call( rbind,  r.fgwas.list );
 	
 	if (!is.null(fgwas.cutoff))
 	{
@@ -245,6 +252,9 @@ gls.fgwas <- function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names=NULL, o
 		return(list( error=T, err.info="Failed to call gls() method.") )
 	}
 	
+	## Increasing performace
+	task.granularity <- 10;
+	
 	cpu.fun<-function( sect )
 	{
 		if( (sect-1)*n.percpu+1 > NROW(snp.mat) )
@@ -304,10 +314,10 @@ gls.fgwas <- function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names=NULL, o
 		cat("Starting parallel computing, snowfall/snow......\n"); 
 		snowfall::sfInit(parallel = TRUE, cpus = op.cpu, type = "SOCK")
 
-		n.percpu <- ceiling( NROW(snp.mat) / op.cpu );
+		n.percpu <- ceiling( NROW(snp.mat) / (op.cpu*task.granularity) );
 		snowfall::sfExport("n.percpu", "phe.gls.mat", "snp.mat", "covar.names", "reg.str0", "reg.str1" );
 		
-		gls.cluster <- snowfall::sfClusterApplyLB( 1:op.cpu, cpu.fun);
+		gls.cluster <- snowfall::sfClusterApplyLB( 1:(op.cpu*task.granularity), cpu.fun);
 		snowfall::sfStop();
 
 		cat("Stopping parallel computing......\n");

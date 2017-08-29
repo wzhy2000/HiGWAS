@@ -1,6 +1,6 @@
 # gwas.lasso
 
-implementing LASSO methods to identify significant SNPs and estimate joint genetic effects for non-longitudinal traits or longitudinal traits in GWAS.
+Implementing LASSO methods to identify significant SNPs and estimate joint genetic effects for non-longitudinal traits or longitudinal traits in GWAS.
 
 # Reference
 

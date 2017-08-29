@@ -28,7 +28,7 @@ The GWAS Lasso package is developed to identify significant SNPs that control ph
 
 Please install the required R packages before you install the fGWAS package. After the  installation of the dependencies, please install the **gwas.lasso** as following steps.
 
-### Install fGWAS on LINUX or Mac OSX
+### Install package on LINUX or Mac OSX
 
 ```
 git clone https://github.com/wzhy2000/gwas.lasso.git
@@ -39,9 +39,9 @@ R CMD INSTALL package
 
 ```
 
-### Install fGWAS on Windows
+### Install package on Windows
 
-1) Please download windows package from (https://github.com/wzhy2000/fGWAS/raw/master/windows/gwas.lasso.zip)
+1) Please download windows package from (https://github.com/wzhy2000/gwas.lasso/raw/master/windows/gwas.lasso.zip)
 
 2) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
 
@@ -49,15 +49,17 @@ R CMD INSTALL package
 
 GWAS lasso is an R package which provides:
 
-> 1) Loading the genotype data(SNP) from PLINK data files or simple SNP data table.
+> 1) Two Lasso models to analyze the joint genetice effects accumulated by the multiple significant SNPs.
 
-> 2) Loading the longitudinal phenotype data(traits) from CSV file with the covariate file or the measure time file.
+> 2) **GLS** model which is used to associate SNPs with the longitudinal phenotype data(traits).
 
-> 3) Scaning SNP data set to estimate log-likelihood ratio and the genetic effetcs of each genotype.
+> 3) **BLS** model which is used to associate SNPs with the single measured phenotype.
 
-> 4) Detecting the significant SNPs and export the results.
+> 4) Data analysis pipeline starting from PLINK genotype data, or Simple format genotype data, or SNP matrix. 
 
-> 5) Drawing the genetic effects for each significant SNP.
+> 5) Detecting the significant SNPs and export the results.
+
+> 6) Drawing the genetic effects for each significant SNP.
 
 
 The following codes show how to call above steps in R.
@@ -66,27 +68,40 @@ We don't attach any data set in the package, so here we use the simulation to ge
 
 ```
 library(gwas.lasso);
-r <- fg.simulate("Logistic", "AR1", 2000, 500, 1:7, sig.pos=250 );
+## generate for BLS model
+bls.simulate(“bls.phe.csv”, “bls.gen.csv”);
+## generate the longitudinal traits for GLS model
+gls.simulate (“gls.phe.csv”, “gls.gen.csv”);;
 ```
 
-Call SNP scaning in a short range (245:255) using 'fgwas' method. 
+Call SNP scaning using **BLS** model. 
 
 ```
-obj.scan <- fg.snpscan(r$obj.gen, r$obj.phe, method="fgwas", snp.sub=c(245:255) );
-obj.scan;
-```
-
-Plot Manhattan figure for all SNPs in a PDF file.
+r.bls <- bls.simple(“bls.phe.csv”, “bls.gen.csv”, Y.name="Y", covar.names=c("X_1","X_2"));
+r.bls;
 
 ```
-plot(obj2.scan, file.pdf="temp.fwgas.obj2.scan.pdf");
-```
 
-Select significant SNPs and plot the varing genetic effects in PDF.
+Call SNP scaning using **GLS** model. 
 
 ```
-tb.sig <- fg.select.sigsnp(obj2.scan, sig.level=0.001, pv.adjust = "bonferroni")
-plot.fgwas.curve( obj2.scan, tb.sig$INDEX, file.pdf="temp.fwgas.obj2.curve.pdf");
+r.gls <- gls.simple(“gls.phe.csv”, “gls.gen.csv”,Y.prefix="Y",Z.prefix="Z", covar.names=c("X_1","X_2"));
+r.gls;
+
 ```
 
-All functions and examples in the fGWAS are available in the manual (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso-manual.pdf).
+Plot genetic effects for all SNPs in a PDF file.
+
+```
+plot (r.bls, fig.prefix="bls-ret");
+plot (r.gls, fig.prefix="gls-ret");
+```
+
+Show the significant SNPs and effects
+
+```
+summary(r.bls);
+summary(r.gls);
+```
+
+All functions and examples in the GWAS.lasso package are available in the manual (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso.manual.pdf).

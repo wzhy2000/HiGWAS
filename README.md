@@ -1,6 +1,6 @@
 # gwas.lasso
 
-Implementing LASSO methods to identify significant SNPs and estimate joint genetic effects for non-longitudinal traits or longitudinal traits in GWAS.
+Implementing Lasso methods to identify significant SNPs and estimate joint genetic effects for non-longitudinal traits or longitudinal traits in GWAS.
 
 # Reference
 
@@ -57,7 +57,7 @@ GWAS lasso is an R package which provides:
 
 > 4) Data analysis pipeline starting from PLINK genotype data, or Simple format genotype data, or SNP matrix. 
 
-> 5) Detecting the significant SNPs and export the results.
+> 5) Identifying the significant SNPs and export the results.
 
 > 6) Drawing the genetic effects for each significant SNP.
 

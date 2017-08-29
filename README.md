@@ -14,9 +14,9 @@ The GWAS Lasso package is developed to identify significant SNPs that control ph
 
 ## Document
 
-> 1) Vignette (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso-vignette.pdf)
+> 1) Vignette (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso.vignette.pdf)
 
-> 2) Manual (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso-manual.pdf)
+> 2) Manual (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso.manual.pdf)
 
 ## Installation Instructions:
 
@@ -47,7 +47,7 @@ R CMD INSTALL package
 
 ## Usage Instructions
 
-fGWAS is an R package which provides:
+GWAS lasso is an R package which provides:
 
 > 1) Loading the genotype data(SNP) from PLINK data files or simple SNP data table.
 

@@ -1,6 +1,6 @@
-/* fm_vector.cpp  -	CFmVector Class
+/* fm_vector.cpp  -    CFmVector Class
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -23,71 +23,71 @@ int CFmVector::g_nObjCount=0;
 
 CFmVector::CFmVector(bool bReused)
 {
-	if (bReused)
-		m_nObjId = g_nObjCount++;
-	else
-		m_nObjId = -1;
+    if (bReused)
+        m_nObjId = g_nObjCount++;
+    else
+        m_nObjId = -1;
 
     m_pNames = NULL;
     m_pszBuf = NULL;
-	m_bReuse = 	bReused;
-	m_nRefer = 0;
-	m_nActLen= 1;
-	m_nMaxLen= 100;
-	m_pData = AllocateMemory( m_nMaxLen );
-	AddRef();
+    m_bReuse =     bReused;
+    m_nRefer = 0;
+    m_nActLen= 1;
+    m_nMaxLen= 100;
+    m_pData = AllocateMemory( m_nMaxLen );
+    AddRef();
 }
 
 CFmVector::CFmVector(CFmMatrix* pMat, int nRow_or_Cols, bool bRow, bool bReused)
 {
-	if (bReused)
-		m_nObjId = g_nObjCount++;
-	else
-		m_nObjId = -1;
+    if (bReused)
+        m_nObjId = g_nObjCount++;
+    else
+        m_nObjId = -1;
 
     m_pNames = NULL;
     m_pszBuf = NULL;
-    m_bReuse = 	bReused;
-	m_nRefer = 0;
-	if (bRow)
-		m_nActLen= pMat->GetNumCols();
-	else
-		m_nActLen= pMat->GetNumRows();
+    m_bReuse =     bReused;
+    m_nRefer = 0;
+    if (bRow)
+        m_nActLen= pMat->GetNumCols();
+    else
+        m_nActLen= pMat->GetNumRows();
 
-	m_nMaxLen= m_nActLen>100?m_nActLen:100;
-	m_pData = AllocateMemory( m_nMaxLen );
+    m_nMaxLen= m_nActLen>100?m_nActLen:100;
+    m_pData = AllocateMemory( m_nMaxLen );
 
-	for(int i=0; i<m_nActLen; i++)
-		if (bRow)
-			m_pData[i] = pMat->Get( nRow_or_Cols, i);
-		else
-			m_pData[i] = pMat->Get( i, nRow_or_Cols);
-	AddRef();
+    for(int i=0; i<m_nActLen; i++)
+        if (bRow)
+            m_pData[i] = pMat->Get( nRow_or_Cols, i);
+        else
+            m_pData[i] = pMat->Get( i, nRow_or_Cols);
+    AddRef();
 }
 
 CFmVector::CFmVector(int nSize, double fInit, int nMaxSize, bool bReused)
 {
-	if (bReused)
-		m_nObjId = g_nObjCount++;
-	else
-		m_nObjId = -1;
+    if (bReused)
+        m_nObjId = g_nObjCount++;
+    else
+        m_nObjId = -1;
 
     m_pNames = NULL;
     m_pszBuf = NULL;
-    m_bReuse = 	bReused;
-	m_nRefer = 0;
-	m_nActLen= nSize;
-	if (nMaxSize<=0)
-		m_nMaxLen= m_nActLen>100?m_nActLen:100;
-	else
-		m_nMaxLen= nMaxSize;
+    m_bReuse =     bReused;
+    m_nRefer = 0;
+    m_nActLen= nSize;
+    if (nMaxSize<=0)
+        m_nMaxLen= m_nActLen>100?m_nActLen:100;
+    else
+        m_nMaxLen= nMaxSize;
 
-	m_pData = AllocateMemory( m_nMaxLen );
+    m_pData = AllocateMemory( m_nMaxLen );
 
-	for(int i=0; i<m_nActLen; i++)
-		m_pData[i]=	fInit;
+    for(int i=0; i<m_nActLen; i++)
+        m_pData[i]=    fInit;
 
-	AddRef();
+    AddRef();
 }
 
 CFmVector::CFmVector(CFmVector* pVct, bool bReused )
@@ -99,7 +99,7 @@ CFmVector::CFmVector(CFmVector* pVct, bool bReused )
 
     m_pNames = NULL;
     m_pszBuf = NULL;
-    m_bReuse = 	bReused;
+    m_bReuse =     bReused;
     m_nRefer = 0;
     m_nActLen= pVct->m_nActLen;
     m_nMaxLen= pVct->m_nMaxLen;
@@ -124,296 +124,296 @@ CFmVector::~CFmVector()
 
  //Rprintf("Destructor Vector(%X)\n", this);
 
-	Release();
+    Release();
 }
 
 bool CFmVector::SetLength(int nLen)
 {
-	if (nLen <= m_nMaxLen && nLen>=0)
-	{
-		m_nActLen = nLen;
-		return (true);
-	}
-	else
-		return false;
+    if (nLen <= m_nMaxLen && nLen>=0)
+    {
+        m_nActLen = nLen;
+        return (true);
+    }
+    else
+        return false;
 }
 
 bool CFmVector::operator==(CFmVector &other)
 {
-	if (_DV) Rprintf(" OP  b = Ve == Vo..\n");
-	if (m_nActLen != other.m_nActLen)
+    if (_DV) Rprintf(" OP  b = Ve == Vo..\n");
+    if (m_nActLen != other.m_nActLen)
         throw( "Vectors do not have common size in op(==)" );
 
-	int ret = memcmp(m_pData, other.m_pData, sizeof(double) * m_nActLen ) ;
+    int ret = memcmp(m_pData, other.m_pData, sizeof(double) * m_nActLen ) ;
 
-	if (IsReusable()) Release();
-	if (other.IsReusable()) other.Release();
+    if (IsReusable()) Release();
+    if (other.IsReusable()) other.Release();
 
-	if (ret== 0)
-		return true ;
-	else
-		return false ;
+    if (ret== 0)
+        return true ;
+    else
+        return false ;
 }
 
 CFmVector& CFmVector::operator+(double other)
 {
-	if (_DV) Rprintf(" OP  Ve + v..\n");
+    if (_DV) Rprintf(" OP  Ve + v..\n");
 
     CFmVector* pTmp = FindReuseVector( m_nActLen );
-
-	int nLen = m_nActLen;
-	if (m_nActLen==0)
-		nLen = m_nMaxLen;
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] + other;
-
-	if (IsReusable()) Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator-(double other)
-{
-	if (_DV) Rprintf(" OP  Ve - v..\n");
-
-    CFmVector* pTmp = FindReuseVector( m_nActLen );
-
-	int nLen = m_nActLen;
-	if (m_nActLen==0)
-		nLen = m_nMaxLen;
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] - other;
-
-	if (IsReusable()) Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator*(double other)
-{
-	if (_DV) Rprintf(" OP  Ve * v..\n");
-
-    CFmVector* pTmp = FindReuseVector( m_nActLen );
-
-	int nLen = m_nActLen;
-	if (m_nActLen==0)
-		nLen = m_nMaxLen;
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] * other;
-
-	if (IsReusable()) Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator/(double other)
-{
-	if (_DV) Rprintf(" OP  Ve / v..\n");
-
-    CFmVector* pTmp = FindReuseVector( m_nActLen );
-
-	int nLen = m_nActLen;
-	if (m_nActLen==0)
-		nLen = m_nMaxLen;
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] / other;
-
-	if (IsReusable()) Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator^(double other)
-{
-	if (_DV) Rprintf(" OP  Ve ^ v..\n");
-
-    CFmVector* pTmp = FindReuseVector( m_nActLen );
-
-	int nLen = m_nActLen;
-	if (m_nActLen==0)
-		nLen = m_nMaxLen;
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = pow( m_pData[i] , other);
-
-	if (IsReusable()) Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator+(CFmVector& other)
-{
-	if (_DV) Rprintf(" OP  Ve + Vo..\n");
-
-	int nLen=0;
-	if (m_nActLen!=0)
-	{
-		if (m_nActLen != other.m_nActLen)
-		{
-            throw( "Vectors do not have common size in op(+)" );
-		}
-
-		nLen = m_nActLen;
-	}
-	else
-		nLen = other.m_nActLen;
-
-    CFmVector* pTmp = FindReuseVector( nLen );
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] + other.m_pData[i];
-
-	if (IsReusable()) Release();
-	if (other.IsReusable()) other.Release();
-
-	return(*pTmp);
-
-}
-
-CFmVector& CFmVector::operator-(CFmVector& other)
-{
-	if (_DV) Rprintf(" OP  Ve - Vo..\n");
-
-	int nLen=0;
-	if (m_nActLen!=0)
-	{
-		if (m_nActLen != other.m_nActLen)
-		{
-            throw( "Vectors do not have common size in op(-)" );
-		}
-
-		nLen = m_nActLen;
-	}
-	else
-		nLen = other.m_nActLen;
-
-    CFmVector* pTmp = FindReuseVector( nLen );
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] - other.m_pData[i];
-
-	if (IsReusable()) Release();
-	if (other.IsReusable()) other.Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator*(CFmVector& other)
-{
-	if (_DV) Rprintf(" OP  Ve * Vo..\n");
-
-
-	int nLen=0;
-	if (m_nActLen!=0)
-	{
-		if (m_nActLen != other.m_nActLen)
-		{
-            throw( "Vectors do not have common size in op(*)" );
-		}
-
-		nLen = m_nActLen;
-	}
-	else
-		nLen = other.m_nActLen;
-
-    CFmVector* pTmp = FindReuseVector( nLen );
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] * other.m_pData[i];
-
-	if (IsReusable()) Release();
-	if (other.IsReusable()) other.Release();
-
-	return(*pTmp);
-}
-
-CFmVector& CFmVector::operator/(CFmVector& other)
-{
-	if (_DV) Rprintf(" OP  Ve / Vo..\n");
-
-	int nLen=0;
-	if (m_nActLen!=0)
-	{
-		if (m_nActLen != other.m_nActLen)
-		{
-            throw( "Vectors do not have common size in op(/)" );
-		}
-
-		nLen = m_nActLen;
-	}
-	else
-		nLen = other.m_nActLen;
-
-    CFmVector* pTmp = FindReuseVector( nLen );
-
-	for(int i=0; i<nLen; i++)
-		pTmp->m_pData[i] = m_pData[i] / other.m_pData[i];
-
-	if (IsReusable()) Release();
-	if (other.IsReusable()) other.Release();
-
-	return(*pTmp);
-}
-
-CFmMatrix& CFmVector::operator*(CFmMatrix& other)
-{
-	if (_DV) Rprintf(" OP  Ve * Mo..\n");
-
-	// first check for a valid multiplication operation
-	if (m_nActLen != other.GetNumRows() )
-        throw( "Matrices do not have common size");
-
-    CFmMatrix* pTmp = CFmMatrix::FindReuseMatrix( 1, other.GetNumCols() );
-
-	double	 value ;
-	for (int i = 0 ; i < other.GetNumCols() ; ++i)
-	{
-		value = 0.0 ;
-		for (int k = 0 ; k < other.GetNumRows(); ++k)
-			value += Get(k) * other.Get(k,i) ;
-
-		pTmp->Set(0, i, value) ;
-	}
-
-	if ( other.IsReusable()) other.Release();
-	if ( this->IsReusable()) this->Release();
-
-	return *pTmp ;
-}
-
-void CFmVector::operator=(double other)
-{
-	if (_DV) Rprintf(" OP  Ve = v.\n");
 
     int nLen = m_nActLen;
     if (m_nActLen==0)
         nLen = m_nMaxLen;
 
     for(int i=0; i<nLen; i++)
-		m_pData[i] = other;
+        pTmp->m_pData[i] = m_pData[i] + other;
+
+    if (IsReusable()) Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator-(double other)
+{
+    if (_DV) Rprintf(" OP  Ve - v..\n");
+
+    CFmVector* pTmp = FindReuseVector( m_nActLen );
+
+    int nLen = m_nActLen;
+    if (m_nActLen==0)
+        nLen = m_nMaxLen;
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] - other;
+
+    if (IsReusable()) Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator*(double other)
+{
+    if (_DV) Rprintf(" OP  Ve * v..\n");
+
+    CFmVector* pTmp = FindReuseVector( m_nActLen );
+
+    int nLen = m_nActLen;
+    if (m_nActLen==0)
+        nLen = m_nMaxLen;
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] * other;
+
+    if (IsReusable()) Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator/(double other)
+{
+    if (_DV) Rprintf(" OP  Ve / v..\n");
+
+    CFmVector* pTmp = FindReuseVector( m_nActLen );
+
+    int nLen = m_nActLen;
+    if (m_nActLen==0)
+        nLen = m_nMaxLen;
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] / other;
+
+    if (IsReusable()) Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator^(double other)
+{
+    if (_DV) Rprintf(" OP  Ve ^ v..\n");
+
+    CFmVector* pTmp = FindReuseVector( m_nActLen );
+
+    int nLen = m_nActLen;
+    if (m_nActLen==0)
+        nLen = m_nMaxLen;
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = pow( m_pData[i] , other);
+
+    if (IsReusable()) Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator+(CFmVector& other)
+{
+    if (_DV) Rprintf(" OP  Ve + Vo..\n");
+
+    int nLen=0;
+    if (m_nActLen!=0)
+    {
+        if (m_nActLen != other.m_nActLen)
+        {
+            throw( "Vectors do not have common size in op(+)" );
+        }
+
+        nLen = m_nActLen;
+    }
+    else
+        nLen = other.m_nActLen;
+
+    CFmVector* pTmp = FindReuseVector( nLen );
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] + other.m_pData[i];
+
+    if (IsReusable()) Release();
+    if (other.IsReusable()) other.Release();
+
+    return(*pTmp);
+
+}
+
+CFmVector& CFmVector::operator-(CFmVector& other)
+{
+    if (_DV) Rprintf(" OP  Ve - Vo..\n");
+
+    int nLen=0;
+    if (m_nActLen!=0)
+    {
+        if (m_nActLen != other.m_nActLen)
+        {
+            throw( "Vectors do not have common size in op(-)" );
+        }
+
+        nLen = m_nActLen;
+    }
+    else
+        nLen = other.m_nActLen;
+
+    CFmVector* pTmp = FindReuseVector( nLen );
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] - other.m_pData[i];
+
+    if (IsReusable()) Release();
+    if (other.IsReusable()) other.Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator*(CFmVector& other)
+{
+    if (_DV) Rprintf(" OP  Ve * Vo..\n");
+
+
+    int nLen=0;
+    if (m_nActLen!=0)
+    {
+        if (m_nActLen != other.m_nActLen)
+        {
+            throw( "Vectors do not have common size in op(*)" );
+        }
+
+        nLen = m_nActLen;
+    }
+    else
+        nLen = other.m_nActLen;
+
+    CFmVector* pTmp = FindReuseVector( nLen );
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] * other.m_pData[i];
+
+    if (IsReusable()) Release();
+    if (other.IsReusable()) other.Release();
+
+    return(*pTmp);
+}
+
+CFmVector& CFmVector::operator/(CFmVector& other)
+{
+    if (_DV) Rprintf(" OP  Ve / Vo..\n");
+
+    int nLen=0;
+    if (m_nActLen!=0)
+    {
+        if (m_nActLen != other.m_nActLen)
+        {
+            throw( "Vectors do not have common size in op(/)" );
+        }
+
+        nLen = m_nActLen;
+    }
+    else
+        nLen = other.m_nActLen;
+
+    CFmVector* pTmp = FindReuseVector( nLen );
+
+    for(int i=0; i<nLen; i++)
+        pTmp->m_pData[i] = m_pData[i] / other.m_pData[i];
+
+    if (IsReusable()) Release();
+    if (other.IsReusable()) other.Release();
+
+    return(*pTmp);
+}
+
+CFmMatrix& CFmVector::operator*(CFmMatrix& other)
+{
+    if (_DV) Rprintf(" OP  Ve * Mo..\n");
+
+    // first check for a valid multiplication operation
+    if (m_nActLen != other.GetNumRows() )
+        throw( "Matrices do not have common size");
+
+    CFmMatrix* pTmp = CFmMatrix::FindReuseMatrix( 1, other.GetNumCols() );
+
+    double     value ;
+    for (int i = 0 ; i < other.GetNumCols() ; ++i)
+    {
+        value = 0.0 ;
+        for (int k = 0 ; k < other.GetNumRows(); ++k)
+            value += Get(k) * other.Get(k,i) ;
+
+        pTmp->Set(0, i, value) ;
+    }
+
+    if ( other.IsReusable()) other.Release();
+    if ( this->IsReusable()) this->Release();
+
+    return *pTmp ;
+}
+
+void CFmVector::operator=(double other)
+{
+    if (_DV) Rprintf(" OP  Ve = v.\n");
+
+    int nLen = m_nActLen;
+    if (m_nActLen==0)
+        nLen = m_nMaxLen;
+
+    for(int i=0; i<nLen; i++)
+        m_pData[i] = other;
 }
 
 void CFmVector::operator=(double* other)
 {
-	if (_DV) Rprintf(" OP  Ve = *pv.\n");
+    if (_DV) Rprintf(" OP  Ve = *pv.\n");
 
-	int nLen = m_nActLen;
-	if (m_nActLen==0)
-		nLen = m_nMaxLen;
+    int nLen = m_nActLen;
+    if (m_nActLen==0)
+        nLen = m_nMaxLen;
 
-	for(int i=0; i<nLen; i++)
-		m_pData[i] = other[i];
+    for(int i=0; i<nLen; i++)
+        m_pData[i] = other[i];
 }
 
 void CFmVector::operator=(CFmVector& other)
 {
-	if (_DV) Rprintf(" OP  Ve = Vo.\n");
+    if (_DV) Rprintf(" OP  Ve = Vo.\n");
 
-	if (m_nMaxLen<other.GetLength())
+    if (m_nMaxLen<other.GetLength())
     {
         double* pData = AllocateMemory(other.GetLength() + 100);
         FreeMemory(m_pData);
@@ -421,11 +421,11 @@ void CFmVector::operator=(CFmVector& other)
         m_nMaxLen = other.GetLength() + 100;
     }
 
-	m_nActLen = other.GetLength();
-	for(int i=0; i<m_nActLen; i++)
-		m_pData[i] = other.m_pData[i];
+    m_nActLen = other.GetLength();
+    for(int i=0; i<m_nActLen; i++)
+        m_pData[i] = other.m_pData[i];
 
-	if (other.IsReusable()) other.Release();
+    if (other.IsReusable()) other.Release();
 }
 
 void CFmVector::Set(CFmVector& other)
@@ -478,13 +478,13 @@ CFmVector& CFmVector::abs()
 
 double CFmVector::Sum()
 {
-	double sum = 0;
-	for(int i=0; i<m_nActLen; i++)
-		sum += m_pData[i];
+    double sum = 0;
+    for(int i=0; i<m_nActLen; i++)
+        sum += m_pData[i];
 
-	if (IsReusable()) Release();
+    if (IsReusable()) Release();
 
-	return(sum);
+    return(sum);
 }
 
 double CFmVector::GetMax()
@@ -547,7 +547,7 @@ double CFmVector::Prod(CFmVector& other)
 
     double sum=0;
     for(int i=0; i<m_nActLen; i++)
-		sum += (m_pData[i]*other.m_pData[i]);
+        sum += (m_pData[i]*other.m_pData[i]);
 
     if (other.IsReusable()) other.Release();
     if (this != &other)
@@ -618,17 +618,17 @@ void CFmVector::Append(CFmVector& other)
 
 void CFmVector::Remove( int nPos )
 {
-	if( nPos<0 && nPos>=m_nActLen)
-		return;
+    if( nPos<0 && nPos>=m_nActLen)
+        return;
 
-	m_nActLen--;
-	if( nPos == m_nActLen)
-		return;
+    m_nActLen--;
+    if( nPos == m_nActLen)
+        return;
 
-	for(int i=nPos; i<m_nActLen; i++)
-	{
-		m_pData[i] = m_pData[i+1];
-	}
+    for(int i=nPos; i<m_nActLen; i++)
+    {
+        m_pData[i] = m_pData[i+1];
+    }
 }
 
 void CFmVector::RemoveNan()
@@ -696,111 +696,111 @@ int CFmVector::Find(double fVal)
 
 void CFmVector::AddRef()
 {
-	m_nRefer++;
+    m_nRefer++;
 }
 
 void CFmVector::Release()
 {
-	m_nRefer--;
-	if ( m_nRefer == 0)
-	{
-		if (!m_bReuse)
-		{
+    m_nRefer--;
+    if ( m_nRefer == 0)
+    {
+        if (!m_bReuse)
+        {
 //Rprintf("DOUBLEs Freed:%X!\n", m_pData);
-			FreeMemory(m_pData);
-			m_pData = NULL ;
-		}
-		else
-		{
-			if (_DV) Rprintf("***RECYCLE VECTOR(%d):\n", m_nObjId);
-		}
-	}
+            FreeMemory(m_pData);
+            m_pData = NULL ;
+        }
+        else
+        {
+            if (_DV) Rprintf("***RECYCLE VECTOR(%d):\n", m_nObjId);
+        }
+    }
 }
 
 void CFmVector::FreeMemory( double* p )
 {
-	Free(p);
+    Free(p);
 }
 
 double* CFmVector::AllocateMemory( int nLen )
 {
-    double	*pData = Calloc( nLen + 1, double);
+    double    *pData = Calloc( nLen + 1, double);
 //Rprintf("%d DOUBLEs allocated(%X)!\n", nLen + 1, this);
 
 //**MEMTEST:fprintf(stderr,"ALLOC MEMORY(CFmVector): %d[%d], %s\n", (nLen + 1)*sizeof(double),nLen, m_bReuse?"YES":"NO" );
 
-	if (pData==NULL)
-	{
+    if (pData==NULL)
+    {
         _log_fatal( _HI_ , "MEMORY: failed to allocate %d bytes to CFmVector.", (nLen+1)*4);
-	}
+    }
 
-	memset(pData, 0, sizeof(double) * (nLen + 1)) ;
-	return pData ;
+    memset(pData, 0, sizeof(double) * (nLen + 1)) ;
+    return pData ;
 }
 
 bool CFmVector::IsFitted(int nLen)
 {
-	return( m_nMaxLen >= nLen );
+    return( m_nMaxLen >= nLen );
 }
 
 void CFmVector::Resize(int nLen, bool reset)
 {
-	if (m_nMaxLen < nLen )
+    if (m_nMaxLen < nLen )
     {
         FreeMemory( m_pData );
         m_nMaxLen = nLen+100;
         m_pData = AllocateMemory(m_nMaxLen);
     }
 
-	m_nActLen = nLen;
+    m_nActLen = nLen;
     if(reset)
         memset( m_pData, 0, sizeof(double)*m_nMaxLen);
 }
 
 
-#define REUSE_VECTOR_COUNT	1000
+#define REUSE_VECTOR_COUNT    1000
 CFmVector* CFmVector::FindReuseVector( int nLen)
 {
-	if (g_pReused==NULL)
-	{
+    if (g_pReused==NULL)
+    {
         g_pReused = (CFmVector**)Calloc( REUSE_VECTOR_COUNT,  CFmVector* );
         memset(g_pReused, 0, sizeof(CFmVector*)*REUSE_VECTOR_COUNT );
-	}
+    }
 
-	for(int i=0; i<REUSE_VECTOR_COUNT; i++)
-	{
+    for(int i=0; i<REUSE_VECTOR_COUNT; i++)
+    {
         CFmVector* pTmp = (CFmVector* )(g_pReused[i]);
-		if ( pTmp!=NULL &&
-			 pTmp->GetRefer()==0 &&
-			 pTmp->IsFitted(nLen))
-		{
-			pTmp->Resize(nLen);
-			pTmp->AddRef();
+        if ( pTmp!=NULL &&
+             pTmp->GetRefer()==0 &&
+             pTmp->IsFitted(nLen))
+        {
+            pTmp->Resize(nLen);
+            pTmp->AddRef();
 
-			if (_DV) Rprintf("***REUSE VECTOR(%d)\n", pTmp->m_nObjId);
-			return(pTmp);
-		}
-	}
+            if (_DV) Rprintf("***REUSE VECTOR(%d)\n", pTmp->m_nObjId);
+            return(pTmp);
+        }
+    }
 
-	CFmNewTemp fmRef;
+    CFmNewTemp fmRef;
     CFmVector* pVct = new (fmRef) CFmVector(nLen, 0.0, -1, true);
-	if (_DV) Rprintf("***NEW VECTOR(%d): Len=%d\n", pVct->m_nObjId, nLen);
-	if ( pVct->m_nObjId > 5000 )
-		_DV=1;
-	if ( pVct->m_nObjId > 5000*2 )
+    if (_DV) Rprintf("***NEW VECTOR(%d): Len=%d\n", pVct->m_nObjId, nLen);
+    if ( pVct->m_nObjId > 5000 )
+        _DV=1;
+    if ( pVct->m_nObjId > 5000*2 )
         throw( "Resue vectors have big problem\n...");
 
-	for(int i=0; i<REUSE_VECTOR_COUNT; i++)
-	{
+    for(int i=0; i<REUSE_VECTOR_COUNT; i++)
+    {
         CFmVector* pTmp = (CFmVector* )(g_pReused[i]);
-		if ( pTmp==NULL)
-		{
-			g_pReused[i] = pVct;
-			break;
-		}
-	}
+        if ( pTmp==NULL)
+        {
+            g_pReused[i] = pVct;
+            break;
+        }
+    }
 
-	return(pVct);
+    return(pVct);
 }
 
 bool CFmVector::RemoveElements(CFmVector& nRows)
@@ -1057,62 +1057,62 @@ int GetVector(SEXP pExp, CFmVector* pVct)
 
 CFmMatrix& CFmVector::GetRow()
 {
-	if (_DV) Rprintf(" GetRow.\n");
+    if (_DV) Rprintf(" GetRow.\n");
 
-	// first check for a valid multiplication operation
+    // first check for a valid multiplication operation
     CFmMatrix* pTmp = CFmMatrix::FindReuseMatrix( 1, m_nActLen );
 
-	double	 value ;
-	for (int i = 0 ; i < m_nActLen ; ++i)
-		pTmp->Set(0, i, m_pData[i] ) ;
+    double     value ;
+    for (int i = 0 ; i < m_nActLen ; ++i)
+        pTmp->Set(0, i, m_pData[i] ) ;
 
-	if ( this->IsReusable()) this->Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 CFmMatrix& CFmVector::GetCol()
 {
-	if (_DV) Rprintf(" GetRow.\n");
+    if (_DV) Rprintf(" GetRow.\n");
 
-	// first check for a valid multiplication operation
+    // first check for a valid multiplication operation
     CFmMatrix* pTmp = CFmMatrix::FindReuseMatrix( m_nActLen,1 );
 
-	double	 value ;
-	for (int i = 0 ; i < m_nActLen ; ++i)
-		pTmp->Set(i, 0, m_pData[i] ) ;
+    double     value ;
+    for (int i = 0 ; i < m_nActLen ; ++i)
+        pTmp->Set(i, 0, m_pData[i] ) ;
 
-	if ( this->IsReusable()) this->Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 void CFmVector::StatCache(int* pnTotal, int* pnUsed)
 {
-	if (g_pReused==NULL)
-	{
-		*pnTotal = 0;
-		*pnUsed = 0;
-		return;
-	}
+    if (g_pReused==NULL)
+    {
+        *pnTotal = 0;
+        *pnUsed = 0;
+        return;
+    }
 
-	for(int i=0; i<REUSE_VECTOR_COUNT; i++)
-	{
+    for(int i=0; i<REUSE_VECTOR_COUNT; i++)
+    {
         CFmVector* pTmp = (CFmVector* )(g_pReused[i]);
-		if ( pTmp==NULL )
-			continue;
+        if ( pTmp==NULL )
+            continue;
 
-		*pnTotal = *pnTotal + 1;
-		if( pTmp->GetRefer() > 0)
-			*pnUsed = *pnUsed + 1;
-	}
+        *pnTotal = *pnTotal + 1;
+        if( pTmp->GetRefer() > 0)
+            *pnUsed = *pnUsed + 1;
+    }
 
-	return;
+    return;
 }
 
 void destroy(CFmVector* p)
 {
-	CFmNewTemp fmRef;
-	p->~CFmVector();
-	operator delete(p, fmRef);
+    CFmNewTemp fmRef;
+    p->~CFmVector();
+    operator delete(p, fmRef);
 }

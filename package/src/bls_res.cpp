@@ -1,6 +1,6 @@
-/* BLS_res.cpp  -	BLS Result Object
+/* BLS_res.cpp  -    BLS Result Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -28,11 +28,11 @@
 BLS_res::BLS_res(CMDOPTIONS *pCmd, BLS_cfg* pCfg)
 {
     m_pCfg = pCfg;
-	m_pCmd = pCmd;
+    m_pCmd = pCmd;
 
     m_nSimuRound = 1;
-    m_nSnpP 	 = 0;
-    m_nSubjN 	 = 0;
+    m_nSnpP      = 0;
+    m_nSubjN      = 0;
     m_nMcmcSect  = 0;
     m_nMcmcSnp   = 0;
     m_nMcmcIter  = 0;
@@ -56,8 +56,8 @@ BLS_res::BLS_res(CMDOPTIONS *pCmd, BLS_cfg* pCfg)
     m_pRefit_Rh2      = NULL;
     m_pRefit_QBest    = NULL;
 
-	m_pRefitSnps  = NULL;
-	m_pSigSnps    = NULL;
+    m_pRefitSnps  = NULL;
+    m_pSigSnps    = NULL;
     m_pSigAddSnps = NULL;
     m_pSigDomSnps = NULL;
     m_pCovNames    = NULL;
@@ -71,8 +71,8 @@ BLS_res::~BLS_res()
     if(m_pVarsel_Coefs) destroy( m_pVarsel_Coefs );
     if(m_pVarsel_Ra)   destroy( m_pVarsel_Ra );
     if(m_pVarsel_Rd)   destroy( m_pVarsel_Rd );
-	if(m_pVarsel_Rh2)   destroy( m_pVarsel_Rh2 );
-	if(m_pVarsel_QBest) destroy( m_pVarsel_QBest );
+    if(m_pVarsel_Rh2)   destroy( m_pVarsel_Rh2 );
+    if(m_pVarsel_QBest) destroy( m_pVarsel_QBest );
 
     if(m_pRefit_SnpName) destroy( m_pRefit_SnpName );
     if(m_pRefit_SnpChr) destroy( m_pRefit_SnpChr );
@@ -81,10 +81,10 @@ BLS_res::~BLS_res()
     if(m_pRefit_Ra) destroy( m_pRefit_Ra );
     if(m_pRefit_Rd) destroy( m_pRefit_Rd );
     if(m_pRefit_Rh2) destroy( m_pRefit_Rh2 );
-	if(m_pRefit_QBest) destroy( m_pRefit_QBest );
+    if(m_pRefit_QBest) destroy( m_pRefit_QBest );
 
-	if(m_pRefitSnps) destroy( m_pRefitSnps );
-	if(m_pSigSnps) destroy( m_pSigSnps );
+    if(m_pRefitSnps) destroy( m_pRefitSnps );
+    if(m_pSigSnps) destroy( m_pSigSnps );
     if(m_pSigAddSnps) destroy( m_pSigAddSnps );
     if(m_pSigDomSnps) destroy( m_pSigDomSnps );
     if(m_pCovNames) destroy( m_pCovNames );
@@ -108,8 +108,8 @@ int BLS_res::InitVarsel(int mRound, int nSnpP, int SubjN, int mcmcSect, int mcmc
     m_nMcmcSnp   = mcmcSnps;
     m_nMcmcIter  = mcmcIter;
 
-	CFmNewTemp refNew;
-	m_pCovNames  = new (refNew) CFmVectorStr(pCovNames);
+    CFmNewTemp refNew;
+    m_pCovNames  = new (refNew) CFmVectorStr(pCovNames);
 
     return(0);
 }
@@ -124,13 +124,13 @@ char* BLS_res::GetVarselSnpName(int idx)
 
 int BLS_res::GetRefitSnp(CFmVector* pVct)
 {
-	if (m_pVarsel_Ra==NULL)
+    if (m_pVarsel_Ra==NULL)
         return(ERR_NULL_DATA);
 
-	for (long int i=0; i< m_nSnpP; i++)
+    for (long int i=0; i< m_nSnpP; i++)
     {
-	    if ( m_pVarsel_Ra->Get(i,0) || m_pVarsel_Rd->Get(i,0) )
-			pVct->Put(i);
+        if ( m_pVarsel_Ra->Get(i,0) || m_pVarsel_Rd->Get(i,0) )
+            pVct->Put(i);
     }
 
     return(0);
@@ -143,65 +143,65 @@ int BLS_res::GetMcmcResult(CFmFileMatrix* pFileMat, long int idx, double fQval, 
     int q1 = (int)floor( fQval * nMcmc);
     int q2 = (int)floor( ( 1- fQval)* nMcmc -1 );
 
-	CFmVector fmVctTmp(0, 0.0);
-	int ret = pFileMat->GetCacheCol(idx, fmVctTmp);
-	if(ret!=0) return(ret);
+    CFmVector fmVctTmp(0, 0.0);
+    int ret = pFileMat->GetCacheCol(idx, fmVctTmp);
+    if(ret!=0) return(ret);
 
-	int bSig = 1;
+    int bSig = 1;
     fmVctTmp.Sort();
-	if (fmVctTmp[q1]<=0 && fmVctTmp[q2]>=0)
-	    bSig = 0;
+    if (fmVctTmp[q1]<=0 && fmVctTmp[q2]>=0)
+        bSig = 0;
 
-	CFmVector fmTmp(0, 0.0);
-	for(long int q=q1; q<= q2; q++)
-		fmTmp.Put( fmVctTmp[q] );
+    CFmVector fmTmp(0, 0.0);
+    for(long int q=q1; q<= q2; q++)
+        fmTmp.Put( fmVctTmp[q] );
 
-	fmVctRet.Resize(0);
-	fmVctRet.Put( bSig * 1.0 );
-	fmVctRet.Put( fmTmp.GetMedian() );
-	fmVctRet.Put( fmTmp.GetMin() );
-	fmVctRet.Put( fmTmp.GetMax() );
+    fmVctRet.Resize(0);
+    fmVctRet.Put( bSig * 1.0 );
+    fmVctRet.Put( fmTmp.GetMedian() );
+    fmVctRet.Put( fmTmp.GetMin() );
+    fmVctRet.Put( fmTmp.GetMax() );
 
     return(0);
 }
 
 int BLS_res::SortoutResult( CFmFileMatrix* pFileMat, CFmMatrix* gen_pA, double y_var, int nSnp, int nCov,
-						     CFmMatrix* pmatCoef, CFmMatrix* pmatA, CFmMatrix* pmatD, CFmVector* pvctH2 )
+                             CFmMatrix* pmatCoef, CFmMatrix* pmatA, CFmMatrix* pmatD, CFmVector* pvctH2 )
 {
     _log_debug(_HI_, "SortoutResult(), NCOL(FileMat)=%d, SNP=%d nCov=%d", pFileMat->GetNumCols(), nSnp, nCov );
 
     CFmVector fmVctRet(0, 0.0);
 
-	for(long int i=0; i< nCov; i++)
-	{
-		GetMcmcResult(pFileMat, i, m_pCfg->m_fQval_add, fmVctRet);
-		pmatCoef->Cbind( fmVctRet );
-	}
-
-	for (long int i=0; i< nSnp; i++)
+    for(long int i=0; i< nCov; i++)
     {
-		GetMcmcResult(pFileMat, nCov + i , m_pCfg->m_fQval_add, fmVctRet);
-		pmatA->Cbind( fmVctRet );
-		if ( fmVctRet[0] >0 )
-			_log_debug(_HI_, "significant SNP [%d], ADD = %.4f, %.4f, %.4f, %.4f", i+1, fmVctRet[0], fmVctRet[1], fmVctRet[2], fmVctRet[3] );
-	}
-
-	for (long int i=0; i< nSnp; i++)
-    {
-		GetMcmcResult(pFileMat, nCov + nSnp + i , m_pCfg->m_fQval_dom, fmVctRet);
-		pmatD->Cbind( fmVctRet );
-		if ( fmVctRet[0] >0 )
-			_log_debug(_HI_, "significant SNP [%d], DOM = %.4f, %.4f, %.4f, %.4f", i+1, fmVctRet[0], fmVctRet[1], fmVctRet[2], fmVctRet[3] );
+        GetMcmcResult(pFileMat, i, m_pCfg->m_fQval_add, fmVctRet);
+        pmatCoef->Cbind( fmVctRet );
     }
 
-	pmatA->Transpose();
-	pmatD->Transpose();
-	pmatCoef->Transpose();
+    for (long int i=0; i< nSnp; i++)
+    {
+        GetMcmcResult(pFileMat, nCov + i , m_pCfg->m_fQval_add, fmVctRet);
+        pmatA->Cbind( fmVctRet );
+        if ( fmVctRet[0] >0 )
+            _log_debug(_HI_, "significant SNP [%d], ADD = %.4f, %.4f, %.4f, %.4f", i+1, fmVctRet[0], fmVctRet[1], fmVctRet[2], fmVctRet[3] );
+    }
 
-	CFmVector fmAdd(0, 0.0);
-	fmAdd= pmatA->GetCol(1);
-	CFmVector fmDom(0, 0.0);
-	fmDom = pmatD->GetCol(1);
+    for (long int i=0; i< nSnp; i++)
+    {
+        GetMcmcResult(pFileMat, nCov + nSnp + i , m_pCfg->m_fQval_dom, fmVctRet);
+        pmatD->Cbind( fmVctRet );
+        if ( fmVctRet[0] >0 )
+            _log_debug(_HI_, "significant SNP [%d], DOM = %.4f, %.4f, %.4f, %.4f", i+1, fmVctRet[0], fmVctRet[1], fmVctRet[2], fmVctRet[3] );
+    }
+
+    pmatA->Transpose();
+    pmatD->Transpose();
+    pmatCoef->Transpose();
+
+    CFmVector fmAdd(0, 0.0);
+    fmAdd= pmatA->GetCol(1);
+    CFmVector fmDom(0, 0.0);
+    fmDom = pmatD->GetCol(1);
     GetH2( gen_pA, fmAdd, fmDom, pvctH2, y_var );
 
     return(0);
@@ -209,12 +209,12 @@ int BLS_res::SortoutResult( CFmFileMatrix* pFileMat, CFmMatrix* gen_pA, double y
 
 
 int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
-						CFmVectorStr* pVctSnp, CFmVector* pVctChr, CFmVector* pVctPos, CFmFileMatrix* pFileMat )
+                        CFmVectorStr* pVctSnp, CFmVector* pVctChr, CFmVector* pVctPos, CFmFileMatrix* pFileMat )
 {
-	int nSnp = pVctSnp->GetLength();
+    int nSnp = pVctSnp->GetLength();
     _log_debug(_HI_, "SetResult: bRefit=%d, nSNP=%d, nCov=%d", bRefit?1:0, nSnp, nCov );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     if (bRefit)
     {
@@ -226,11 +226,11 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
         m_pRefit_Rd = new (refNew) CFmMatrix(0, 0);
         m_pRefit_Rh2 = new (refNew) CFmVector(0, 0.0);
 
- 		SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pRefit_Coefs, m_pRefit_Ra, m_pRefit_Rd, m_pRefit_Rh2 );
+         SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pRefit_Coefs, m_pRefit_Ra, m_pRefit_Rd, m_pRefit_Rh2 );
 
- 		m_pRefit_QBest = new (refNew) CFmMatrix(nSnp, 8);
- 		SortoutQBest( pFileMat, m_pRefit_QBest, nSnp, nCov);
- 		m_pRefit_QBest->SetRowNames(m_pRefit_SnpName);
+         m_pRefit_QBest = new (refNew) CFmMatrix(nSnp, 8);
+         SortoutQBest( pFileMat, m_pRefit_QBest, nSnp, nCov);
+         m_pRefit_QBest->SetRowNames(m_pRefit_SnpName);
 
     }
     else
@@ -243,11 +243,11 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
         m_pVarsel_Rd = new (refNew) CFmMatrix(0, 0);
         m_pVarsel_Rh2 = new (refNew) CFmVector(0, 0.0);
 
-		SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pVarsel_Coefs, m_pVarsel_Ra, m_pVarsel_Rd, m_pVarsel_Rh2 );
+        SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pVarsel_Coefs, m_pVarsel_Ra, m_pVarsel_Rd, m_pVarsel_Rh2 );
 
- 		m_pVarsel_QBest = new (refNew) CFmMatrix(nSnp, 8);
- 		SortoutQBest( pFileMat, m_pVarsel_QBest, nSnp, nCov);
- 		m_pVarsel_QBest->SetRowNames(m_pVarsel_SnpName);
+         m_pVarsel_QBest = new (refNew) CFmMatrix(nSnp, 8);
+         SortoutQBest( pFileMat, m_pVarsel_QBest, nSnp, nCov);
+         m_pVarsel_QBest->SetRowNames(m_pVarsel_SnpName);
     }
 
     return(0);
@@ -255,19 +255,19 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
 
 int BLS_res::InitRefit(int nMcmcIter, CFmVectorStr* pCovNames)
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     if (m_pRefitSnps) destroy( m_pRefitSnps );
     m_pRefitSnps = new (refNew) CFmVector( 0, 0.0 );
 
-	if (m_pCovNames==NULL)
-		m_pCovNames = new (refNew) CFmVectorStr(pCovNames);
+    if (m_pCovNames==NULL)
+        m_pCovNames = new (refNew) CFmVectorStr(pCovNames);
 
     _log_debug(_HI_, "InitRefit: VARSEL[%d,%d]", m_pVarsel_Ra->GetNumRows(), m_pVarsel_Ra->GetNumCols() );
 
-	for (long int i=0; i< m_nSnpP; i++)
+    for (long int i=0; i< m_nSnpP; i++)
     {
-		if ( m_pVarsel_Ra->Get(i,0) >0 || m_pVarsel_Rd->Get(i,0)>0 )
+        if ( m_pVarsel_Ra->Get(i,0) >0 || m_pVarsel_Rd->Get(i,0)>0 )
             m_pRefitSnps->Put(i);
     }
 
@@ -289,29 +289,29 @@ int BLS_res::InitRefit(int nMcmcIter, CFmVectorStr* pCovNames)
 
 int BLS_res::GetSigSNP()
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
-	int nSnp = m_nRefitSnp;
+    int nSnp = m_nRefitSnp;
 
-	if (m_pSigSnps) destroy( m_pSigSnps );
-	if (m_pSigDomSnps) destroy( m_pSigDomSnps );
-	if (m_pSigAddSnps) destroy( m_pSigAddSnps );
+    if (m_pSigSnps) destroy( m_pSigSnps );
+    if (m_pSigDomSnps) destroy( m_pSigDomSnps );
+    if (m_pSigAddSnps) destroy( m_pSigAddSnps );
 
-	m_pSigSnps = new (refNew) CFmVector(0, 0.0);
-	m_pSigDomSnps = new (refNew) CFmVector(0, 0.0);
-	m_pSigAddSnps = new (refNew) CFmVector(0, 0.0);
+    m_pSigSnps = new (refNew) CFmVector(0, 0.0);
+    m_pSigDomSnps = new (refNew) CFmVector(0, 0.0);
+    m_pSigAddSnps = new (refNew) CFmVector(0, 0.0);
 
-	_log_debug(_HI_, "GetSigSNP: NSnp=%d", nSnp );
+    _log_debug(_HI_, "GetSigSNP: NSnp=%d", nSnp );
 
-	for (long int i=0; i< nSnp; i++)
+    for (long int i=0; i< nSnp; i++)
     {
-		if ( m_pRefit_Ra->Get(i,0) >0 || m_pRefit_Rd->Get(i,0)>0 )
+        if ( m_pRefit_Ra->Get(i,0) >0 || m_pRefit_Rd->Get(i,0)>0 )
             m_pSigSnps->Put(i);
 
-		if ( m_pRefit_Rd->Get(i,0) >0 )
+        if ( m_pRefit_Rd->Get(i,0) >0 )
             m_pSigDomSnps->Put(i);
 
-		if (  m_pRefit_Ra->Get(i,0) >0 )
+        if (  m_pRefit_Ra->Get(i,0) >0 )
             m_pSigAddSnps->Put(i);
     }
 
@@ -391,7 +391,7 @@ int BLS_res::SaveRData( char* szRdataFile )
     // #NO1: adh2
     if (m_pVarsel_SnpName)
     {
-		CFmMatrix matVs1(0,0);
+        CFmMatrix matVs1(0,0);
 
         matVs1.Cbind(*m_pVarsel_SnpChr, (char*)("chr"));
         matVs1.Cbind(*m_pVarsel_SnpPos, (char*)("pos"));
@@ -399,14 +399,14 @@ int BLS_res::SaveRData( char* szRdataFile )
         matVs1.Cbind(*m_pVarsel_Rd);
         matVs1.Cbind(*m_pVarsel_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pVarsel_SnpName);
+        matVs1.SetRowNames(m_pVarsel_SnpName);
 
-		rls.SetData( (char*)"varsel", &matVs1);
-	}
+        rls.SetData( (char*)"varsel", &matVs1);
+    }
 
     if (m_pRefit_SnpName)
     {
-		CFmMatrix matVs1(0,0);
+        CFmMatrix matVs1(0,0);
 
         matVs1.Cbind(*m_pRefit_SnpChr, (char*)("chr"));
         matVs1.Cbind(*m_pRefit_SnpPos, (char*)("pos"));
@@ -414,10 +414,10 @@ int BLS_res::SaveRData( char* szRdataFile )
         matVs1.Cbind(*m_pRefit_Rd );
         matVs1.Cbind(*m_pRefit_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pRefit_SnpName);
+        matVs1.SetRowNames(m_pRefit_SnpName);
 
-		rls.SetData( (char*)"refit", &matVs1);
-	}
+        rls.SetData( (char*)"refit", &matVs1);
+    }
 
     if(m_pVarsel_Coefs)
     {
@@ -448,7 +448,7 @@ int BLS_res::SaveRData( char* szRdataFile )
 
 int BLS_res::SaveCsv4Fig( char* szCsvFile, bool bRefit )
 {
-	CFmMatrix matVs1(0,0);
+    CFmMatrix matVs1(0,0);
 
     if (!bRefit)
     {
@@ -458,8 +458,8 @@ int BLS_res::SaveCsv4Fig( char* szCsvFile, bool bRefit )
         matVs1.Cbind(*m_pVarsel_Rd );
         matVs1.Cbind(*m_pVarsel_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pVarsel_SnpName);
-	}
+        matVs1.SetRowNames(m_pVarsel_SnpName);
+    }
 
     if (bRefit)
     {
@@ -469,8 +469,8 @@ int BLS_res::SaveCsv4Fig( char* szCsvFile, bool bRefit )
         matVs1.Cbind(*m_pRefit_Rd );
         matVs1.Cbind(*m_pRefit_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pRefit_SnpName);
-	}
+        matVs1.SetRowNames(m_pRefit_SnpName);
+    }
 
 
     matVs1.WriteAsCSVFile(szCsvFile, false);
@@ -480,9 +480,9 @@ int BLS_res::SaveCsv4Fig( char* szCsvFile, bool bRefit )
 
 int BLS_res::SaveSigFile( char* szCsvFile, bool bRefit )
 {
-	_log_info(_HI_, "SaveSigFile: CSV File=%s bRefit=%d", szCsvFile,  bRefit?1:0 );
+    _log_info(_HI_, "SaveSigFile: CSV File=%s bRefit=%d", szCsvFile,  bRefit?1:0 );
 
-	CFmMatrix matVs1(0,0);
+    CFmMatrix matVs1(0,0);
 
     if (!bRefit)
     {
@@ -492,8 +492,8 @@ int BLS_res::SaveSigFile( char* szCsvFile, bool bRefit )
         matVs1.Cbind(*m_pVarsel_Rd );
         matVs1.Cbind(*m_pVarsel_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pVarsel_SnpName);
-	}
+        matVs1.SetRowNames(m_pVarsel_SnpName);
+    }
 
     if (bRefit)
     {
@@ -503,19 +503,19 @@ int BLS_res::SaveSigFile( char* szCsvFile, bool bRefit )
         matVs1.Cbind(*m_pRefit_Rd );
         matVs1.Cbind(*m_pRefit_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pRefit_SnpName);
-	}
+        matVs1.SetRowNames(m_pRefit_SnpName);
+    }
 
-	CFmMatrix matVs2(0,0);
-	for(int i=0;i<matVs1.GetNumRows();i++)
-	{
-		if ( m_pVarsel_Ra->Get(i,0)>0 || m_pVarsel_Rd->Get(i,1)>0 )
-		{
-			matVs2.Cbind(matVs1.GetRow(i));
-		}
-	}
+    CFmMatrix matVs2(0,0);
+    for(int i=0;i<matVs1.GetNumRows();i++)
+    {
+        if ( m_pVarsel_Ra->Get(i,0)>0 || m_pVarsel_Rd->Get(i,1)>0 )
+        {
+            matVs2.Cbind(matVs1.GetRow(i));
+        }
+    }
 
-	matVs2.Transpose();
+    matVs2.Transpose();
     matVs2.WriteAsCSVFile(szCsvFile, false);
     return(0);
 
@@ -525,20 +525,20 @@ SEXP BLS_res::GetRObj()
 {
     _log_info(_HI_, "GetRObj: Start to save the matrix to R.");
 
-	SEXP sRet, t;
-	int nList = (m_pVarsel_SnpName != NULL?1:0) +
-			  	(m_pRefit_SnpName  != NULL?1:0) +
-				(m_pVarsel_Coefs   != NULL?1:0) +
-				(m_pRefit_Coefs    != NULL?1:0) +
-				(m_pVarsel_QBest   != NULL?1:0) +
-				(m_pRefit_QBest    != NULL?1:0);
+    SEXP sRet, t;
+    int nList = (m_pVarsel_SnpName != NULL?1:0) +
+                  (m_pRefit_SnpName  != NULL?1:0) +
+                (m_pVarsel_Coefs   != NULL?1:0) +
+                (m_pRefit_Coefs    != NULL?1:0) +
+                (m_pVarsel_QBest   != NULL?1:0) +
+                (m_pRefit_QBest    != NULL?1:0);
 
     PROTECT(sRet = t = allocList(nList));
 
     // #NO1: ret.vs
     if (m_pVarsel_SnpName)
     {
-		CFmMatrix matVs1(0,0);
+        CFmMatrix matVs1(0,0);
 
         matVs1.Cbind(*m_pVarsel_SnpChr, (char*)("chr"));
         matVs1.Cbind(*m_pVarsel_SnpPos, (char*)("pos"));
@@ -546,16 +546,16 @@ SEXP BLS_res::GetRObj()
         matVs1.Cbind(*m_pVarsel_Rd );
         matVs1.Cbind(*m_pVarsel_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pVarsel_SnpName);
-		SEXP expVS1 = GetSEXP(&matVs1);
-		SETCAR( t, expVS1 );
-		SET_TAG(t, install("varsel") );
-		t = CDR(t);
-	}
+        matVs1.SetRowNames(m_pVarsel_SnpName);
+        SEXP expVS1 = GetSEXP(&matVs1);
+        SETCAR( t, expVS1 );
+        SET_TAG(t, install("varsel") );
+        t = CDR(t);
+    }
 
     if (m_pRefit_SnpName)
     {
-		CFmMatrix matVs1(0,0);
+        CFmMatrix matVs1(0,0);
 
         matVs1.Cbind(*m_pRefit_SnpChr, (char*)("chr"));
         matVs1.Cbind(*m_pRefit_SnpPos, (char*)("pos"));
@@ -563,46 +563,46 @@ SEXP BLS_res::GetRObj()
         matVs1.Cbind(*m_pRefit_Rd );
         matVs1.Cbind(*m_pRefit_Rh2, (char*)("h2"));
 
-		matVs1.SetRowNames(m_pRefit_SnpName);
-		SEXP expVS1 = GetSEXP(&matVs1);
-		SETCAR( t, expVS1 );
-		SET_TAG(t, install("refit") );
-		t = CDR(t);
+        matVs1.SetRowNames(m_pRefit_SnpName);
+        SEXP expVS1 = GetSEXP(&matVs1);
+        SETCAR( t, expVS1 );
+        SET_TAG(t, install("refit") );
+        t = CDR(t);
      }
 
-	if(m_pVarsel_Coefs)
-	{
-		SEXP expVS = GetSEXP(m_pVarsel_Coefs);
-		SETCAR( t, expVS );
-		SET_TAG(t, install("varsel_cov") );
-		t = CDR(t);
-	}
+    if(m_pVarsel_Coefs)
+    {
+        SEXP expVS = GetSEXP(m_pVarsel_Coefs);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("varsel_cov") );
+        t = CDR(t);
+    }
 
-	if(m_pRefit_Coefs)
-	{
-		SEXP expVS = GetSEXP(m_pRefit_Coefs);
-		SETCAR( t, expVS );
-		SET_TAG(t, install("refit_cov") );
-		t = CDR(t);
-	}
+    if(m_pRefit_Coefs)
+    {
+        SEXP expVS = GetSEXP(m_pRefit_Coefs);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("refit_cov") );
+        t = CDR(t);
+    }
 
-	if(m_pVarsel_QBest)
-	{
-		SEXP expVS = GetSEXP(m_pVarsel_QBest);
-		SETCAR( t, expVS );
-		SET_TAG(t, install("varsel_Qbest") );
-		t = CDR(t);
-	}
+    if(m_pVarsel_QBest)
+    {
+        SEXP expVS = GetSEXP(m_pVarsel_QBest);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("varsel_Qbest") );
+        t = CDR(t);
+    }
 
-	if(m_pRefit_QBest)
-	{
-		SEXP expVS = GetSEXP(m_pRefit_QBest);
-		SETCAR( t, expVS );
-		SET_TAG(t, install("refit_Qbest") );
-		t = CDR(t);
-	}
+    if(m_pRefit_QBest)
+    {
+        SEXP expVS = GetSEXP(m_pRefit_QBest);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("refit_Qbest") );
+        t = CDR(t);
+    }
 
-	UNPROTECT(1);
+    UNPROTECT(1);
 
     _log_debug(_HI_, "GetRObj: Successful to save the matrix to R.");
 
@@ -657,26 +657,26 @@ int BLS_res::GetH2(CFmMatrix* gen_pA, CFmVector& vctA, CFmVector& vctD, CFmVecto
 
 int BLS_res::SortoutQBest(CFmFileMatrix* pMatRet, CFmMatrix* pQBest, int nSnp, int nCov)
 {
-	_log_debug(_HI_, "SortoutQBest: FileMatrix=%s NROW(pFileMat)=%d nSNP=%d nCov=%d ",
-			pMatRet->GetFileName(), pMatRet->GetNumRows(), nSnp, nCov );
+    _log_debug(_HI_, "SortoutQBest: FileMatrix=%s NROW(pFileMat)=%d nSNP=%d nCov=%d ",
+            pMatRet->GetFileName(), pMatRet->GetNumRows(), nSnp, nCov );
 
-	CFmVector fmQBest(4, 0.0);
+    CFmVector fmQBest(4, 0.0);
 
-	for (long int i=0; i<nCov; i++)
-		GetQBestInfo( pMatRet, i, fmQBest);
+    for (long int i=0; i<nCov; i++)
+        GetQBestInfo( pMatRet, i, fmQBest);
 
-	CFmVector fmTemp(0, 0.0);
-	for (long int i=0; i< nSnp; i++)
+    CFmVector fmTemp(0, 0.0);
+    for (long int i=0; i< nSnp; i++)
     {
-		fmTemp.Resize(0);
+        fmTemp.Resize(0);
 
-		GetQBestInfo( pMatRet, nCov+ i, fmQBest);
-		fmTemp.Append( fmQBest);
+        GetQBestInfo( pMatRet, nCov+ i, fmQBest);
+        fmTemp.Append( fmQBest);
 
-		GetQBestInfo( pMatRet, nCov+ nSnp +i, fmQBest);
-		fmTemp.Append( fmQBest);
+        GetQBestInfo( pMatRet, nCov+ nSnp +i, fmQBest);
+        fmTemp.Append( fmQBest);
 
-		pQBest->SetRow(i, fmTemp );
+        pQBest->SetRow(i, fmTemp );
     }
 
     _log_debug(_HI_, "SortoutQBest: Successful to sort out.");
@@ -687,47 +687,47 @@ int BLS_res::GetQBestInfo(CFmFileMatrix* pMatRet, int idx, CFmVector& fmQBest)
 {
     int nMcmc= m_pCfg->m_nMcmcIter - m_pCfg->GetBurnInRound();
 
-	fmQBest.Resize( 4 );
-	fmQBest[0] = R_NaN;
-	fmQBest[1] = R_NaN;
-	fmQBest[2] = R_NaN;
-	fmQBest[3] = R_NaN;
+    fmQBest.Resize( 4 );
+    fmQBest[0] = R_NaN;
+    fmQBest[1] = R_NaN;
+    fmQBest[2] = R_NaN;
+    fmQBest[3] = R_NaN;
 
-	CFmVector fmVct(nMcmc, 0.0);
+    CFmVector fmVct(nMcmc, 0.0);
     int ret = pMatRet->GetCacheCol( idx, fmVct );
     if(ret!=0) return( ret );
     fmVct.Sort();
 
-	CFmVector fmTmp(0, 0.0);
-	for(int qx=0 ; qx < nMcmc/2; qx++)
-		if(( fmVct[qx]>0 && fmVct[nMcmc-1-qx]>0 ) || ( fmVct[qx]<0 && fmVct[nMcmc-1-qx]<0 ) )
-		{
-			fmTmp.Resize(0);
-			for(int qxi = qx; qxi <= nMcmc-1-qx; qxi++)
-				fmTmp.Put(fmVct[qxi]);
+    CFmVector fmTmp(0, 0.0);
+    for(int qx=0 ; qx < nMcmc/2; qx++)
+        if(( fmVct[qx]>0 && fmVct[nMcmc-1-qx]>0 ) || ( fmVct[qx]<0 && fmVct[nMcmc-1-qx]<0 ) )
+        {
+            fmTmp.Resize(0);
+            for(int qxi = qx; qxi <= nMcmc-1-qx; qxi++)
+                fmTmp.Put(fmVct[qxi]);
 
-			fmQBest[0] = qx/(nMcmc*1.0 );
-			fmQBest[1] = fmTmp.GetMedian();
-			fmQBest[2] = fmTmp.GetMin();
-			fmQBest[3] = fmTmp.GetMax();
+            fmQBest[0] = qx/(nMcmc*1.0 );
+            fmQBest[1] = fmTmp.GetMedian();
+            fmQBest[2] = fmTmp.GetMin();
+            fmQBest[3] = fmTmp.GetMax();
 
-			break;
-		}
+            break;
+        }
 
-	if(isnan(fmQBest[0]))
-	{
-		fmQBest[0] = 0.5;
-		fmQBest[1] = fmVct[nMcmc/2];
-		fmQBest[2] = fmVct[nMcmc/2];
-		fmQBest[3] = fmVct[nMcmc/2];
-	}
+    if(isnan(fmQBest[0]))
+    {
+        fmQBest[0] = 0.5;
+        fmQBest[1] = fmVct[nMcmc/2];
+        fmQBest[2] = fmVct[nMcmc/2];
+        fmQBest[3] = fmVct[nMcmc/2];
+    }
 
-	return(0);
+    return(0);
 }
 
 void destroy(BLS_res* p)
 {
-	CFmNewTemp  fmRef;
-	p->~BLS_res();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~BLS_res();
+    operator delete(p, fmRef);
 }

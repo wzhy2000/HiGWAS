@@ -1,6 +1,6 @@
-/* fm_mapmat.cpp  -	CFmMapMat Class
+/* fm_mapmat.cpp  -    CFmMapMat Class
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -165,7 +165,7 @@ int CFmMapMat::LoadCSV(const char* filename)
     if (ret)
         return ret;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     int nIdx = df.FindColumn("Marker");
     if (nIdx>=0)
@@ -237,7 +237,7 @@ CFmDatPheno::CFmDatPheno(char* szFile_pheno )
 
 CFmDatPheno::~CFmDatPheno()
 {
-	if (m_szFile_pheno) Free(m_szFile_pheno);
+    if (m_szFile_pheno) Free(m_szFile_pheno);
     if (m_pTimes) destroy( m_pTimes );
 }
 
@@ -250,7 +250,7 @@ int CFmDatPheno::Load()
     if (ret)
         return ret;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     m_pPhenoY = new (refNew) CFmMatrix(0,0);
     m_pTimes = new (refNew) CFmVector(0, 0.0);
@@ -297,14 +297,14 @@ CFmDatGeno::CFmDatGeno(char* szFile_snp )
 
 CFmDatGeno::~CFmDatGeno()
 {
-	if(m_szFile_snp) Free(m_szFile_snp);
+    if(m_szFile_snp) Free(m_szFile_snp);
 }
 
 int CFmDatGeno::Load()
 {
     _log_info(_HI_, "m_nMesuQ: Start to load SNP data into a matrix from %s", m_szFile_snp);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSnpMat = new (refNew) CFmMatrix(0, 0);
     int ret = m_pSnpMat->ReadFromCSVFile( m_szFile_snp, true, true);
     if (ret!=0)
@@ -321,21 +321,21 @@ int CFmDatGeno::Load()
 
 void destroy(CFmMapMat* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmMapMat();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmMapMat();
+    operator delete(p, fmRef);
 }
 
 void destroy(CFmDatPheno* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmDatPheno();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmDatPheno();
+    operator delete(p, fmRef);
 }
 
 void destroy(CFmDatGeno* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmDatGeno();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmDatGeno();
+    operator delete(p, fmRef);
 }

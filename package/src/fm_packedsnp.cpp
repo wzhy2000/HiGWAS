@@ -1,5 +1,5 @@
-/* fm_packedsnp.cpp  -	Packed SNP Object
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+/* fm_packedsnp.cpp  -    Packed SNP Object
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -25,7 +25,7 @@ CFmPackedSNP::CFmPackedSNP()
 {
     m_nSubjN = 0;
     m_nSnpP = 0;
-	m_nBaseSubjN = 0;
+    m_nBaseSubjN = 0;
     m_nInsideSnpP = 0;
     m_nInsideSubjN = 0;
     m_nMaxSnps = 0;
@@ -136,7 +136,7 @@ int CFmPackedSNP::AppendSnp()
     Free(m_ppSnpInfo);
     m_ppSnpInfo = ppNewSnpInfo;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     //** enlarge outside<->inside index table
     destroy( m_pSnpIdx );
@@ -241,8 +241,8 @@ int CFmPackedSNP::RemoveRareSNP(double fRareMaf)
     double* pSNPs = new double[m_nSubjN];
     CFmVector nRemoves(0, 0.0);
 
-	R_set_seed( 100 );
-	GetRNGstate();
+    R_set_seed( 100 );
+    GetRNGstate();
 
     for (int i=0; i<m_nSnpP; i++)
     {
@@ -273,8 +273,8 @@ int CFmPackedSNP::RemoveRareSNP(double fRareMaf)
 
         if ( fmin(p1,p2) < fRareMaf )
             nRemoves.Put(i);
-		else
-	    if (n3>0)
+        else
+        if (n3>0)
         {
             double prob[3]={0};
             prob[1] = 1.0*n0/(n0+n1+n2);
@@ -302,9 +302,9 @@ int CFmPackedSNP::RemoveRareSNP(double fRareMaf)
     if (nRemoves.GetLength()>0)
         RemoveSNPs(nRemoves);
 
-	PutRNGstate();
+    PutRNGstate();
 
-	_log_debug(_HI_, "RemoveRareSNP Total:%d, removed:%d", m_nSnpP, nRemoves.GetLength());
+    _log_debug(_HI_, "RemoveRareSNP Total:%d, removed:%d", m_nSnpP, nRemoves.GetLength());
 
     return(0);
 }
@@ -432,19 +432,19 @@ int CFmPackedSNP::WriteAsCSVFile(const char* filename)
 {
     int nSubCol = m_nSubjN;
     int nSnpRow = m_nSnpP;
-	if (nSubCol>500) nSubCol=500;
-	if (nSnpRow>500) nSnpRow=500;
+    if (nSubCol>500) nSubCol=500;
+    if (nSnpRow>500) nSnpRow=500;
 
     CFmMatrix mat(nSnpRow, nSubCol);
-	double* pFval = new double[m_nSubjN];
+    double* pFval = new double[m_nSubjN];
 
-	for( int i=0;i<	nSnpRow; i++)
-	{
-		GetSnpRow(i, pFval);
-		SNPINFO* pInfo=NULL;
-		GetSnpInfo( i, &pInfo );
+    for( int i=0;i<    nSnpRow; i++)
+    {
+        GetSnpRow(i, pFval);
+        SNPINFO* pInfo=NULL;
+        GetSnpInfo( i, &pInfo );
 
-		mat.SetRow(i, pFval, pInfo->szSnpId);
+        mat.SetRow(i, pFval, pInfo->szSnpId);
     }
 
     int ret = mat.WriteAsCSVFile(filename);
@@ -454,7 +454,7 @@ int CFmPackedSNP::WriteAsCSVFile(const char* filename)
 
 void destroy(CFmPackedSNP* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmPackedSNP();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmPackedSNP();
+    operator delete(p, fmRef);
 }

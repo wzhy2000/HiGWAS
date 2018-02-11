@@ -1,6 +1,6 @@
-/* GLS_cfg.cpp  -	GLS System Object
+/* GLS_cfg.cpp  -    GLS System Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *  Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -21,8 +21,8 @@
 
 GLS_cfg::GLS_cfg():CFmSys()
 {
-	m_nSectId = 1;
-	m_nTaskId = 11;
+    m_nSectId = 1;
+    m_nTaskId = 11;
     m_nMcmcHint = 100;
 
     m_nMcmcIter = 2000;
@@ -42,8 +42,8 @@ GLS_cfg::GLS_cfg():CFmSys()
 
 GLS_cfg::GLS_cfg(char* szCfgFile):CFmSys()
 {
-	m_nSectId = 1;
-	m_nTaskId = 11;
+    m_nSectId = 1;
+    m_nTaskId = 11;
     m_nMcmcHint = 100;
 
     m_nMcmcIter = 2000;
@@ -187,7 +187,7 @@ int GLS_cfg::GetBurnInRound()
 
 void destroy(GLS_cfg* p)
 {
-	CFmNewTemp  fmRef;
-	p->~GLS_cfg();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~GLS_cfg();
+    operator delete(p, fmRef);
 }

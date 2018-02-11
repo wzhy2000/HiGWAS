@@ -28,42 +28,42 @@ CFmDataFrame::~CFmDataFrame()
     m_nNumRows = 0;
     m_nNumCols = 0;
 
-	if (m_pRowNames) destroy( m_pRowNames );
+    if (m_pRowNames) destroy( m_pRowNames );
     if (m_pColNames) destroy( m_pColNames );
 
     for (int i=0; i<m_nNumRows; i++)
         for (int j=0; j<m_nNumCols; j++)
         {
-			char* p = Get(i,j);
-			if(p) Free( p );
-		}
+            char* p = Get(i,j);
+            if(p) Free( p );
+        }
 
     Free( m_pData );
 }
 
 CFmMatrix* CFmDataFrame::GetMatrix(CFmVector* pVctCols=NULL)
 {
-	CFmVector fmCols(pVctCols);
-	if(fmCols.GetLength()==0)
-		for(int i=0;i<m_nNumCols;i++)
-			fmCols.Put(i);
+    CFmVector fmCols(pVctCols);
+    if(fmCols.GetLength()==0)
+        for(int i=0;i<m_nNumCols;i++)
+            fmCols.Put(i);
 
-	CFmNewTemp refNew;
-	CFmMatrix* pMat = new (refNew) CFmMatrix(m_nNumRows, fmCols.GetLength());
+    CFmNewTemp refNew;
+    CFmMatrix* pMat = new (refNew) CFmMatrix(m_nNumRows, fmCols.GetLength());
 
-	CFmVectorStr fmNameCols(0);
+    CFmVectorStr fmNameCols(0);
 
-	for(int i=0; i<fmCols.GetLength(); i++)
-	{
-		CFmVector& pVct = GetFloatCol( fmCols.Get(i) );
-		pMat->SetCol(i, pVct);
+    for(int i=0; i<fmCols.GetLength(); i++)
+    {
+        CFmVector& pVct = GetFloatCol( fmCols.Get(i) );
+        pMat->SetCol(i, pVct);
 
-		if(m_pColNames)
-			fmNameCols.Put( m_pColNames->Get( fmCols.Get(i) ) );
-	}
+        if(m_pColNames)
+            fmNameCols.Put( m_pColNames->Get( fmCols.Get(i) ) );
+    }
 
-	if(m_pRowNames)	pMat->SetRowNames( m_pRowNames);
-	if(m_pColNames)	pMat->SetColNames( &fmNameCols );
+    if(m_pRowNames)    pMat->SetRowNames( m_pRowNames);
+    if(m_pColNames)    pMat->SetColNames( &fmNameCols );
 
     return(pMat);
 }
@@ -129,8 +129,8 @@ char* CFmDataFrame::GetColName(int idx)
 
 int CFmDataFrame::FindColumn(const char* szColumn)
 {
-	if(m_pColNames==NULL)
-		return(-1);
+    if(m_pColNames==NULL)
+        return(-1);
 
     for (int i=0;i<m_nNumCols; i++)
     {
@@ -143,7 +143,7 @@ int CFmDataFrame::FindColumn(const char* szColumn)
 
 CFmVector& CFmDataFrame::GetFloatCol(int idx)
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmVector* pNew= new (refNew) CFmVector( 0, 0.0 );
     for (int i=0;i<m_nNumRows; i++)
     {
@@ -166,7 +166,7 @@ CFmVector& CFmDataFrame::GetFloatCol(int idx)
 
 CFmVectorStr* CFmDataFrame::GetStringCol(int idx)
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmVectorStr* pNew= new (refNew) CFmVectorStr( 0, 100 );
     for (int i=0;i<m_nNumRows; i++)
         pNew->Put( Get(i, idx) );
@@ -271,13 +271,13 @@ int CFmDataFrame::Load(const char* filename, bool bRowName, bool bColName)
     char* token = _strsep((char**)&running, seps1 );
     while(token)
     {
-		if(strlen(token)!=0)
-		{
-			vctColNames.Put( token);
-		    col_size++;
+        if(strlen(token)!=0)
+        {
+            vctColNames.Put( token);
+            col_size++;
         }
 
-    	token = _strsep( (char**)&running, seps1 );
+        token = _strsep( (char**)&running, seps1 );
     }
 
     Free(runnptr);
@@ -363,7 +363,7 @@ int CFmDataFrame::Load(const char* filename, bool bRowName, bool bColName)
 
     fclose(fp);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     if (bRowName)
         m_pRowNames = new (refNew) CFmVectorStr( &vctRowNames );
 
@@ -398,7 +398,7 @@ char *trim(char *s)
 
 void destroy(CFmDataFrame* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmDataFrame();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmDataFrame();
+    operator delete(p, fmRef);
 }

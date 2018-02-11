@@ -31,7 +31,7 @@ public:
 
     int Summary(char* szOutFile = NULL);
     int SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
-		CFmVectorStr* pVctSnp, CFmVector* pVctChr, CFmVector* pVctPos, CFmFileMatrix* pFileMat);
+        CFmVectorStr* pVctSnp, CFmVector* pVctChr, CFmVector* pVctPos, CFmFileMatrix* pFileMat);
     int InitVarsel(int mRound, int nSnpP, int SubjN, int mcmcSect, int mcmcSnps, int mcmcIter, CFmVectorStr* pCovNames);
     int InitRefit( int mcmcIter, CFmVectorStr* pCovNames );
 
@@ -47,7 +47,7 @@ public:
 private:
     int GetH2(CFmMatrix* gen_pA, CFmVector& pA, CFmVector& pD, CFmVector* pH2, double y_var );
     int SortoutResult( CFmFileMatrix* pFileMat, CFmMatrix* gen_pA, double y_var, int nSnp, int nCov,
-		 CFmMatrix* pmatCoef, CFmMatrix* pmatA, CFmMatrix* pmatD, CFmVector* pvctH2 );
+         CFmMatrix* pmatCoef, CFmMatrix* pmatA, CFmMatrix* pmatD, CFmVector* pvctH2 );
     int GetMcmcResult( CFmFileMatrix* pFileMat, long int idx, double fQval, CFmVector& fmVctRet );
     int SortoutQBest( CFmFileMatrix* pFileMat, CFmMatrix* pBestQ, int nSnp, int nCov );
     int GetQBestInfo(CFmFileMatrix* pMatRet, int idx, CFmVector& fmQBest);

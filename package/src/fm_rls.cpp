@@ -1,6 +1,6 @@
-/* BLS_res.cpp  -	BLS Result Object
+/* BLS_res.cpp  -    BLS Result Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -332,7 +332,7 @@ int CFmRls::LoadResFile()
         return( ERR_READ_FILE );
     }
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     int nRet = 0;
     int nPos = sizeof(fmt);
@@ -365,7 +365,7 @@ int CFmRls::LoadResFile()
             m_MatMap.insert( std::pair<char*,CFmMatrix*>( szVar, pMat ) );
         }
 
-		Free(szVar);
+        Free(szVar);
 
         if(nRet!=0)
             break;
@@ -448,9 +448,9 @@ int CFmRls::SaveRData( const char* szRdataFile )
 
 void destroy(CFmRls* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmRls();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmRls();
+    operator delete(p, fmRef);
 }
 
 

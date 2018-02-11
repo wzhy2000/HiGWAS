@@ -32,7 +32,7 @@
 class CFmMatrix
 {
 public:
-    friend class	CFmVector ;		// used for operator[][]
+    friend class    CFmVector ;        // used for operator[][]
 
     // construction and destruction
     // default constructor
@@ -45,10 +45,10 @@ public:
     explicit CFmMatrix(int nSize, bool set_diagonal = true, double init_value=0, bool bReused = false) ;
     explicit CFmMatrix(int nRows, int nCols, int nMaxRows, int nMaxCols, bool bReused = false) ;
 
-    virtual	~CFmMatrix();
+    virtual    ~CFmMatrix();
 
-    inline int      GetRefer()	const { return m_nRefer; };
-    inline bool     IsReusable()	const { return m_bReuse; };
+    inline int      GetRefer()    const { return m_nRefer; };
+    inline bool     IsReusable() const { return m_bReuse; };
     inline int      GetNumCols() const { return m_nNumCols ; };
     inline int      GetNumRows() const { return m_nNumRows ; };
     inline int      GetMaxCols() const { return m_nMaxCols ; };
@@ -73,42 +73,42 @@ public:
     void            Show(const char* szName=NULL);
 
     // matrix mathematical operations
-    CFmMatrix&		operator+( CFmMatrix &other) ;
-    CFmMatrix&		operator-( CFmMatrix &other) ;
-    CFmMatrix&		operator*( CFmMatrix &other) ;
-    CFmMatrix&		operator/( CFmMatrix &other) ;
+    CFmMatrix&        operator+( CFmMatrix &other) ;
+    CFmMatrix&        operator-( CFmMatrix &other) ;
+    CFmMatrix&        operator*( CFmMatrix &other) ;
+    CFmMatrix&        operator/( CFmMatrix &other) ;
 
-    CFmMatrix&		operator*( CFmVector &other) ;
+    CFmMatrix&        operator*( CFmVector &other) ;
 
-    CFmMatrix&		operator+(double value) ;
-    CFmMatrix&		operator-(double value) ;
-    CFmMatrix&		operator*(double value) ;
-    CFmMatrix&		operator/(double value) ;
-    CFmMatrix&		operator^(double value) ;
-    CFmMatrix&		operator>(double value) ;
+    CFmMatrix&        operator+(double value) ;
+    CFmMatrix&        operator-(double value) ;
+    CFmMatrix&        operator*(double value) ;
+    CFmMatrix&        operator/(double value) ;
+    CFmMatrix&        operator^(double value) ;
+    CFmMatrix&        operator>(double value) ;
 
-    void		operator+=(double value) ;
-    void		operator-=(double value) ;
-    void		operator*=(double value) ;
-    void		operator/=(double value) ;
-    void		operator^=(double value) ;
+    void        operator+=(double value) ;
+    void        operator-=(double value) ;
+    void        operator*=(double value) ;
+    void        operator/=(double value) ;
+    void        operator^=(double value) ;
 
-    void		operator=( double value) ;
-    void		operator=( CFmMatrix &other) ;
-    void		operator+=( CFmMatrix &other) ;
-    void		operator-=( CFmMatrix &other) ;
-    void		operator*=( CFmMatrix &other) ;
-    void		operator/=( CFmMatrix &other) ;
-    bool		operator==( CFmMatrix &other) ;
+    void        operator=( double value) ;
+    void        operator=( CFmMatrix &other) ;
+    void        operator+=( CFmMatrix &other) ;
+    void        operator-=( CFmMatrix &other) ;
+    void        operator*=( CFmMatrix &other) ;
+    void        operator/=( CFmMatrix &other) ;
+    bool        operator==( CFmMatrix &other) ;
     void        ValueMultiple( CFmMatrix &other) ;
 
-    double		RowProd(int nRow1, int nRow2);
-    double		ColProd(int nRow1, int nRow2);
-    CFmMatrix&		GetAbs();
+    double        RowProd(int nRow1, int nRow2);
+    double        ColProd(int nRow1, int nRow2);
+    CFmMatrix&        GetAbs();
     // matrix transposition
-    CFmMatrix&		GetTransposed();
+    CFmMatrix&        GetTransposed();
     // matrix inversion
-    CFmMatrix&		GetInverted(bool bCheck = false) ;
+    CFmMatrix&        GetInverted(bool bCheck = false) ;
 
     // element access
 #ifdef _DEBUG
@@ -185,7 +185,7 @@ public:
 
     static void     GlobalDump();
 public:
-    static          int	_DM;
+    static          int    _DM;
     static          int g_nObjCount;
     static void     StatCache(int* pnTotal, int* pnUsed);
 
@@ -194,7 +194,7 @@ protected:
     static          CFmMatrix* FindReuseMatrix( int nRow, int nCols );
 
 private:
-	// internal variables
+    // internal variables
     char*           m_pId;
     int             m_nRefer;
     int             m_nObjId;
@@ -206,22 +206,22 @@ private:
     double*         m_pData ;
     CFmVectorStr*   m_pRowNames;
     CFmVectorStr*   m_pColNames;
-    void            Release() ;	// decrements the m_pData reference count
+    void            Release() ;    // decrements the m_pData reference count
 
 
 private:
-	// private internal functions
+    // private internal functions
     double*         AllocateDouble(int nRows, int nCols) ;
     void            FreeMemory();
     void            EnlargeCols( int nMaxCols );
     void            FreeDouble( double* pData );
 
     // reference counting functions
-    void            AddRef() ;	// increments the m_pData reference count
+    void            AddRef() ;    // increments the m_pData reference count
 
     // helper functions
     char*           GetRowAsText(int row) const ;
-    static char*    ReadLine(FILE *file) ;		// reads a \r\n delimited line of text from a file
+    static char*    ReadLine(FILE *file) ;        // reads a \r\n delimited line of text from a file
     static int      GetStringToken(char* source, char* destination, int start, char ch) ;
     static std::list<CFmMatrix*> g_matList;
 };

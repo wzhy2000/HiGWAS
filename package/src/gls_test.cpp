@@ -1,6 +1,6 @@
-/* gls_test.cpp  -	Test data
+/* gls_test.cpp  -    Test data
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *  Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 

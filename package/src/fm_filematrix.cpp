@@ -14,7 +14,7 @@
 
 CFmFileMatrix::CFmFileMatrix(char* szFile, bool bAppend, bool bAutodel=TRUE)
 {
-	m_bAutodel = bAutodel;
+    m_bAutodel = bAutodel;
     m_nNumCols = 0;
     m_nNumRows = 0;
     m_pFile = NULL;
@@ -24,7 +24,7 @@ CFmFileMatrix::CFmFileMatrix(char* szFile, bool bAppend, bool bAutodel=TRUE)
     m_nCacheCol1 = -1;
 
     CFmNewTemp refNew;
-	m_pmatCache = new (refNew) CFmMatrix(0,100);
+    m_pmatCache = new (refNew) CFmMatrix(0,100);
 
     OpenFile(bAppend);
 }
@@ -36,9 +36,9 @@ CFmFileMatrix::~CFmFileMatrix()
 
     if (m_pFile)
     {
-	    RewriteHeader();
-	    fflush( m_pFile);
-		fclose(m_pFile);
+        RewriteHeader();
+        fflush( m_pFile);
+        fclose(m_pFile);
         if (m_bAutodel) unlink(m_pszFile);
     }
 
@@ -48,7 +48,7 @@ CFmFileMatrix::~CFmFileMatrix()
 
 char* CFmFileMatrix::GetFileName()
 {
-	return(m_pszFile);
+    return(m_pszFile);
 }
 
 int CFmFileMatrix::OpenFile(bool bAppend)
@@ -148,7 +148,7 @@ int CFmFileMatrix::GetRow(int nRow, CFmVector& vct)
     double* pDouble = new double[m_nNumCols];
     size_t rlen = fread( pDouble, sizeof(double), m_nNumCols, m_pFile );
     if(rlen <= 0)
-     	return ERR_FILE_OPERATE;
+         return ERR_FILE_OPERATE;
 
     vct.Resize(0);
     for (int i=0;i<m_nNumCols;i++)
@@ -180,21 +180,21 @@ int CFmFileMatrix::GetCol(int nCol, CFmVector& vct)
 
 int CFmFileMatrix::GetCacheCol(int nCol, CFmVector& vct)
 {
-	if( nCol>=m_nNumCols ) return(ERR_NULL_DATA);
+    if( nCol>=m_nNumCols ) return(ERR_NULL_DATA);
 
     vct.Resize(0);
     if( nCol>=m_nCacheCol0 && nCol<m_nCacheCol1)
     {
-		vct = m_pmatCache->GetCol(nCol-m_nCacheCol0);
-		return(0);
-	}
+        vct = m_pmatCache->GetCol(nCol-m_nCacheCol0);
+        return(0);
+    }
 
     fflush( m_pFile);
 
-	m_pmatCache->Resize(m_nNumRows, 100);
-	m_nCacheCol0 = (int)floor(nCol/100.0)*100;
-	m_nCacheCol1 = (int)floor(nCol/100.0)*100+100;
-	if( m_nCacheCol1> m_nNumCols ) m_nCacheCol1=m_nNumCols;
+    m_pmatCache->Resize(m_nNumRows, 100);
+    m_nCacheCol0 = (int)floor(nCol/100.0)*100;
+    m_nCacheCol1 = (int)floor(nCol/100.0)*100+100;
+    if( m_nCacheCol1> m_nNumCols ) m_nCacheCol1=m_nNumCols;
 
     for(int i=0; i<m_nNumRows; i++)
     {
@@ -207,10 +207,10 @@ int CFmFileMatrix::GetCacheCol(int nCol, CFmVector& vct)
         if (cnt<=0)
             return ERR_FILE_OPERATE;
 
-		m_pmatCache->SetRow(i, fv );
+        m_pmatCache->SetRow(i, fv );
     }
 
-	vct = m_pmatCache->GetCol( nCol-m_nCacheCol0 );
+    vct = m_pmatCache->GetCol( nCol-m_nCacheCol0 );
 
     return(0);
 }
@@ -245,7 +245,7 @@ int CFmFileMatrix::SetAt(int nRow, int nCol, double fval)
 
 CFmMatrix* LoadFileMatrix(char* szFile)
 {
-	FILE* pFile = fopen( szFile, "rb");
+    FILE* pFile = fopen( szFile, "rb");
     if (pFile==NULL)
     {
         _log_info(_HI_, "LoadFileMatrix: can not open the file of FileMatrix(%s).", szFile );
@@ -261,31 +261,31 @@ CFmMatrix* LoadFileMatrix(char* szFile)
     }
 
     double* pBuf = Calloc( fmt.nNumCols, double );
-	memset( pBuf, 0, sizeof(double)*fmt.nNumCols );
+    memset( pBuf, 0, sizeof(double)*fmt.nNumCols );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmMatrix* pMat = new (refNew) CFmMatrix(0, 0);
-	for (long int j=0; j<fmt.nNumRows; j++)
-	{
-		size_t nSize = fread(pBuf, sizeof(double)*fmt.nNumCols, 1, pFile);
-		if (nSize != 1)
-		{
-			Rprintf("nSize=%d nPos=%d\n", nSize,  sizeof(double)*fmt.nNumCols*j );
-			return( NULL );
-		}
+    for (long int j=0; j<fmt.nNumRows; j++)
+    {
+        size_t nSize = fread(pBuf, sizeof(double)*fmt.nNumCols, 1, pFile);
+        if (nSize != 1)
+        {
+            Rprintf("nSize=%d nPos=%d\n", nSize,  sizeof(double)*fmt.nNumCols*j );
+            return( NULL );
+        }
 
-		pMat->Cbind( pBuf, fmt.nNumCols );
-	}
+        pMat->Cbind( pBuf, fmt.nNumCols );
+    }
 
     fclose(pFile);
-	Free(pBuf);
+    Free(pBuf);
 
-	return(pMat);
+    return(pMat);
 }
 
 void destroy(CFmFileMatrix* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmFileMatrix();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmFileMatrix();
+    operator delete(p, fmRef);
 }

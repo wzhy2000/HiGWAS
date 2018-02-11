@@ -23,7 +23,7 @@ class CFmVectorStr;
 class CFmVector
 {
 public:
-    ///friend class	CFmMatrix ;
+    ///friend class    CFmMatrix ;
 
     explicit CFmVector(bool bReused = false );
     explicit CFmVector(CFmMatrix*, int nRow_or_Cols, bool bRow=true, bool bReused = false );
@@ -34,11 +34,11 @@ public:
 public:
     virtual ~CFmVector();
 
-    inline int	GetRefer()	const { return m_nRefer; } ;
-    inline bool	IsReusable()	const { return m_bReuse; } ;
+    inline int    GetRefer()    const { return m_nRefer; } ;
+    inline bool    IsReusable()    const { return m_bReuse; } ;
     inline double* GetData(){return m_pData;};
-    inline int	GetLength(){return m_nActLen;};
-    inline int	GetBytes(){return m_nActLen*sizeof(double);};
+    inline int    GetLength(){return m_nActLen;};
+    inline int    GetBytes(){return m_nActLen*sizeof(double);};
     inline double Get(int i){return m_pData[i];};
     inline double GetLast(){
         if (m_nActLen>0)
@@ -47,7 +47,7 @@ public:
             throw("NULL vector");
     }
 
-    inline void	Set(int i, double f){m_pData[i] = f;};
+    inline void    Set(int i, double f){m_pData[i] = f;};
 
     inline void Show(const char* szName=NULL)
     {
@@ -65,34 +65,34 @@ public:
             return m_pData[row];
     };
 
-    bool		operator==(CFmVector &other) ;
+    bool        operator==(CFmVector &other) ;
 
-    CFmVector&		operator+(double other);
-    CFmVector&		operator-(double other);
-    CFmVector&		operator*(double other);
-    CFmVector&		operator/(double other);
-    CFmVector&		operator^(double other);
+    CFmVector&        operator+(double other);
+    CFmVector&        operator-(double other);
+    CFmVector&        operator*(double other);
+    CFmVector&        operator/(double other);
+    CFmVector&        operator^(double other);
 
-    CFmVector&		operator+(CFmVector& other);
-    CFmVector&		operator-(CFmVector& other);
-    CFmVector&		operator*(CFmVector& other);
-    CFmVector&		operator/(CFmVector& other);
+    CFmVector&        operator+(CFmVector& other);
+    CFmVector&        operator-(CFmVector& other);
+    CFmVector&        operator*(CFmVector& other);
+    CFmVector&        operator/(CFmVector& other);
 
-    CFmVector&		abs();
-    CFmMatrix&		operator*(CFmMatrix& other);
-    CFmMatrix&		GetRow();
-    CFmMatrix&		GetCol();
+    CFmVector&        abs();
+    CFmMatrix&        operator*(CFmMatrix& other);
+    CFmMatrix&        GetRow();
+    CFmMatrix&        GetCol();
 
-    void		operator=(double other);
-    void 		operator=(double* other);
-    void		operator=(CFmVector& other);
-    void		Set(CFmVector& other);
+    void        operator=(double other);
+    void         operator=(double* other);
+    void        operator=(CFmVector& other);
+    void        Set(CFmVector& other);
 
-    CFmVector& 		GetTransposed();
-    CFmVector& 		GetReciprocal();
+    CFmVector&         GetTransposed();
+    CFmVector&         GetReciprocal();
 
-    bool 		SetLength(int nLen);
-    double		Sum();
+    bool         SetLength(int nLen);
+    double        Sum();
     double          GetMean();
     double          GetMedian();
     double          GetVar();
@@ -119,9 +119,9 @@ public:
     int             LoadValueFromRData( const char* szRDataFile, const char* szVarname);
     char*           GetCommaString(const char* szFormat);
 
-	// reference counting functions
-    void            AddRef() ;	// increments the m_pData reference count
-    void            Release() ;	// decrements the m_pData reference count
+    // reference counting functions
+    void            AddRef() ;    // increments the m_pData reference count
+    void            Release() ;    // decrements the m_pData reference count
     void            SetNames( CFmVectorStr* pNames);
     CFmVectorStr*   GetNames();
     char*           GetName(int idx );

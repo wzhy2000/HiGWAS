@@ -1,6 +1,6 @@
-/* BLS_res.cpp  -	BLS Result Object
+/* BLS_res.cpp  -    BLS Result Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 

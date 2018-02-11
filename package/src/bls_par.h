@@ -22,7 +22,7 @@ public:
     BLS_par( CMDOPTIONS* pCmd );
     virtual ~BLS_par();
 
-	int Load(char* szParFile);
+    int Load(char* szParFile);
     int Summary(char* szOutFile=NULL);
 
 public:

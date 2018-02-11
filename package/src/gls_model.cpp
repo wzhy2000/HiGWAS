@@ -1,6 +1,6 @@
-/* gls_model.cpp  -	LS2 Computational model
+/* gls_model.cpp  -    LS2 Computational model
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -36,8 +36,8 @@ GLS::GLS()
     m_nDataType = RUNMODE_UNK;
     m_bRefit = false;
 
-	m_pDat = NULL;
-	m_pRes = NULL;
+    m_pDat = NULL;
+    m_pRes = NULL;
     m_pCfg = NULL;
 }
 
@@ -52,7 +52,7 @@ GLS::~GLS()
 
 int GLS::LoadSimulate( CMDOPTIONS *pCmd, GLS_par* pPar  )
 {
-	int ret=0;
+    int ret=0;
 
     m_pCmd = pCmd;
     m_nDataType = RUNMODE_SIM;
@@ -64,7 +64,7 @@ int GLS::LoadSimulate( CMDOPTIONS *pCmd, GLS_par* pPar  )
 
     _log_prompt(_HI_, "Start the data generation.");
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pDat = new (refNew) GLS_dat(pCmd);
 
     pcf.UpdatePcfFile(PCF_DAT_LOAD );
@@ -103,7 +103,7 @@ int GLS::LoadPlink( CMDOPTIONS *pCmd )
     CFmPcf pcf;
     pcf.UpdatePcfFile(PCF_DAT_LOAD );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pDat = new (refNew) GLS_dat( pCmd );
     int ret = m_pDat->LoadPlink( pCmd->szTpedFile,
                                  pCmd->szTfamFile,
@@ -140,7 +140,7 @@ int GLS::LoadSimple( CMDOPTIONS *pCmd )
     CFmPcf pcf;
     pcf.UpdatePcfFile(PCF_DAT_LOAD );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pDat = new (refNew) GLS_dat( pCmd );
     int ret = m_pDat->LoadSimple(pCmd->szSnpFile,
                                  pCmd->szPheFile,
@@ -170,7 +170,7 @@ int GLS::LoadSnpmat( CFmMatrix* pFmPhe, CFmMatrix* pFmSnp, CMDOPTIONS *pCmd )
     CFmPcf pcf;
     pcf.UpdatePcfFile(PCF_DAT_LOAD );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pDat = new (refNew) GLS_dat( pCmd );
     int ret = m_pDat->AttachSnpmat( pFmPhe, pFmSnp, pCmd->bZNormalized);
     if (ret!=0)
@@ -189,9 +189,9 @@ int GLS::Varsel(GLS_cfg *pCfg)
 {
     // Create Result object
     if (m_pRes!=NULL)
-		destroy( m_pRes );
+        destroy( m_pRes );
 
-	m_pCfg = pCfg;
+    m_pCfg = pCfg;
 
     int P = m_pDat->m_nSnpP;
     int N = m_pDat->m_nSubjN;
@@ -200,16 +200,16 @@ int GLS::Varsel(GLS_cfg *pCfg)
 
     m_bRefit = false;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pRes = new (refNew) GLS_res(m_pCmd, m_pCfg);
     m_pRes->InitVarsel( m_pCmd->nSimuRound, P, N, m_pCfg->m_nMcmcIter);
 
     CFmPcf pcf;
     pcf.UpdatePcfFile( PCF_VARSEL, 0, 1, -1, -1);
 
-	CFmFileMatrix* pMatRet=NULL;
-	if (m_pCmd->szMatadFile)
-		pMatRet = new (refNew) CFmFileMatrix( m_pCmd->szMatadFile, FALSE, FALSE);
+    CFmFileMatrix* pMatRet=NULL;
+    if (m_pCmd->szMatadFile)
+        pMatRet = new (refNew) CFmFileMatrix( m_pCmd->szMatadFile, FALSE, FALSE);
 
     try
     {
@@ -219,8 +219,8 @@ int GLS::Varsel(GLS_cfg *pCfg)
         int ret = proc_mcmc( *(m_pDat->m_pPhenoY), *(m_pDat->m_pPhenoZ), *(m_pDat->m_pPhenoZ0), *(m_pDat->m_pCovars), gen, pMatRet );
         if (ret!=0)
         {
-        	_log_error( _HI_, "VARSEL: MCMC procedure return error code(%d).", ret);
-        	return(ret);
+            _log_error( _HI_, "VARSEL: MCMC procedure return error code(%d).", ret);
+            return(ret);
         }
 
         CFmVectorStr vctSnpName(0);
@@ -228,7 +228,7 @@ int GLS::Varsel(GLS_cfg *pCfg)
         CFmVector vctSnpPos(0, 0.0);
         gen.GetSnpInfo(&vctSnpName, &vctSnpChr, &vctSnpPos);
 
-	    m_pRes->SetMcmcResults( false, &vctSnpName, &vctSnpChr, &vctSnpPos, pMatRet, m_pDat->m_pCovars->GetNumCols() );
+        m_pRes->SetMcmcResults( false, &vctSnpName, &vctSnpChr, &vctSnpPos, pMatRet, m_pDat->m_pCovars->GetNumCols() );
 
     }
     catch(const char* str)
@@ -277,7 +277,7 @@ int GLS::Refit(GLS_cfg *pCfg)
         return( ERR_NULL_DATA );
     }
 
-	m_pCfg = pCfg;
+    m_pCfg = pCfg;
 
     int ret = m_pRes->InitRefit( m_pCfg->m_nMcmcIter );
     if ( ret!=0 )
@@ -318,10 +318,10 @@ int GLS::Refit(GLS_cfg *pCfg)
     CFmPcf pcf;
     pcf.UpdatePcfFile( PCF_REFIT, 0, 1, -1, -1);
 
-	CFmNewTemp refNew;
-	CFmFileMatrix* pMatRet=NULL;
-	if (m_pCmd->szMatadFile)
-		pMatRet = new (refNew) CFmFileMatrix( m_pCmd->szMatadFile, FALSE, FALSE);
+    CFmNewTemp refNew;
+    CFmFileMatrix* pMatRet=NULL;
+    if (m_pCmd->szMatadFile)
+        pMatRet = new (refNew) CFmFileMatrix( m_pCmd->szMatadFile, FALSE, FALSE);
 
     try
     {
@@ -432,7 +432,7 @@ int GLS::proc_mcmc( CFmMatrix& Y,  CFmMatrix& Z,  CFmMatrix& Z0, CFmMatrix& X, C
     CFmMatrix r_tau_st2(0, 0, P, 1);
     CFmMatrix r_lambda_st2(0, 0, 1, 1);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmMatrix** all_corMat = Calloc(N, CFmMatrix* );
     for (int i=0; i<N; i++)
         all_corMat[i] = new (refNew) CFmMatrix(0, 0, Q, Q);
@@ -473,8 +473,8 @@ strcpy(m_szTraceTag, "A");
         (all_ui[i])->Cbind( tp1 );
         (all_ui[i])->Cbind( tp );
         (all_ui[i])->Cbind( ((tp^2)*3.0 - 1.0)/2.0 );
-		if (LG>=4) (all_ui[i])->Cbind( ((tp^3)*5.0 - tp*3.0)/2.0 );
-		if (LG>=5) (all_ui[i])->Cbind( ((tp^4)*35.0 - (tp^2)*30.0 +3 )/8.0 );
+        if (LG>=4) (all_ui[i])->Cbind( ((tp^3)*5.0 - tp*3.0)/2.0 );
+        if (LG>=5) (all_ui[i])->Cbind( ((tp^4)*35.0 - (tp^2)*30.0 +3 )/8.0 );
     }
 
     // -- initialize the residual Y
@@ -582,12 +582,12 @@ strcat(m_szTraceTag, "C");
         {
             tmp =  ((*all_corMat[i]) * sigma2).GetInverted() * (*all_ui[i]);
 
-			tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
-			if(nC>0)
-			for( int nX=0; nX < nC; nX++ )
-				tmp4 = tmp4 + alpha.GetRow(nX) * _t( (*all_ui[i]) ) * X.Get(i,nX+1);
+            tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
+            if(nC>0)
+            for( int nX=0; nX < nC; nX++ )
+                tmp4 = tmp4 + alpha.GetRow(nX) * _t( (*all_ui[i]) ) * X.Get(i,nX+1);
 
-           	tmp3 = tmp3 + ( (*all_rd[i]) - tmp4.GetRow(0) ) * tmp;
+               tmp3 = tmp3 + ( (*all_rd[i]) - tmp4.GetRow(0) ) * tmp;
             tmp2 = tmp2 + _t( (*all_ui[i]) ) * tmp;
         }
 
@@ -634,7 +634,7 @@ strcat(m_szTraceTag, "E");
 strcat(m_szTraceTag, "F");
 //**SEQTEST _log_debug( _HI_, "PART F.....round=%d/%d", round, R);
 
-		CFmVector vctP(P, 0.0);
+        CFmVector vctP(P, 0.0);
 
         // -- updating additive effects: a for each SNP
         //CFmMatrix diag(4, true, 1);
@@ -653,10 +653,10 @@ strcat(m_szTraceTag, "F");
                 double a0 = gen.Get_a(j,i);
                 if (a0!=0)
                 {
-					tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
-					if(nC>0)
-					for( int nX=0; nX < nC; nX++ )
-						tmp4 = tmp4 + (alpha.GetRow(nX) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
+                    tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
+                    if(nC>0)
+                    for( int nX=0; nX < nC; nX++ )
+                        tmp4 = tmp4 + (alpha.GetRow(nX) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
 
                     tmp = ( ((*all_corMat[i]) * sigma2).GetInverted() ) * a0 * (*all_ui[i]);
                     tmp3 = tmp3 + ( (*all_rd[i]) - (mu * _t( (*all_ui[i]) ) ).GetRow(0)
@@ -668,7 +668,7 @@ strcat(m_szTraceTag, "F");
 
                 if( a0 >0 ) N0++;
                 if( a0 <0 ) N2++;
-				if( a0 == 0 ) N1++;
+                if( a0 == 0 ) N1++;
             }
 
             if (N0==0 || N2==0)
@@ -684,17 +684,17 @@ strcat(m_szTraceTag, "F");
                 if (!m_bRefit)
                 {
                     if (N1>0)
-						diag.Square(LG, true, 1/tau2[j]);
+                        diag.Square(LG, true, 1/tau2[j]);
                     else
-						diag.Square(LG, true, 1/tau2_x[j]);
+                        diag.Square(LG, true, 1/tau2_x[j]);
 
                     aVar_j =  (diag/sigma2 + tmp2).GetInverted();
                 }
                 else
                 {
                     diag.Square(LG, true, 1);
-	                //aVar_j =  (diag/sigma2 + tmp2).GetInverted();
-	                aVar_j =  (tmp2).GetInverted();
+                    //aVar_j =  (diag/sigma2 + tmp2).GetInverted();
+                    aVar_j =  (tmp2).GetInverted();
                 }
 
                 aMu_j = aVar_j* _t( tmp3 );
@@ -717,31 +717,31 @@ strcat(m_szTraceTag, "G");
 //**SEQTEST _log_debug( _HI_, "PART G.....round=%d/%d", round, R);
     if(!m_bRefit && m_pCmd->bAddUsed )
     {
-		int a_P1 =0 ;
-		int a_P2 =0 ;
+        int a_P1 =0 ;
+        int a_P2 =0 ;
         // --- Updating tau2 underlying a
         for (int j=0; j<P; j++)
         {
-			//if (a.RowProd(j,j )!=0)
-			if (vctP[j]==2)
-			{
-				double InvTau2_1 = sqrt( LG * lambda2 * sigma2/a.RowProd(j,j ) );
-				tau2[j] = 1/func_invGau( InvTau2_1, LG*lambda2);
-				tau2_x[j] = 0;
-				a_P2 ++;
-			}
-			else if (vctP[j]==1)
-			{
-				double InvTau2_1 = sqrt( LG * lambda2_x * sigma2/a.RowProd(j,j ) );
-				tau2_x[j] = 1/func_invGau( InvTau2_1, LG*lambda2_x);
-				tau2[j] = 0;
-				a_P1 ++;
-			}
-			else
-			{
-				tau2[j] = 0;
-				tau2_x[j] = 0;
-			}
+            //if (a.RowProd(j,j )!=0)
+            if (vctP[j]==2)
+            {
+                double InvTau2_1 = sqrt( LG * lambda2 * sigma2/a.RowProd(j,j ) );
+                tau2[j] = 1/func_invGau( InvTau2_1, LG*lambda2);
+                tau2_x[j] = 0;
+                a_P2 ++;
+            }
+            else if (vctP[j]==1)
+            {
+                double InvTau2_1 = sqrt( LG * lambda2_x * sigma2/a.RowProd(j,j ) );
+                tau2_x[j] = 1/func_invGau( InvTau2_1, LG*lambda2_x);
+                tau2[j] = 0;
+                a_P1 ++;
+            }
+            else
+            {
+                tau2[j] = 0;
+                tau2_x[j] = 0;
+            }
         }
 
         //-- Updating lambda2 underlying tau2
@@ -750,9 +750,9 @@ strcat(m_szTraceTag, "G");
     }
     else
     {
-		lambda2 = 0;
-		lambda2_x = 0;
-	}
+        lambda2 = 0;
+        lambda2_x = 0;
+    }
 
 //---------------------------------------------------
 // part H in the R code
@@ -760,7 +760,7 @@ strcat(m_szTraceTag, "G");
 strcat(m_szTraceTag, "H");
 //**SEQTEST _log_debug( _HI_, "PART H.....round=%d/%d", round, R);
 
-		int d_P = 0;
+        int d_P = 0;
         //-- Updating dominant effects: d, for each SNP
         if(m_pCmd->bDomUsed)
         for(int j=0; j<P; j++)
@@ -778,10 +778,10 @@ strcat(m_szTraceTag, "H");
                 double a0 = gen.Get_a(j,i);
                 if (d0!=0)
                 {
-					tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
-					if(nC>0)
-					for( int nX=0; nX < nC; nX++ )
-						tmp4 = tmp4 + ( alpha.GetRow(nX) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
+                    tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
+                    if(nC>0)
+                    for( int nX=0; nX < nC; nX++ )
+                        tmp4 = tmp4 + ( alpha.GetRow(nX) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
 
                     //calculate mean and variance
                     tmp  = ( (*all_corMat[i]) * sigma2).GetInverted() * (*all_ui[i])*d0;
@@ -809,21 +809,21 @@ strcat(m_szTraceTag, "H");
                 if (!m_bRefit)
                 {
                     if (vctP[j] == 2)
-	                {
-						diag.Square(LG, true, 1/tau_st2[j] );
-	                	dVar_j = ( tmp2 + diag /sigma2 ).GetInverted();
-	                }
-	                else
-	                {
-						diag.Square(LG, true, 1/tau_st2_x[j] );
-	                	dVar_j = ( tmp2 + diag /sigma2 ).GetInverted();
-	                }
+                    {
+                        diag.Square(LG, true, 1/tau_st2[j] );
+                        dVar_j = ( tmp2 + diag /sigma2 ).GetInverted();
+                    }
+                    else
+                    {
+                        diag.Square(LG, true, 1/tau_st2_x[j] );
+                        dVar_j = ( tmp2 + diag /sigma2 ).GetInverted();
+                    }
                 }
                 else
                 {
-	                diag.Square(LG, true, 1 );
-	                //dVar_j = ( diag/sigma2 + tmp2 ).GetInverted();
-	                dVar_j = ( tmp2 ).GetInverted();
+                    diag.Square(LG, true, 1 );
+                    //dVar_j = ( diag/sigma2 + tmp2 ).GetInverted();
+                    dVar_j = ( tmp2 ).GetInverted();
                 }
 
                 dMu_j  = dVar_j * _t(tmp3);
@@ -844,31 +844,31 @@ strcat(m_szTraceTag, "I");
 //**SEQTEST _log_debug( _HI_, "PART I.....round=%d/%d", round, R);
     if(!m_bRefit && m_pCmd->bDomUsed)
     {
-		int d_P1 =0 ;
-		int d_P2 =0 ;
+        int d_P1 =0 ;
+        int d_P2 =0 ;
         // -- Updating tau_st2 underlying d
         for (int j=0; j<P; j++)
         {
-			//if (d.RowProd(j,j )!=0)
-			if (vctP[j]==2)
-			{
-				double InvTau2_1 = sqrt( LG * lambda_st2 * sigma2/d.RowProd(j,j ) );
-				tau_st2[j] = 1/func_invGau(InvTau2_1, LG*lambda_st2 );
-				tau_st2_x[j] = 0;
-				d_P2 ++;
-			}
-			else if (vctP[j]==1)
-			{
-				double InvTau2_1 = sqrt( LG * lambda_st2_x * sigma2/d.RowProd(j,j ) );
-				tau_st2_x[j] = 1/func_invGau(InvTau2_1, LG*lambda_st2_x );
-				tau_st2[j] = 0;
-				d_P1 ++;
-			}
-			else
-			{
-				tau_st2[j] = 0;
-				tau_st2_x[j] = 0;
-			}
+            //if (d.RowProd(j,j )!=0)
+            if (vctP[j]==2)
+            {
+                double InvTau2_1 = sqrt( LG * lambda_st2 * sigma2/d.RowProd(j,j ) );
+                tau_st2[j] = 1/func_invGau(InvTau2_1, LG*lambda_st2 );
+                tau_st2_x[j] = 0;
+                d_P2 ++;
+            }
+            else if (vctP[j]==1)
+            {
+                double InvTau2_1 = sqrt( LG * lambda_st2_x * sigma2/d.RowProd(j,j ) );
+                tau_st2_x[j] = 1/func_invGau(InvTau2_1, LG*lambda_st2_x );
+                tau_st2[j] = 0;
+                d_P1 ++;
+            }
+            else
+            {
+                tau_st2[j] = 0;
+                tau_st2_x[j] = 0;
+            }
         }
 
 
@@ -878,9 +878,9 @@ strcat(m_szTraceTag, "I");
     }
     else
     {
-		lambda_st2 = 0;
+        lambda_st2 = 0;
         lambda_st2_x = 0;
-	}
+    }
 
 //---------------------------------------------------
 // part J in the R code
@@ -891,27 +891,27 @@ strcat(m_szTraceTag, "J");
         // -- Updating single covariates: alpha
         for(int nX=0; nX<nC; nX ++)
         {
-			tmp2 = 0;
-			tmp3 = 0;
-			for (int i=0; i<N; i++)
-			{
-				tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
-				if ( nC > 0)
-				for( int nX2=0; nX2 < nC; nX2++ )
-					if ( nX2 != nX )
-						tmp4 = tmp4 + ( alpha.GetRow(nX2) * _t( (*all_ui[i]) ) ) * X.Get(i,nX2+1);
+            tmp2 = 0;
+            tmp3 = 0;
+            for (int i=0; i<N; i++)
+            {
+                tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
+                if ( nC > 0)
+                for( int nX2=0; nX2 < nC; nX2++ )
+                    if ( nX2 != nX )
+                        tmp4 = tmp4 + ( alpha.GetRow(nX2) * _t( (*all_ui[i]) ) ) * X.Get(i,nX2+1);
 
-				// calculate mean and variance
-				tmp  = ( (*all_corMat[i]) * sigma2 ).GetInverted() * X.Get(i, nX + 1) * (*all_ui[i]);
-				tmp3 = tmp3 + ( (*all_rd[i]) - (mu * _t( (*all_ui[i]) ) ).GetRow(0) - tmp4.GetRow(0)) * tmp;
-				tmp2 = tmp2 + _t( (*all_ui[i]) ) * tmp * X.Get(i,nX+1);
-			}
+                // calculate mean and variance
+                tmp  = ( (*all_corMat[i]) * sigma2 ).GetInverted() * X.Get(i, nX + 1) * (*all_ui[i]);
+                tmp3 = tmp3 + ( (*all_rd[i]) - (mu * _t( (*all_ui[i]) ) ).GetRow(0) - tmp4.GetRow(0)) * tmp;
+                tmp2 = tmp2 + _t( (*all_ui[i]) ) * tmp * X.Get(i,nX+1);
+            }
 
-			alpha_Var_j = ( tmp2 + sigmaAlpha.GetInverted()).GetInverted();
-			alpha_Mu_j  = alpha_Var_j * _t(tmp3);
-			rmultnorm( 1, alpha_Mu_j.GetData(), alpha_Var_j.GetData(), LG, fBuf );
-			alpha.SetRow(nX, fBuf );
-		}
+            alpha_Var_j = ( tmp2 + sigmaAlpha.GetInverted()).GetInverted();
+            alpha_Mu_j  = alpha_Var_j * _t(tmp3);
+            rmultnorm( 1, alpha_Mu_j.GetData(), alpha_Var_j.GetData(), LG, fBuf );
+            alpha.SetRow(nX, fBuf );
+        }
 
 //---------------------------------------------------
 // part K in the R code
@@ -926,10 +926,10 @@ strcat(m_szTraceTag, "K");
 
         for(int i=0; i<N; i++)
         {
-			tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
-			if (nC > 0)
-			for( int nX=0; nX < nC; nX++ )
-				tmp4 = tmp4 + ( alpha.GetRow( nX ) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
+            tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
+            if (nC > 0)
+            for( int nX=0; nX < nC; nX++ )
+                tmp4 = tmp4 + ( alpha.GetRow( nX ) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
 
             // calculate scale parameter
             tmpv_sigma2 = (*all_rd[i]) - ( mu* _t( (*all_ui[i]) ) ).GetRow(0) - tmp4.GetRow(0);
@@ -964,10 +964,10 @@ strcat(m_szTraceTag, "L");
             sigma_old = (*all_corMat[i])*sigma2;
             sigma_new = (*all_corMat_MH[i])*sigma2;
 
-			tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
-			if ( nC > 0 )
-			for( int nX=0; nX < nC; nX++ )
-				tmp4 = tmp4 + ( alpha.GetRow( nX) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
+            tmp4.Resize(1, all_rd[i]->GetLength(), TRUE );
+            if ( nC > 0 )
+            for( int nX=0; nX < nC; nX++ )
+                tmp4 = tmp4 + ( alpha.GetRow( nX) * _t( (*all_ui[i]) ) ) * X.Get(i,nX+1);
 
             // calculate scale parameter
             allRd_i  = (*all_rd[i]) - (mu * _t((*all_ui[i]))).GetRow(0) - tmp4.GetRow(0);
@@ -987,32 +987,32 @@ strcat(m_szTraceTag, "M");
         double Pnew_Pold = det_diff * exp( -exp_diff/2.0 );
         double accpp     = fmin2( 1 , Pnew_Pold * Qold/ Qnew );
         double tmp6      = runif(0, 1);
-        rho       		 = tmp5*(tmp6<accpp) + rho*(tmp6>=accpp);
+        rho                = tmp5*(tmp6<accpp) + rho*(tmp6>=accpp);
 
         //-- save results of current round
         if ( round >= m_pCfg->GetBurnInRound() )
         {
-			CFmVector fmVct(0, 0.0);
-			CFmVector fmTmp0(0, 0.0);
+            CFmVector fmVct(0, 0.0);
+            CFmVector fmTmp0(0, 0.0);
 
-			fmVct.Append(mu);
+            fmVct.Append(mu);
 
-			for(int nX=0; nX<nC; nX++)
-			{
-				fmTmp0 = alpha.GetRow(nX);
-				fmVct.Append(fmTmp0);
-			}
+            for(int nX=0; nX<nC; nX++)
+            {
+                fmTmp0 = alpha.GetRow(nX);
+                fmVct.Append(fmTmp0);
+            }
 
-			for(int i=0; i<a.GetNumRows(); i++)
-			{
-				fmTmp0 = a.GetRow(i);
-				fmVct.Append( fmTmp0 );
+            for(int i=0; i<a.GetNumRows(); i++)
+            {
+                fmTmp0 = a.GetRow(i);
+                fmVct.Append( fmTmp0 );
 
-				fmTmp0 = d.GetRow(i);
-				fmVct.Append( fmTmp0 );
-			}
+                fmTmp0 = d.GetRow(i);
+                fmVct.Append( fmTmp0 );
+            }
 
-			pMatRet->Rbind(fmVct);
+            pMatRet->Rbind(fmVct);
         }
 
         _log_debug(_HI_, "Round=%d sigma2=%f rho=%.4f tmp5=%f lambda2=%f,%f,%f,%f mu=%.4f, %.4f, %.4f ",  round, sigma2, rho, tmp5, lambda2, lambda2_x, lambda_st2, lambda_st2_x, mu[0], mu[1], mu[2] );
@@ -1038,10 +1038,10 @@ double GLS::func_invGau(double theta, double chi)
     //squared normal, i.e., chi-square with df=1
     double chisq1 = pow(rnorm(0, 1), 2);
 
-	double y1    = theta + 0.5*theta/chi * ( theta*chisq1 - sqrt(4*theta*chi*chisq1 + theta*theta*chisq1*chisq1) );
-	double y2    = theta*theta/y1;
-	double out_1 = runif(0, 1) < (theta/(theta+y1));
-	double value = out_1*y1+(1-out_1)*y2;
+    double y1    = theta + 0.5*theta/chi * ( theta*chisq1 - sqrt(4*theta*chi*chisq1 + theta*theta*chisq1*chisq1) );
+    double y2    = theta*theta/y1;
+    double out_1 = runif(0, 1) < (theta/(theta+y1));
+    double value = out_1*y1+(1-out_1)*y2;
 
     return(value);
 }
@@ -1092,8 +1092,8 @@ int GLS::ExportFig(char* szFigFile, bool bRefit )
 
 SEXP GLS::GetRObj()
 {
-	if (m_pRes)
-		return(m_pRes->GetRObj());
-	else
-		return(R_NilValue);
+    if (m_pRes)
+        return(m_pRes->GetRObj());
+    else
+        return(R_NilValue);
 }

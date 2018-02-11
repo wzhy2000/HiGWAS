@@ -1,5 +1,5 @@
-/* gls_dat.cpp  -	GLS Data Object
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+/* gls_dat.cpp  -    GLS Data Object
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -108,7 +108,7 @@ int GLS_dat::LoadPlink( char* szFile_tped, char* szFile_tfam, char* szFile_pheno
 
     _log_info( _HI_, "LoadPlink: Start to read the TPED file(%s)", szFile_tped);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pPlink = new (refNew) CFmDat_Plink( szFile_tped, szFile_tfam);
     int ret = m_pPlink->Load();
     if (ret!=0)
@@ -161,7 +161,7 @@ int GLS_dat::LoadSimple( char* szFile_snp, char* szFile_pheno, bool bZnorm  )
 
     _log_info( _HI_, "LoadSimple: Start to read the SNP file(%s)", szFile_snp);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSimple = new (refNew) CFmDat_Simple( szFile_snp );
     int ret = m_pSimple->Load();
     if (ret!=0)
@@ -209,7 +209,7 @@ int GLS_dat::AttachSnpmat( CFmMatrix* pFmPhe, CFmMatrix* pFmSnp, bool bZnorm  )
 
     _log_info( _HI_, "AttachSnpmat: Start to read the SNPMAT" );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pPackedSNP = new (refNew) CFmPackedSNP();
     m_pPackedSNP->InitData( pFmSnp->GetNumCols()-2, pFmSnp->GetNumRows() );
 
@@ -240,11 +240,11 @@ int GLS_dat::AttachSnpmat( CFmMatrix* pFmPhe, CFmMatrix* pFmSnp, bool bZnorm  )
     int ret = m_pPackedSNP->RemoveRareSNP( 0.01 );
     if (ret!=0)
     {
-		_log_error( _HI_, "CFmPackedSNP: Failed to remove rare SNPs");
-		return( ERR_SNPFILE_LONG );
-	}
-	else
-	    _log_prompt( _HI_, "Total SNPs: %d, Rare SNPs: %d, Rare MAF= %.3f", nSnpP, nSnpP - m_pPackedSNP->GetNumSnps(), 0.01 );
+        _log_error( _HI_, "CFmPackedSNP: Failed to remove rare SNPs");
+        return( ERR_SNPFILE_LONG );
+    }
+    else
+        _log_prompt( _HI_, "Total SNPs: %d, Rare SNPs: %d, Rare MAF= %.3f", nSnpP, nSnpP - m_pPackedSNP->GetNumSnps(), 0.01 );
 
     m_pSnpNames = new (refNew) CFmVectorStr( m_pPackedSNP->GetNumSnps() );
     for (int i=0;i<m_pPackedSNP->GetNumSnps();i++)
@@ -300,7 +300,7 @@ int GLS_dat::LoadPhenoOnly(char* szFile_pheno, bool bZnorm )
     if (m_pPlink)
         pSubjs = m_pSimple->m_pSubIds;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmDat_Pheno* pPheno = new (refNew) CFmDat_Pheno( szFile_pheno, bZnorm, m_pCmd->szYname, m_pCmd->szZname, m_pCmd->szXname );
     int ret = pPheno->LoadNonlongdt( m_pPackedSNP, pSubjs );
     if (ret!=0)
@@ -331,7 +331,7 @@ int GLS_dat::Simulate_test(GLS_par* par, CMDOPTIONS* pCmd )
     _log_info( _HI_, "Simulation_test: Generate phenotypical data.");
     proc_gls_simu_pheno_test( m_pPhenoY, m_pPhenoZ, m_pCovars, m_pZRange );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSnpNames = new (refNew) CFmVectorStr(m_nSnpP);
     for (int i=0;i<m_nSnpP;i++)
     {
@@ -386,8 +386,8 @@ int GLS_dat::Simulate( GLS_par* par, CMDOPTIONS* pCmd )
     memcpy( simu_par.simu_z_range     ,par->simu_z_range      ,sizeof(par->simu_z_range));
     memcpy( simu_par.simu_z_count     ,par->simu_z_count      ,sizeof(par->simu_z_count));
 
-	CFmNewTemp refNew;
-	CFmSimulate* m_pSimulate = new (refNew) CFmSimulate( &simu_par );
+    CFmNewTemp refNew;
+    CFmSimulate* m_pSimulate = new (refNew) CFmSimulate( &simu_par );
     int nRet = m_pSimulate->Simulate( pCmd->szSnpoutFile, pCmd->szPheoutFile, (char*)"0" );
     if (nRet)
         return(nRet);
@@ -603,7 +603,7 @@ int GLS_dat::Summary(char* szOutFile)
 
 void destroy(GLS_dat* p)
 {
-	CFmNewTemp  fmRef;
-	p->~GLS_dat();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~GLS_dat();
+    operator delete(p, fmRef);
 }

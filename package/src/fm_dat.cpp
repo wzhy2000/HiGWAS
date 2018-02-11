@@ -1,5 +1,5 @@
-/* CFmDat.cpp  -	GLS Data Object
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+/* CFmDat.cpp  -    GLS Data Object
+ *  Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -24,8 +24,8 @@ CFmDat_Plink::CFmDat_Plink(char* szFile_tped, char* szFile_tfam )
     m_sTped_file = Strdup(szFile_tped);
     m_sTfam_file = Strdup(szFile_tfam);
     m_nSnpP = 0;
-	m_pSubIds = NULL;
-	m_pSnpNames = NULL;
+    m_pSubIds = NULL;
+    m_pSnpNames = NULL;
 }
 
 CFmDat_Plink::~CFmDat_Plink()
@@ -33,8 +33,8 @@ CFmDat_Plink::~CFmDat_Plink()
     Free(m_sTped_file);
     Free(m_sTfam_file);
 
-	if(m_pSnpNames) destroy( m_pSnpNames );
-	if(m_pSubIds) destroy( m_pSubIds );
+    if(m_pSnpNames) destroy( m_pSnpNames );
+    if(m_pSubIds) destroy( m_pSubIds );
 
     _log_debug(_HI_, "CFmDat_Plink is released successfully.");
 }
@@ -62,7 +62,7 @@ int CFmDat_Plink::Load(char* szPresigFile)
     m_nSnpP = m_PackedSNP.GetNumSnps();
     _log_info( _HI_, "LoadPlink: non-rare SNP:%d", m_nSnpP );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSnpNames = new (refNew) CFmVectorStr(m_nSnpP);
     for (int i=0;i<m_nSnpP;i++)
     {
@@ -250,8 +250,8 @@ int CFmDat_Plink::LoadTfam( char* szFile_tfam )
         return( ERR_OPEN_FILE );
     }
 
-	CFmNewTemp refNew;
-	m_pSubIds = new (refNew) CFmVectorStr(0, 1000);
+    CFmNewTemp refNew;
+    m_pSubIds = new (refNew) CFmVectorStr(0, 1000);
     int nSubj=0;
     char aLine[256]={0};
     char seps1[] = " ,\t";
@@ -273,7 +273,7 @@ int CFmDat_Plink::LoadTfam( char* szFile_tfam )
                i++;
            }
 
-			nSubj++;
+            nSubj++;
         }
     }
 
@@ -287,7 +287,7 @@ int CFmDat_Plink::LoadTfam( char* szFile_tfam )
 CFmDat_Simple::CFmDat_Simple(char* szFile_snp )
 {
     m_szFile_snp = Strdup(szFile_snp);
-	m_pSubIds = NULL;
+    m_pSubIds = NULL;
     m_pSnpNames= NULL;
 
 }
@@ -295,8 +295,8 @@ CFmDat_Simple::CFmDat_Simple(char* szFile_snp )
 CFmDat_Simple::~CFmDat_Simple()
 {
     Free(m_szFile_snp);
-	if(m_pSubIds) destroy( m_pSubIds );
-	if(m_pSnpNames) destroy( m_pSnpNames );
+    if(m_pSubIds) destroy( m_pSubIds );
+    if(m_pSnpNames) destroy( m_pSnpNames );
 
     _log_debug(_HI_, "CFmDat_Simple is released successfully.");
 }
@@ -358,7 +358,7 @@ int CFmDat_Simple::Load(char* szPresigFile)
 
     _log_info( _HI_, "LoadSimple: non-rare SNP:%d", nSnpP );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSnpNames = new (refNew) CFmVectorStr(nSnpP);
     for (int i=0;i<nSnpP;i++)
     {
@@ -378,14 +378,14 @@ CFmDat_Pheno::CFmDat_Pheno(char* szFile_pheno, bool bZnorm, char* szYname, char*
     m_bZnorm = bZnorm;
     m_pAttachedPhe = NULL;
 
-	m_pszXname = NULL;
-	m_pszZname = NULL;
-	m_pszYname = Strdup(szYname);
+    m_pszXname = NULL;
+    m_pszZname = NULL;
+    m_pszYname = Strdup(szYname);
 
-	if(szXname) m_pszXname = Strdup(szXname);
-	if(szZname) m_pszZname = Strdup(szZname);
+    if(szXname) m_pszXname = Strdup(szXname);
+    if(szZname) m_pszZname = Strdup(szZname);
 
-	Init();
+    Init();
 }
 
 void CFmDat_Pheno::Init()
@@ -394,13 +394,13 @@ void CFmDat_Pheno::Init()
     m_pPhenoZ = NULL ;
     m_pPhenoZ0 = NULL ;
     m_pCovars = NULL ;
-	m_pSubjs = NULL;
+    m_pSubjs = NULL;
 
     m_nSubjN = 0;
     m_nMesuQ = 1;
 
-	CFmNewTemp refNew;
-	m_pXnames = new (refNew) CFmVectorStr(0);
+    CFmNewTemp refNew;
+    m_pXnames = new (refNew) CFmVectorStr(0);
     char* pch = strtok (m_pszXname,",");
     while (pch != NULL)
     {
@@ -417,14 +417,14 @@ CFmDat_Pheno::CFmDat_Pheno(CFmMatrix* pFmPhe, bool bZnorm, char* szYname, char* 
     m_pAttachedPhe = pFmPhe;
     m_bZnorm = bZnorm;
 
-	m_pszXname = NULL;
-	m_pszZname = NULL;
-	m_pszYname = Strdup(szYname);
+    m_pszXname = NULL;
+    m_pszZname = NULL;
+    m_pszYname = Strdup(szYname);
 
-	if(szXname) m_pszXname = Strdup(szXname);
-	if(szZname) m_pszZname = Strdup(szZname);
+    if(szXname) m_pszXname = Strdup(szXname);
+    if(szZname) m_pszZname = Strdup(szZname);
 
-	Init();
+    Init();
 }
 
 CFmDat_Pheno::~CFmDat_Pheno()
@@ -453,24 +453,24 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
         return( ERR_PARAM_VALUE );
     }
 
-	CFmMatrix* pFmPhe = NULL;
-	if( m_szFile_pheno != NULL)
-	{
-	    CFmDataFrame df;
-		int ret = df.Load(m_szFile_pheno, false, true);
-		if (ret!=0)
-		{
-			_log_error(_HI_, "Failed to open the Phenotype file(%s)", m_szFile_pheno);
-			return( ERR_OPEN_FILE );
-		}
+    CFmMatrix* pFmPhe = NULL;
+    if( m_szFile_pheno != NULL)
+    {
+        CFmDataFrame df;
+        int ret = df.Load(m_szFile_pheno, false, true);
+        if (ret!=0)
+        {
+            _log_error(_HI_, "Failed to open the Phenotype file(%s)", m_szFile_pheno);
+            return( ERR_OPEN_FILE );
+        }
 
-		CFmVector vctCol(0, 0.0);
-		for(int i=1;i<df.GetNumCol();i++)	vctCol.Put(i);
-		pFmPhe = df.GetMatrix( &vctCol );
-		pFmPhe->SetRowNames( df.GetStringCol(0) );
-	}
-	else
-		pFmPhe = m_pAttachedPhe;
+        CFmVector vctCol(0, 0.0);
+        for(int i=1;i<df.GetNumCol();i++)    vctCol.Put(i);
+        pFmPhe = df.GetMatrix( &vctCol );
+        pFmPhe->SetRowNames( df.GetStringCol(0) );
+    }
+    else
+        pFmPhe = m_pAttachedPhe;
 
     m_nSubjN = pPackedSNP->GetNumSubjs();
     if ( pFmPhe->GetNumRows() != m_nSubjN )
@@ -483,7 +483,7 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
     m_pSubjs = new (refNew) CFmVectorStr( pFmPhe->GetRowNames() );
 
     // Data from PLINK command
-	CFmVector subjOrd(0, 0.0);
+    CFmVector subjOrd(0, 0.0);
     if (pFamSubjs)
     {
         for(int i=0;i<m_pSubjs->GetLength(); i++)
@@ -584,11 +584,11 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
         vct_ord.Resize(0, true);
         for(int j=0; j<m_pPhenoZ->GetNumCols(); j++)
             if ( !isnan( m_pPhenoZ->Get(i,j) ) && !isnan( m_pPhenoY->Get(i,j) ) )
-            	vct_ord.Put(j);
+                vct_ord.Put(j);
 
          vct.Resize(0, true);
          for( int j=0; j<m_pPhenoZ->GetNumCols(); j++)
-         	vct.Put(R_NaN);
+             vct.Put(R_NaN);
 
          for( int j=0; j<vct_ord.GetLength(); j++)
             vct.Set( j, m_pPhenoZ->Get(i, (int)(vct_ord[j])) );
@@ -596,7 +596,7 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
 
          vct.Resize(0, true);
          for( int j=0; j<m_pPhenoY->GetNumCols(); j++)
-         	vct.Put(R_NaN);
+             vct.Put(R_NaN);
 
          for( int j=0; j<vct_ord.GetLength(); j++)
             vct.Set( j, m_pPhenoY->Get(i, (int)(vct_ord[j])) );
@@ -605,13 +605,13 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
 
     // Covars matrix
     m_pCovars = new (refNew) CFmMatrix( m_nSubjN, m_pXnames->GetLength() + 1);
-	m_pCovars->SetColName( 0, (char*)"Mu" );
+    m_pCovars->SetColName( 0, (char*)"Mu" );
     for(int i=0; i<m_nSubjN; i++)
         m_pCovars->Set( i, 0, 1.0 );
 
     for(int i=1; i<m_pXnames->GetLength()+1;i++)
     {
-		char* szVarX = m_pXnames->Get( i-1 );
+        char* szVarX = m_pXnames->Get( i-1 );
         int nIdx = pFmPhe->FindColumn( szVarX );
         if (nIdx<0)
         {
@@ -662,8 +662,8 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
         }
     }
 
-	if( m_szFile_pheno != NULL)
-		destroy( pFmPhe );
+    if( m_szFile_pheno != NULL)
+        destroy( pFmPhe );
 
     _log_info( _HI_, "Phenotype: %d subjects are read from phenotype file", m_pPhenoY->GetNumRows() );
 
@@ -679,40 +679,40 @@ int CFmDat_Pheno::LoadNonlongdt( CFmPackedSNP* pPackedSNP, CFmVectorStr* pFamSub
         return( ERR_OPEN_FILE );
     }
 
-	CFmMatrix* pFmPhe=NULL;
-	if( m_szFile_pheno!=NULL)
-	{
-	    CFmDataFrame df;
-		int ret = df.Load(m_szFile_pheno, false, true);
-		if (ret!=0)
-		{
-			_log_error(_HI_, "Failed to open the Phenotype file(%s)", m_szFile_pheno);
-			return( ERR_OPEN_FILE );
-		}
+    CFmMatrix* pFmPhe=NULL;
+    if( m_szFile_pheno!=NULL)
+    {
+        CFmDataFrame df;
+        int ret = df.Load(m_szFile_pheno, false, true);
+        if (ret!=0)
+        {
+            _log_error(_HI_, "Failed to open the Phenotype file(%s)", m_szFile_pheno);
+            return( ERR_OPEN_FILE );
+        }
 
-		CFmVector vctCol(0, 0.0);
-		for(int i=1;i<df.GetNumCol();i++)	vctCol.Put(i);
-		pFmPhe = df.GetMatrix( &vctCol );
-		pFmPhe->SetRowNames( df.GetStringCol(0) );
-	}
-	else
-		pFmPhe = m_pAttachedPhe;
+        CFmVector vctCol(0, 0.0);
+        for(int i=1;i<df.GetNumCol();i++)    vctCol.Put(i);
+        pFmPhe = df.GetMatrix( &vctCol );
+        pFmPhe->SetRowNames( df.GetStringCol(0) );
+    }
+    else
+        pFmPhe = m_pAttachedPhe;
 
-	CFmNewTemp refNew;
-	m_pSubjs = new (refNew) CFmVectorStr( pFmPhe->GetRowNames() );
+    CFmNewTemp refNew;
+    m_pSubjs = new (refNew) CFmVectorStr( pFmPhe->GetRowNames() );
 
-	CFmVector subjOrd(0, 0.0);
-	if (pFamSubjs)
-	{
-		for(int i=0;i<m_pSubjs->GetLength(); i++)
-		{
-			int nPos = pFamSubjs->Find ( m_pSubjs->Get(i) );
-			if ( nPos>=0  )
-				subjOrd.Put( nPos+1 );
-			else
-				_log_error(_HI_, "Failed to find %s in phenotype", m_pSubjs->Get(i));
-		}
-	}
+    CFmVector subjOrd(0, 0.0);
+    if (pFamSubjs)
+    {
+        for(int i=0;i<m_pSubjs->GetLength(); i++)
+        {
+            int nPos = pFamSubjs->Find ( m_pSubjs->Get(i) );
+            if ( nPos>=0  )
+                subjOrd.Put( nPos+1 );
+            else
+                _log_error(_HI_, "Failed to find %s in phenotype", m_pSubjs->Get(i));
+        }
+    }
 
     m_nMesuQ = 1;
     m_nSubjN = pPackedSNP->GetNumSubjs();
@@ -736,15 +736,15 @@ int CFmDat_Pheno::LoadNonlongdt( CFmPackedSNP* pPackedSNP, CFmVectorStr* pFamSub
     {
         CFmVector& VctY = pFmPhe->GetCol(nIdx);
 
-		if (subjOrd.GetLength()>0) VctY.Rearrange( subjOrd );
+        if (subjOrd.GetLength()>0) VctY.Rearrange( subjOrd );
         m_pPhenoY->SetCol(0, VctY );
     }
 
     // Covar matrix
     m_pCovars = new (refNew) CFmMatrix( m_nSubjN, m_pXnames->GetLength() + 1  );
-	m_pCovars->SetColName( 0, (char*)"Mu" );
+    m_pCovars->SetColName( 0, (char*)"Mu" );
     for(int i=0; i<m_nSubjN; i++)
-		m_pCovars->Set( i, 0, 1.0);
+        m_pCovars->Set( i, 0, 1.0);
 
     for(int i=1; i< m_pXnames->GetLength() + 1;i++)
     {
@@ -759,16 +759,16 @@ int CFmDat_Pheno::LoadNonlongdt( CFmPackedSNP* pPackedSNP, CFmVectorStr* pFamSub
         else
         {
             CFmVector& VctX = pFmPhe->GetCol(nIdx);
-			if (subjOrd.GetLength()>0)
+            if (subjOrd.GetLength()>0)
                 VctX.Rearrange( subjOrd );
             m_pCovars->SetCol(i, VctX, szVarX );
         }
     }
 
-	RemoveMissing(pPackedSNP);
+    RemoveMissing(pPackedSNP);
 
-	if( m_szFile_pheno != NULL)
-		destroy( pFmPhe );
+    if( m_szFile_pheno != NULL)
+        destroy( pFmPhe );
 
     _log_info( _HI_, "Phenotype: %d subjects are read from phenotype file", m_pPhenoY->GetNumRows() );
 
@@ -781,44 +781,44 @@ int CFmDat_Pheno::RemoveMissing( CFmPackedSNP* pPackedSNP )
     CFmVector phe_null(0, 0.0);
 
     // Y Matrix
-	CFmVector vctY(0, 0.0);
+    CFmVector vctY(0, 0.0);
 
-	if (m_pPhenoY->GetNumCols()==1)
+    if (m_pPhenoY->GetNumCols()==1)
     {
-		for(int i=0; i<m_pPhenoY->GetNumCols(); i++)
-		{
-			vctY = m_pPhenoY->GetCol(i );
-			for(int i=0;i<vctY.GetLength(); i++)
-				if ( isnan( vctY.Get(i) ) )
-					phe_null.UniquePut(i);
-		}
-	}
-	else
-	{
-		CFmVector vct_ord(0, 0.0);
-		// Z Matrix
-		for(int i=0; i<m_pPhenoZ->GetNumRows(); i++)
-		{
-			vct_ord.Resize(0, true);
-			for(int j=0; j<m_pPhenoZ->GetNumCols(); j++)
-				//if ( m_pPhenoZ->Get(i,j) != 0.0 &&
-				//	 m_pPhenoY->Get(i,j) != 0.0 )
-				if ( !isnan( m_pPhenoZ->Get(i,j)) &&
-					 !isnan( m_pPhenoY->Get(i,j)) )
-				vct_ord.Put(j);
+        for(int i=0; i<m_pPhenoY->GetNumCols(); i++)
+        {
+            vctY = m_pPhenoY->GetCol(i );
+            for(int i=0;i<vctY.GetLength(); i++)
+                if ( isnan( vctY.Get(i) ) )
+                    phe_null.UniquePut(i);
+        }
+    }
+    else
+    {
+        CFmVector vct_ord(0, 0.0);
+        // Z Matrix
+        for(int i=0; i<m_pPhenoZ->GetNumRows(); i++)
+        {
+            vct_ord.Resize(0, true);
+            for(int j=0; j<m_pPhenoZ->GetNumCols(); j++)
+                //if ( m_pPhenoZ->Get(i,j) != 0.0 &&
+                //     m_pPhenoY->Get(i,j) != 0.0 )
+                if ( !isnan( m_pPhenoZ->Get(i,j)) &&
+                     !isnan( m_pPhenoY->Get(i,j)) )
+                vct_ord.Put(j);
 
-			if (vct_ord.GetLength()==0)
-					phe_null.UniquePut(i);
-		}
-	}
+            if (vct_ord.GetLength()==0)
+                    phe_null.UniquePut(i);
+        }
+    }
 
     // Covar Matrix
     for(int i=0; i<m_pCovars->GetNumCols(); i++)
     {
         vctY = m_pCovars->GetCol(i );
-		for(int j=0;j<vctY.GetLength(); j++)
-			if ( isnan( vctY.Get(j) ) )
-				phe_null.UniquePut(j);
+        for(int j=0;j<vctY.GetLength(); j++)
+            if ( isnan( vctY.Get(j) ) )
+                phe_null.UniquePut(j);
     }
 
     _log_info( _HI_, "RemoveMissing: %d subjects will be removed.", phe_null.GetLength() );
@@ -829,7 +829,7 @@ int CFmDat_Pheno::RemoveMissing( CFmPackedSNP* pPackedSNP )
         m_pCovars->RemoveRows( phe_null );
         m_pPhenoY->RemoveRows( phe_null );
         pPackedSNP->RemoveSubjs( phe_null );
-	    m_nSubjN = pPackedSNP->GetNumSubjs();
+        m_nSubjN = pPackedSNP->GetNumSubjs();
     }
 
     _log_info( _HI_, "RemoveMissing: %d subjects are left after removing empty rows", m_pPhenoY->GetNumRows() );
@@ -839,21 +839,21 @@ int CFmDat_Pheno::RemoveMissing( CFmPackedSNP* pPackedSNP )
 
 void destroy(CFmDat_Plink* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmDat_Plink();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmDat_Plink();
+    operator delete(p, fmRef);
 }
 
 void destroy(CFmDat_Simple* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmDat_Simple();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmDat_Simple();
+    operator delete(p, fmRef);
 }
 
 void destroy(CFmDat_Pheno* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmDat_Pheno();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmDat_Pheno();
+    operator delete(p, fmRef);
 }

@@ -1,6 +1,6 @@
-/* BLS_par.cpp  -	BLS Parameter Object for simulation
+/* BLS_par.cpp  -    BLS Parameter Object for simulation
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -87,7 +87,7 @@ void BLS_par::LoadDefault()
     simu_d_pos[8]= 850;
     simu_d_pos[9]= 900;
     simu_d_pos[10]=950;
-	simu_d_effect[0]= 1.2;
+    simu_d_effect[0]= 1.2;
     simu_d_effect[1]= 1.2;
     simu_d_effect[2]= 1.2;
     simu_d_effect[3]= 0.8;
@@ -99,10 +99,10 @@ void BLS_par::LoadDefault()
     simu_d_effect[9]= 1.2;
     simu_d_effect[10]=0.8;
 
-	simu_t_range[0] = -1;
-	simu_t_range[1] = 1;
-	simu_covar_range[0] = 0;
-	simu_covar_range[1] = 1;
+    simu_t_range[0] = -1;
+    simu_t_range[1] = 1;
+    simu_covar_range[0] = 0;
+    simu_covar_range[1] = 1;
 
     sig_p = Get_SigP();
 }
@@ -207,7 +207,7 @@ int BLS_par::Load(char* szParFile)
         simu_covar_coefs[i] = x_eff[i] ;
     }
 
-	//default T_range is (-1, 1);
+    //default T_range is (-1, 1);
     const char* sz_z_range = iFile.ReadString("blasso", "simu_t_range", "");
     iFile.SplitFloat(sz_z_range, x_pos);
     for (int i=0;i<2;i++)
@@ -216,7 +216,7 @@ int BLS_par::Load(char* szParFile)
         simu_t_range[i] = x_pos[i];
     }
 
-	//default cov_range is (-1, 1);
+    //default cov_range is (-1, 1);
     const char* sz_cov_range = iFile.ReadString("blasso", "simu_cov_range", "");
     iFile.SplitFloat(sz_cov_range, x_pos);
     for (int i=0;i<2;i++)
@@ -230,7 +230,7 @@ int BLS_par::Load(char* szParFile)
 
     _log_info(_HI_, "parameter file is loaded successfully.(sig_p:%d)", sig_p);
 
-	return(0);
+    return(0);
 }
 
 int BLS_par::Summary( char* szOutFile )
@@ -286,7 +286,7 @@ int BLS_par::Summary( char* szOutFile )
 
 void destroy(BLS_par* p)
 {
-	CFmNewTemp  fmRef;
-	p->~BLS_par();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~BLS_par();
+    operator delete(p, fmRef);
 }

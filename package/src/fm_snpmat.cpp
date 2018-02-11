@@ -1,6 +1,6 @@
-/* matrix.cpp  -	CFmSnpMat Class
+/* matrix.cpp  -    CFmSnpMat Class
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -56,8 +56,8 @@ CFmSnpMat::CFmSnpMat(int nSnps, int nSubjs, int nMaxSnps, int nMaxSubjs)
     m_pSnpInfos = NULL;
     m_pSubjInfos = NULL;
 
-	m_bSD = FALSE;
-	m_pSD = NULL;
+    m_bSD = FALSE;
+    m_pSD = NULL;
 }
 
 CFmSnpMat::~CFmSnpMat()
@@ -81,13 +81,13 @@ char* CFmSnpMat::AllocateChar( int nSnps, int nSubjs )
         _log_debug( _HI_ , "MEMORY: Try to allocate %.3fM bytes", (nSubjs * nSnps + 1)/1024.0/1024.0);
 
     char* pData = Calloc( nSubjs * nSnps + 1, char ) ;
-	if (pData==NULL)
-	{
+    if (pData==NULL)
+    {
         _log_fatal( _HI_ , "MEMORY: failed to allocate %d bytes to CFmSnpMat[%d,%d].", (nSubjs * nSnps + 1)*4, nSnps, nSubjs );
-	}
+    }
 
     memset(pData, 0, sizeof(char) * (nSubjs * nSnps + 1)) ;
-	return pData ;
+    return pData ;
 }
 
 //R: Me = Mo;
@@ -116,7 +116,7 @@ bool CFmSnpMat::SetSnpInfo(int nSnp, char* szSnpName, char* szChr, char* szPos)
         return(false);
     }
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     if (szSnpName)
     {
         if (m_pSnpInfos==NULL)
@@ -141,7 +141,7 @@ bool CFmSnpMat::SetSubjName(int nSubj, char* szSubjName)
         return(false);
     }
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     if (szSubjName)
     {
         if (m_pSubjInfos==NULL)
@@ -173,15 +173,15 @@ bool CFmSnpMat::GetSnpInfo(CFmVectorStr* pVctSnp, CFmVector* pVctChr, CFmVector*
             return(false);
         if ( pos0 )
         {
-			strncpy( szSnpName, szSnpInfo, (pos0-szSnpInfo) );
-			szSnpName[pos0 - szSnpInfo] = '\0';
-		}
+            strncpy( szSnpName, szSnpInfo, (pos0-szSnpInfo) );
+            szSnpName[pos0 - szSnpInfo] = '\0';
+        }
 
         char* pos1 = strchr(pos0+1, '/');
         if ( pos1 )
         {
             strncpy( szChr, pos0+1, (pos1-pos0) );
-			szChr[ pos1-pos0 ] = '\0';
+            szChr[ pos1-pos0 ] = '\0';
 
             strcpy( szPos, pos1+1);
         }
@@ -242,7 +242,7 @@ CFmVector& CFmSnpMat::GetSnp(int nSnp)
     for(int i=0; i<m_nNumSubjs; i++)
         pTmp->Set(i, Get_a(nSnp, i));
 
-	return *pTmp;
+    return *pTmp;
 }
 
 CFmVector& CFmSnpMat::GetSubj(int nSubj)
@@ -252,7 +252,7 @@ CFmVector& CFmSnpMat::GetSubj(int nSubj)
     for(int i=0; i<m_nNumSnps; i++)
         pTmp->Set(i, Get_a(i, nSubj));
 
-	return *pTmp;
+    return *pTmp;
 }
 
 void CFmSnpMat::SetSnp( int nSnp, CFmVector& vct, char* szSnpName, char* szChr, char* szPos )
@@ -324,7 +324,7 @@ int CFmSnpMat::WriteAsCSVFile(const char* filename)
 
 int CFmSnpMat::ReadFromCSVFile(const char* filename,  bool bSubjName, bool bSnpName)
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmMatrix* pMat = new (refNew) CFmMatrix(0,0);
     int ret = pMat->ReadFromCSVFile(filename, bSubjName, bSnpName);
     if (ret!=0)
@@ -338,7 +338,7 @@ int CFmSnpMat::ReadFromCSVFile(const char* filename,  bool bSubjName, bool bSnpN
 
 CFmMatrix* CFmSnpMat::ToMatrix()
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmMatrix* pMat = new (refNew) CFmMatrix(m_nNumSnps, m_nNumSubjs);
     for (int i=0;i<m_nNumSnps;i++)
         for (int j=0;j<m_nNumSubjs;j++)
@@ -357,7 +357,7 @@ CFmMatrix* CFmSnpMat::GetAdd()
 
 CFmMatrix* CFmSnpMat::GetDom()
 {
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     CFmMatrix* pMat = new (refNew) CFmMatrix(m_nNumSnps, m_nNumSubjs);
     for (int i=0;i<m_nNumSnps;i++)
         for (int j=0;j<m_nNumSubjs;j++)
@@ -381,30 +381,30 @@ void CFmSnpMat::FromMatrix(CFmMatrix* pMat)
         for (int j = 0 ; j <m_nNumSubjs ; j++)
             Set(i, j, pMat->Get(i, j)) ;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSnpInfos = new (refNew) CFmVectorStr(pMat->GetRowNames());
     m_pSubjInfos = new (refNew) CFmVectorStr(pMat->GetColNames());
 }
 
 void CFmSnpMat::sd()
 {
-	CFmNewTemp refNew;
-	m_pSD = new (refNew) CFmVector( m_nNumSnps, 0 );
-	CFmVector snpVct(m_nNumSnps);
-	for (int i=0; i<m_nNumSnps; i++)
-	{
-		snpVct = GetSnp( i );
+    CFmNewTemp refNew;
+    m_pSD = new (refNew) CFmVector( m_nNumSnps, 0 );
+    CFmVector snpVct(m_nNumSnps);
+    for (int i=0; i<m_nNumSnps; i++)
+    {
+        snpVct = GetSnp( i );
 
-		float sd = sqrt( snpVct.GetVar() );
-		m_pSD->Set(i, sd);
-	}
+        float sd = sqrt( snpVct.GetVar() );
+        m_pSD->Set(i, sd);
+    }
 
-	m_bSD = TRUE;
+    m_bSD = TRUE;
 }
 
 void destroy(CFmSnpMat* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmSnpMat();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmSnpMat();
+    operator delete(p, fmRef);
 }

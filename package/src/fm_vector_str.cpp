@@ -1,6 +1,6 @@
-/* fm_vector_str.cpp  -	CFmVectorStr Class
+/* fm_vector_str.cpp  -    CFmVectorStr Class
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -38,10 +38,10 @@ CFmVectorStr::CFmVectorStr(int nSize, int nMaxSize)
     m_pNames = NULL;
     m_nMaxStrlen = 0;
     m_nActLen= nSize;
-	if (nMaxSize<=0)
+    if (nMaxSize<=0)
         m_nMaxLen= m_nActLen>100?m_nActLen:100;
-	else
-		m_nMaxLen= nMaxSize;
+    else
+        m_nMaxLen= nMaxSize;
 
     if (m_nActLen>m_nMaxLen)
         m_nMaxLen = m_nActLen;
@@ -53,9 +53,9 @@ CFmVectorStr::~CFmVectorStr()
 {
     for (int i=0; i<m_nActLen; i++)
     {
-		if (m_pData[i])
+        if (m_pData[i])
             Free(m_pData[i]);
-	}
+    }
 
     Free(m_pData);
 }
@@ -119,17 +119,17 @@ char** CFmVectorStr::GetData()
     return m_pData;
 }
 
-int	CFmVectorStr::GetLength()
+int    CFmVectorStr::GetLength()
 {
     return m_nActLen;
 }
 
-int	CFmVectorStr::GetMaxStrlen()
+int    CFmVectorStr::GetMaxStrlen()
 {
     return m_nMaxStrlen;
 }
 
-int	CFmVectorStr::GetBytes()
+int    CFmVectorStr::GetBytes()
 {
     return m_nActLen*(m_nMaxStrlen+1);
 }
@@ -206,7 +206,7 @@ bool CFmVectorStr::Remove(int idx)
     if ( idx < (m_nActLen-1) )
         memmove( &m_pData[idx], &m_pData[idx+1], (m_nActLen-idx-1) * sizeof(char*) );
 
-	m_pData[ m_nActLen-1 ] = NULL;
+    m_pData[ m_nActLen-1 ] = NULL;
     m_nActLen--;
 
     return(true);
@@ -363,7 +363,7 @@ int CFmVectorStr::WriteAsCSVFile(const char* szCsvFile, bool bAppend, const char
 
 void destroy(CFmVectorStr* p)
 {
-	CFmNewTemp fmRef;
-	p->~CFmVectorStr();
-	operator delete(p, fmRef);
+    CFmNewTemp fmRef;
+    p->~CFmVectorStr();
+    operator delete(p, fmRef);
 }

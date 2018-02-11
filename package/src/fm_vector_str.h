@@ -26,7 +26,7 @@ public:
     void    Reset(int size);
     void    Resize(int size);
     char*   Get(int idx);
-    void	Set(int idx, char* str);
+    void    Set(int idx, char* str);
     char*   operator[](int idx) const;
 
     int     GetMaxStrlen();

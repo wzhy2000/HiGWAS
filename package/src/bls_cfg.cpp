@@ -1,6 +1,6 @@
-/* bls_cfg.cpp  -	BLS System Object
+/* bls_cfg.cpp  -    BLS System Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -34,8 +34,8 @@ BLS_cfg::BLS_cfg():CFmSys()
     m_fPerRefit = 0.10;
     m_fNumSig   = 0;
     m_fPerSig   = 0.02;
-	m_fQval_add = 0.05;
-	m_fQval_dom = 0.09;
+    m_fQval_add = 0.05;
+    m_fQval_dom = 0.09;
 
     m_bIncZ = true;
     m_bIncX = true;
@@ -55,13 +55,13 @@ BLS_cfg::BLS_cfg(char* szCfgFiled):CFmSys()
     m_fPerRefit = 0.10;
     m_fNumSig   = 0;
     m_fPerSig   = 0.02;
-	m_fQval_add = 0.05;
-	m_fQval_dom = 0.09;
+    m_fQval_add = 0.05;
+    m_fQval_dom = 0.09;
 
     m_bIncZ = true;
     m_bIncX = true;
 
-	Load(szCfgFiled);
+    Load(szCfgFiled);
 }
 
 BLS_cfg::~BLS_cfg()
@@ -192,7 +192,7 @@ int BLS_cfg::GetBurnInRound()
 
 void destroy(BLS_cfg* p)
 {
-	CFmNewTemp  fmRef;
-	p->~BLS_cfg();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~BLS_cfg();
+    operator delete(p, fmRef);
 }

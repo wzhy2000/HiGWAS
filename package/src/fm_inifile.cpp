@@ -18,7 +18,7 @@
   0.50: Problem with file pointer solved
   0.51: We better do smaller steps now. I have reformated to tab4. Sorry
         New function DeleteKey added. Thanks for the guy who post this.
-		I have also renamed the pointer to be sonsinstent with IniFile.Cpp.
+        I have also renamed the pointer to be sonsinstent with IniFile.Cpp.
 
   PLEASE update GetVersion!
 
@@ -87,10 +87,10 @@ void strupr( char *str )
     {
         if ( islower( *str ) )
         {
-		     *str = toupper( *str );
+             *str = toupper( *str );
         }
         str++;
-	}
+    }
 }
 #endif
 
@@ -99,10 +99,10 @@ void strupr( char *str )
 *========================================================================*/
 CFmIniFile::CFmIniFile (void)
 {
-	m_pEntry      = NULL;
-	m_pCurEntry   = NULL;
-	m_result [0]  = 0;
-	m_pIniFile    = NULL;
+    m_pEntry      = NULL;
+    m_pCurEntry   = NULL;
+    m_result [0]  = 0;
+    m_pIniFile    = NULL;
 }
 
 /*=========================================================================
@@ -110,7 +110,7 @@ CFmIniFile::CFmIniFile (void)
 *========================================================================*/
 CFmIniFile::~CFmIniFile (void)
 {
-	FreeAllMem ();
+    FreeAllMem ();
 }
 
 /*=========================================================================
@@ -121,7 +121,7 @@ CFmIniFile::~CFmIniFile (void)
 *========================================================================*/
 UINT CFmIniFile::GetVersion (void)
 {
-	return 0x0030;
+    return 0x0030;
 }
 
 
@@ -134,62 +134,62 @@ UINT CFmIniFile::GetVersion (void)
 ========================================================================*/
 BOOL CFmIniFile::OpenIniFile (CCHR * FileName)
 {
-	char   Str [255];
-	char   *pStr;
-	struct ENTRY *pEntry;
+    char   Str [255];
+    char   *pStr;
+    struct ENTRY *pEntry;
 
-	FreeAllMem ();
+    FreeAllMem ();
 
-	if (FileName == NULL)                             { return FALSE; }
-	if ((m_pIniFile = fopen (FileName, "r")) == NULL) { return FALSE; }
+    if (FileName == NULL)                             { return FALSE; }
+    if ((m_pIniFile = fopen (FileName, "r")) == NULL) { return FALSE; }
 
-	while (fgets (Str, 255, m_pIniFile) != NULL)
-	{
-		pStr = strchr (Str, '\n');
-		if (pStr != NULL) { *pStr = 0; }
-		pEntry = MakeNewEntry ();
-		if (pEntry == NULL) { return FALSE; }
+    while (fgets (Str, 255, m_pIniFile) != NULL)
+    {
+        pStr = strchr (Str, '\n');
+        if (pStr != NULL) { *pStr = 0; }
+        pEntry = MakeNewEntry ();
+        if (pEntry == NULL) { return FALSE; }
 
-		#ifdef INI_REMOVE_CR
+        #ifdef INI_REMOVE_CR
         int Len = strlen(Str);
-		if ( Len > 0 )
-		{
-			if ( Str[Len-1] == '\r' )
-			{
-				Str[Len-1] = '\0';
-			}
-		}
-		#endif
+        if ( Len > 0 )
+        {
+            if ( Str[Len-1] == '\r' )
+            {
+                Str[Len-1] = '\0';
+            }
+        }
+        #endif
 
-		pEntry->pText = Calloc (strlen (Str)+1, char);
-		if (pEntry->pText == NULL)
-		{
-			FreeAllMem ();
-			return FALSE;
-		}
-		strcpy (pEntry->pText, Str);
-		pStr = strchr (Str,';');
-		if (pStr != NULL) { *pStr = 0; } /* Cut all comments */
-		if ( (strstr (Str, "[") > 0) && (strstr (Str, "]") > 0) ) /* Is Section */
-		{
-			pEntry->Type = tpSECTION;
-		}
-		else
-		{
-			if (strstr (Str, "=") > 0)
-			{
-				pEntry->Type = tpKEYVALUE;
-			}
-			else
-			{
-				pEntry->Type = tpCOMMENT;
-			}
-		}
-		m_pCurEntry = pEntry;
-	}
-	fclose (m_pIniFile);
-	m_pIniFile = NULL;
-	return TRUE;
+        pEntry->pText = Calloc (strlen (Str)+1, char);
+        if (pEntry->pText == NULL)
+        {
+            FreeAllMem ();
+            return FALSE;
+        }
+        strcpy (pEntry->pText, Str);
+        pStr = strchr (Str,';');
+        if (pStr != NULL) { *pStr = 0; } /* Cut all comments */
+        if ( (strstr (Str, "[") > 0) && (strstr (Str, "]") > 0) ) /* Is Section */
+        {
+            pEntry->Type = tpSECTION;
+        }
+        else
+        {
+            if (strstr (Str, "=") > 0)
+            {
+                pEntry->Type = tpKEYVALUE;
+            }
+            else
+            {
+                pEntry->Type = tpCOMMENT;
+            }
+        }
+        m_pCurEntry = pEntry;
+    }
+    fclose (m_pIniFile);
+    m_pIniFile = NULL;
+    return TRUE;
 }
 
 /*=========================================================================
@@ -200,12 +200,12 @@ BOOL CFmIniFile::OpenIniFile (CCHR * FileName)
 ========================================================================*/
 void CFmIniFile::CloseIniFile (void)
 {
-	FreeAllMem ();
-	if (m_pIniFile != NULL)
-	{
-		fclose (m_pIniFile);
-		m_pIniFile = NULL;
-	}
+    FreeAllMem ();
+    if (m_pIniFile != NULL)
+    {
+        fclose (m_pIniFile);
+        m_pIniFile = NULL;
+    }
 }
 
 
@@ -217,33 +217,33 @@ void CFmIniFile::CloseIniFile (void)
 ========================================================================*/
 bool CFmIniFile::WriteIniFile (const char *pFileName)
 {
-	struct ENTRY *pEntry = m_pEntry;
-	if (m_pIniFile != NULL)
-	{
-		fclose (m_pIniFile);
-	}
-	if ((m_pIniFile = fopen (pFileName, "wb")) == NULL)
-	{
-		FreeAllMem ();
-		return FALSE;
-	}
+    struct ENTRY *pEntry = m_pEntry;
+    if (m_pIniFile != NULL)
+    {
+        fclose (m_pIniFile);
+    }
+    if ((m_pIniFile = fopen (pFileName, "wb")) == NULL)
+    {
+        FreeAllMem ();
+        return FALSE;
+    }
 
-	while (pEntry != NULL)
-	{
-		if (pEntry->Type != tpNULL)
-		{
-#			ifdef INI_REMOVE_CR
-			fprintf (m_pIniFile, "%s\n", pEntry->pText);
-#			else
-			fprintf (m_pIniFile, "%s\r\n", pEntry->pText);
-#			endif
-		}
-		pEntry = pEntry->pNext;
-	}
+    while (pEntry != NULL)
+    {
+        if (pEntry->Type != tpNULL)
+        {
+#            ifdef INI_REMOVE_CR
+            fprintf (m_pIniFile, "%s\n", pEntry->pText);
+#            else
+            fprintf (m_pIniFile, "%s\r\n", pEntry->pText);
+#            endif
+        }
+        pEntry = pEntry->pNext;
+    }
 
-	fclose (m_pIniFile);
-	m_pIniFile = NULL;
-	return TRUE;
+    fclose (m_pIniFile);
+    m_pIniFile = NULL;
+    return TRUE;
 }
 
 
@@ -252,28 +252,28 @@ bool CFmIniFile::WriteIniFile (const char *pFileName)
 ========================================================================*/
 void CFmIniFile::WriteString (CCHR *pSection, CCHR *pKey, CCHR *pValue)
 {
-	EFIND List;
-	char  Str [255];
+    EFIND List;
+    char  Str [255];
 
-	if (ArePtrValid (pSection, pKey, pValue) == FALSE) { return; }
-	if (FindKey  (pSection, pKey, &List) == TRUE)
-	{
-		sprintf (Str, "%s=%s%s", List.KeyText, pValue, List.Comment);
-		FreeMem (List.pKey->pText);
-		List.pKey->pText = Calloc (strlen (Str)+1, char);
-		strcpy (List.pKey->pText, Str);
-	}
-	else
-	{
-		if ((List.pSec != NULL) && (List.pKey == NULL)) /* section exist, Key not */
-		{
-			AddKey (List.pSec, pKey, pValue);
-		}
-		else
-		{
-			AddSectionAndKey (pSection, pKey, pValue);
-		}
-	}
+    if (ArePtrValid (pSection, pKey, pValue) == FALSE) { return; }
+    if (FindKey  (pSection, pKey, &List) == TRUE)
+    {
+        sprintf (Str, "%s=%s%s", List.KeyText, pValue, List.Comment);
+        FreeMem (List.pKey->pText);
+        List.pKey->pText = Calloc (strlen (Str)+1, char);
+        strcpy (List.pKey->pText, Str);
+    }
+    else
+    {
+        if ((List.pSec != NULL) && (List.pKey == NULL)) /* section exist, Key not */
+        {
+            AddKey (List.pSec, pKey, pValue);
+        }
+        else
+        {
+            AddSectionAndKey (pSection, pKey, pValue);
+        }
+    }
 }
 
 /*=========================================================================
@@ -281,9 +281,9 @@ void CFmIniFile::WriteString (CCHR *pSection, CCHR *pKey, CCHR *pValue)
 ========================================================================*/
 void CFmIniFile::WriteBool (CCHR *pSection, CCHR *pKey, bool Value)
 {
-	char Val [2] = {'0',0};
-	if (Value != 0) { Val [0] = '1'; }
-	WriteString (pSection, pKey, Val);
+    char Val [2] = {'0',0};
+    if (Value != 0) { Val [0] = '1'; }
+    WriteString (pSection, pKey, Val);
 }
 
 /*=========================================================================
@@ -291,9 +291,9 @@ void CFmIniFile::WriteBool (CCHR *pSection, CCHR *pKey, bool Value)
 ========================================================================*/
 void CFmIniFile::WriteInt (CCHR *pSection, CCHR *pKey, int Value)
 {
-	char Val [12]; /* 32bit maximum + sign + \0 */
-	sprintf (Val, "%d", Value);
-	WriteString (pSection, pKey, Val);
+    char Val [12]; /* 32bit maximum + sign + \0 */
+    sprintf (Val, "%d", Value);
+    WriteString (pSection, pKey, Val);
 }
 
 /*=========================================================================
@@ -301,7 +301,7 @@ void CFmIniFile::WriteInt (CCHR *pSection, CCHR *pKey, int Value)
  ========================================================================*/
 void CFmIniFile::WriteDouble (CCHR *pSection, CCHR *pKey, double Value)
 {
-	char Val [32]; /* DDDDDDDDDDDDDDD+E308\0 */
+    char Val [32]; /* DDDDDDDDDDDDDDD+E308\0 */
     //sprintf (Val, "%1.10lE", Value);
     sprintf (Val, "%f", Value);
     WriteString (pSection, pKey, Val);
@@ -313,14 +313,14 @@ void CFmIniFile::WriteDouble (CCHR *pSection, CCHR *pKey, double Value)
  ========================================================================*/
 CCHR *CFmIniFile::ReadString (CCHR *pSection, CCHR *pKey, CCHR *pDefault)
 {
-	EFIND List;
-	if (ArePtrValid (pSection, pKey, pDefault) == FALSE) { return pDefault; }
-	if (FindKey  (pSection, pKey, &List) == TRUE)
-	{
-		strcpy (m_result, List.ValText);
-		return m_result;
-	}
-	return pDefault;
+    EFIND List;
+    if (ArePtrValid (pSection, pKey, pDefault) == FALSE) { return pDefault; }
+    if (FindKey  (pSection, pKey, &List) == TRUE)
+    {
+        strcpy (m_result, List.ValText);
+        return m_result;
+    }
+    return pDefault;
 }
 
 /*=========================================================================
@@ -328,9 +328,9 @@ CCHR *CFmIniFile::ReadString (CCHR *pSection, CCHR *pKey, CCHR *pDefault)
  ========================================================================*/
 BOOL CFmIniFile::ReadBool (CCHR *pSection, CCHR *pKey, BOOL Default)
 {
-	char Val [2] = {"0"};
-	if (Default != 0) { Val [0] = '1'; }
-	return (atoi (ReadString (pSection, pKey, Val))?1:0); /* Only allow 0 or 1 */
+    char Val [2] = {"0"};
+    if (Default != 0) { Val [0] = '1'; }
+    return (atoi (ReadString (pSection, pKey, Val))?1:0); /* Only allow 0 or 1 */
 }
 
 /*=========================================================================
@@ -338,9 +338,9 @@ BOOL CFmIniFile::ReadBool (CCHR *pSection, CCHR *pKey, BOOL Default)
  ========================================================================*/
 int CFmIniFile::ReadInt (CCHR *pSection, CCHR *pKey, int Default)
 {
-	char Val [12];
-	sprintf (Val,"%d", Default);
-	return (atoi (ReadString (pSection, pKey, Val)));
+    char Val [12];
+    sprintf (Val,"%d", Default);
+    return (atoi (ReadString (pSection, pKey, Val)));
 }
 
 /*=========================================================================
@@ -348,7 +348,7 @@ int CFmIniFile::ReadInt (CCHR *pSection, CCHR *pKey, int Default)
  ========================================================================*/
 double CFmIniFile::ReadDouble (CCHR *pSection, CCHR *pKey, double Default)
 {
-	double Val;
+    double Val;
     //sprintf (m_result, "%1.10lE", Default);
     //sscanf (ReadString (pSection, pKey, m_result), "%lE", &Val);
     sprintf (m_result, "%f", Default);
@@ -361,27 +361,27 @@ double CFmIniFile::ReadDouble (CCHR *pSection, CCHR *pKey, double Default)
  ========================================================================*/
 bool CFmIniFile::DeleteKey (CCHR *pSection, CCHR *pKey)
 {
-	EFIND         List;
-	struct ENTRY *pPrev;
-	struct ENTRY *pNext;
+    EFIND         List;
+    struct ENTRY *pPrev;
+    struct ENTRY *pNext;
 
-	if (FindKey (pSection, pKey, &List) == TRUE)
-	{
-		pPrev = List.pKey->pPrev;
-		pNext = List.pKey->pNext;
-		if (pPrev)
-		{
-			pPrev->pNext=pNext;
-		}
-		if (pNext)
-		{
-			pNext->pPrev=pPrev;
-		}
-		FreeMem (List.pKey->pText);
-		FreeMem (List.pKey);
-		return TRUE;
-	}
-	return FALSE;
+    if (FindKey (pSection, pKey, &List) == TRUE)
+    {
+        pPrev = List.pKey->pPrev;
+        pNext = List.pKey->pNext;
+        if (pPrev)
+        {
+            pPrev->pNext=pNext;
+        }
+        if (pNext)
+        {
+            pNext->pPrev=pPrev;
+        }
+        FreeMem (List.pKey->pText);
+        FreeMem (List.pKey);
+        return TRUE;
+    }
+    return FALSE;
 }
 
 
@@ -391,191 +391,191 @@ bool CFmIniFile::DeleteKey (CCHR *pSection, CCHR *pKey)
 
 void CFmIniFile::FreeMem (void *pPtr)
 {
-	if (pPtr != NULL) { Free (pPtr); }
+    if (pPtr != NULL) { Free (pPtr); }
 }
 
 void CFmIniFile::FreeAllMem (void)
 {
-	struct ENTRY *pEntry;
-	struct ENTRY *pNextEntry;
-	pEntry = m_pEntry;
-	while (1)
-	{
-		if (pEntry == NULL) { break; }
-		pNextEntry = pEntry->pNext;
-		FreeMem (pEntry->pText); /* Frees the pointer if not NULL */
-		FreeMem (pEntry);
-		pEntry = pNextEntry;
-	}
-	m_pEntry    = NULL;
-	m_pCurEntry = NULL;
+    struct ENTRY *pEntry;
+    struct ENTRY *pNextEntry;
+    pEntry = m_pEntry;
+    while (1)
+    {
+        if (pEntry == NULL) { break; }
+        pNextEntry = pEntry->pNext;
+        FreeMem (pEntry->pText); /* Frees the pointer if not NULL */
+        FreeMem (pEntry);
+        pEntry = pNextEntry;
+    }
+    m_pEntry    = NULL;
+    m_pCurEntry = NULL;
 }
 
 struct ENTRY *CFmIniFile::FindSection (CCHR *pSection)
 {
-	char Sec  [130];
-	char iSec [130];
-	struct ENTRY *pEntry;
-	sprintf (Sec, "[%s]", pSection);
-	strupr  (Sec);
-	pEntry = m_pEntry; /* Get a pointer to the first Entry */
-	while (pEntry != NULL)
-	{
-		if (pEntry->Type == tpSECTION)
-		{
-			strcpy  (iSec, pEntry->pText);
-			strupr  (iSec);
-			if (strcmp (Sec, iSec) == 0)
-			{
-				return pEntry;
-			}
-		}
-		pEntry = pEntry->pNext;
-	}
-	return NULL;
+    char Sec  [130];
+    char iSec [130];
+    struct ENTRY *pEntry;
+    sprintf (Sec, "[%s]", pSection);
+    strupr  (Sec);
+    pEntry = m_pEntry; /* Get a pointer to the first Entry */
+    while (pEntry != NULL)
+    {
+        if (pEntry->Type == tpSECTION)
+        {
+            strcpy  (iSec, pEntry->pText);
+            strupr  (iSec);
+            if (strcmp (Sec, iSec) == 0)
+            {
+                return pEntry;
+            }
+        }
+        pEntry = pEntry->pNext;
+    }
+    return NULL;
 }
 
 bool CFmIniFile::FindKey  (CCHR *pSection, CCHR *pKey, EFIND *pList)
 {
-	char Search [130];
-	char Found  [130];
-	char Text   [255];
-	char *pText;
-	struct ENTRY *pEntry;
-	pList->pSec        = NULL;
-	pList->pKey        = NULL;
-	pEntry = FindSection (pSection);
-	if (pEntry == NULL) { return FALSE; }
-	pList->pSec        = pEntry;
-	pList->KeyText[0] = 0;
-	pList->ValText[0] = 0;
-	pList->Comment[0] = 0;
-	pEntry = pEntry->pNext;
-	if (pEntry == NULL) { return FALSE; }
-	sprintf (Search, "%s",pKey);
-	strupr  (Search);
-	while (pEntry != NULL)
-	{
-		if ((pEntry->Type == tpSECTION) || /* Stop after next section or EOF */
-			(pEntry->Type == tpNULL   ))
-		{
-			return FALSE;
-		}
-		if (pEntry->Type == tpKEYVALUE)
-		{
-			strcpy (Text, pEntry->pText);
-			pText = strchr (Text, ';');
-			if (pText != NULL)
-			{
-				strcpy (pList->Comment, pText);
-				*pText = 0;
-			}
-			pText = strchr (Text, '=');
-			if (pText != NULL)
-			{
-				*pText = 0;
-				strcpy (pList->KeyText, Text);
-				strcpy (Found, Text);
-				*pText = '=';
-				strupr (Found);
-				/*            printf ("%s,%s\n", Search, Found); */
-				if (strcmp (Found,Search) == 0)
-				{
-				   strcpy (pList->ValText, pText+1);
-				   pList->pKey = pEntry;
+    char Search [130];
+    char Found  [130];
+    char Text   [255];
+    char *pText;
+    struct ENTRY *pEntry;
+    pList->pSec        = NULL;
+    pList->pKey        = NULL;
+    pEntry = FindSection (pSection);
+    if (pEntry == NULL) { return FALSE; }
+    pList->pSec        = pEntry;
+    pList->KeyText[0] = 0;
+    pList->ValText[0] = 0;
+    pList->Comment[0] = 0;
+    pEntry = pEntry->pNext;
+    if (pEntry == NULL) { return FALSE; }
+    sprintf (Search, "%s",pKey);
+    strupr  (Search);
+    while (pEntry != NULL)
+    {
+        if ((pEntry->Type == tpSECTION) || /* Stop after next section or EOF */
+            (pEntry->Type == tpNULL   ))
+        {
+            return FALSE;
+        }
+        if (pEntry->Type == tpKEYVALUE)
+        {
+            strcpy (Text, pEntry->pText);
+            pText = strchr (Text, ';');
+            if (pText != NULL)
+            {
+                strcpy (pList->Comment, pText);
+                *pText = 0;
+            }
+            pText = strchr (Text, '=');
+            if (pText != NULL)
+            {
+                *pText = 0;
+                strcpy (pList->KeyText, Text);
+                strcpy (Found, Text);
+                *pText = '=';
+                strupr (Found);
+                /*            printf ("%s,%s\n", Search, Found); */
+                if (strcmp (Found,Search) == 0)
+                {
+                   strcpy (pList->ValText, pText+1);
+                   pList->pKey = pEntry;
                    return true;
-				}
-			}
-		}
-		pEntry = pEntry->pNext;
-	}
+                }
+            }
+        }
+        pEntry = pEntry->pNext;
+    }
     return false;
 }
 
 BOOL CFmIniFile::AddItem (char Type, CCHR *pText)
 {
-	struct ENTRY *pEntry = MakeNewEntry ();
-	if (pEntry == NULL) { return FALSE; }
-	pEntry->Type = Type;
-	pEntry->pText = Calloc (strlen (pText) +1, char);
-	if (pEntry->pText == NULL)
-	{
-		Free (pEntry);
-		return FALSE;
-	}
-	strcpy (pEntry->pText, pText);
-	pEntry->pNext   = NULL;
-	if (m_pCurEntry != NULL) { m_pCurEntry->pNext = pEntry; }
-	m_pCurEntry    = pEntry;
-	return TRUE;
+    struct ENTRY *pEntry = MakeNewEntry ();
+    if (pEntry == NULL) { return FALSE; }
+    pEntry->Type = Type;
+    pEntry->pText = Calloc (strlen (pText) +1, char);
+    if (pEntry->pText == NULL)
+    {
+        Free (pEntry);
+        return FALSE;
+    }
+    strcpy (pEntry->pText, pText);
+    pEntry->pNext   = NULL;
+    if (m_pCurEntry != NULL) { m_pCurEntry->pNext = pEntry; }
+    m_pCurEntry    = pEntry;
+    return TRUE;
 }
 
 bool CFmIniFile::AddItemAt (struct ENTRY *pEntryAt, char Mode, CCHR *pText)
 {
-	struct ENTRY *pNewEntry;
-	if (pEntryAt == NULL)  { return FALSE; }
-	pNewEntry = (struct ENTRY*) Calloc (1, ENTRY );
-	if (pNewEntry == NULL) { return FALSE; }
-	pNewEntry->pText = (char *) Calloc (strlen (pText)+1, char);
-	if (pNewEntry->pText == NULL)
-	{
-		Free (pNewEntry);
-		return FALSE;
-	}
-	strcpy (pNewEntry->pText, pText);
-	if (pEntryAt->pNext == NULL) /* No following nodes. */
-	{
-		pEntryAt->pNext   = pNewEntry;
-		pNewEntry->pNext  = NULL;
-	}
-	else
-	{
-		pNewEntry->pNext = pEntryAt->pNext;
-		pEntryAt->pNext  = pNewEntry;
-	}
-	pNewEntry->pPrev = pEntryAt;
-	pNewEntry->Type  = Mode;
-	return TRUE;
+    struct ENTRY *pNewEntry;
+    if (pEntryAt == NULL)  { return FALSE; }
+    pNewEntry = (struct ENTRY*) Calloc (1, ENTRY );
+    if (pNewEntry == NULL) { return FALSE; }
+    pNewEntry->pText = (char *) Calloc (strlen (pText)+1, char);
+    if (pNewEntry->pText == NULL)
+    {
+        Free (pNewEntry);
+        return FALSE;
+    }
+    strcpy (pNewEntry->pText, pText);
+    if (pEntryAt->pNext == NULL) /* No following nodes. */
+    {
+        pEntryAt->pNext   = pNewEntry;
+        pNewEntry->pNext  = NULL;
+    }
+    else
+    {
+        pNewEntry->pNext = pEntryAt->pNext;
+        pEntryAt->pNext  = pNewEntry;
+    }
+    pNewEntry->pPrev = pEntryAt;
+    pNewEntry->Type  = Mode;
+    return TRUE;
 }
 
 bool CFmIniFile::AddSectionAndKey (CCHR *pSection, CCHR *pKey, CCHR *pValue)
 {
-	char Text [255];
-	sprintf (Text, "[%s]", pSection);
-	if (AddItem (tpSECTION, Text) == FALSE) { return FALSE; }
-	sprintf (Text, "%s=%s", pKey, pValue);
-	return AddItem (tpKEYVALUE, Text)? 1 : 0;
+    char Text [255];
+    sprintf (Text, "[%s]", pSection);
+    if (AddItem (tpSECTION, Text) == FALSE) { return FALSE; }
+    sprintf (Text, "%s=%s", pKey, pValue);
+    return AddItem (tpKEYVALUE, Text)? 1 : 0;
 }
 
 void CFmIniFile::AddKey (struct ENTRY *pSecEntry, CCHR *pKey, CCHR *pValue)
 {
-	char Text [255];
-	sprintf (Text, "%s=%s", pKey, pValue);
-	AddItemAt (pSecEntry, tpKEYVALUE, Text);
+    char Text [255];
+    sprintf (Text, "%s=%s", pKey, pValue);
+    AddItemAt (pSecEntry, tpKEYVALUE, Text);
 }
 
 struct ENTRY *CFmIniFile::MakeNewEntry (void)
 {
-	struct ENTRY *pEntry;
-	pEntry = (struct ENTRY *)Calloc (1, ENTRY);
-	if (pEntry == NULL)
-	{
-		FreeAllMem ();
-		return NULL;
-	}
-	if (m_pEntry == NULL)
-	{
-		m_pEntry = pEntry;
-	}
-	pEntry->Type  = tpNULL;
-	pEntry->pPrev = m_pCurEntry;
-	pEntry->pNext = NULL;
-	pEntry->pText = NULL;
-	if (m_pCurEntry != NULL)
-	{
-		m_pCurEntry->pNext = pEntry;
-	}
-	return pEntry;
+    struct ENTRY *pEntry;
+    pEntry = (struct ENTRY *)Calloc (1, ENTRY);
+    if (pEntry == NULL)
+    {
+        FreeAllMem ();
+        return NULL;
+    }
+    if (m_pEntry == NULL)
+    {
+        m_pEntry = pEntry;
+    }
+    pEntry->Type  = tpNULL;
+    pEntry->pPrev = m_pCurEntry;
+    pEntry->pNext = NULL;
+    pEntry->pText = NULL;
+    if (m_pCurEntry != NULL)
+    {
+        m_pCurEntry->pNext = pEntry;
+    }
+    return pEntry;
 }
 
 int CFmIniFile::SplitFloat(CCHR* szlist, double* pValue, int nMaxLen)
@@ -600,34 +600,34 @@ int CFmIniFile::SplitFloat(CCHR* szlist, double* pValue, int nMaxLen)
 int main (void)
 {
     CFmIniFile iFile;
-	printf ("Hello World\n");
-	iFile.OpenIniFile  ("Test.Ini");
-	iFile.WriteString  ("Test", "Name", "Value");
-	iFile.WriteString  ("Test", "Name", "OverWrittenValue");
-	iFile.WriteString  ("Test", "Port", "COM1");
-	iFile.WriteString  ("Test", "User", "James Brown jr.");
-	iFile.WriteString  ("Configuration", "eDriver", "MBM2.VXD");
-	iFile.WriteString  ("Configuration", "Wrap", "LPT.VXD");
-	iFile.WriteInt     ("IO-Port", "Com", 2);
-	iFile.WriteBool    ("IO-Port", "IsValid", 0);
-	iFile.WriteDouble  ("TheMoney", "TheMoney", 67892.00241);
-	iFile.WriteInt     ("Test"    , "ToDelete", 1234);
-	iFile.WriteIniFile ("Test.Ini");
-	printf ("Key ToDelete created. Check ini file. Any key to continue");
-	while (!kbhit());
-	iFile.OpenIniFile  ("Test.Ini");
-	iFile.DeleteKey    ("Test"	  , "ToDelete");
-	iFile.WriteIniFile ("Test.Ini");
-	printf ("[Test] Name = %s\n", iFile.ReadString ("Test", "Name", "NotFound"));
-	printf ("[Test] Port = %s\n", iFile.ReadString ("Test", "Port", "NotFound"));
-	printf ("[Test] User = %s\n", iFile.ReadString ("Test", "User", "NotFound"));
-	printf ("[Configuration] eDriver = %s\n", iFile.ReadString ("Configuration", "eDriver", "NotFound"));
-	printf ("[Configuration] Wrap = %s\n", iFile.ReadString ("Configuration", "Wrap", "NotFound"));
-	printf ("[IO-Port] Com = %d\n", iFile.ReadInt ("IO-Port", "Com", 0));
-	printf ("[IO-Port] IsValid = %d\n", iFile.ReadBool ("IO-Port", "IsValid", 0));
-	printf ("[TheMoney] TheMoney = %1.10lf\n", iFile.ReadDouble ("TheMoney", "TheMoney", 111));
-	iFile.CloseIniFile ();
-	return 0;
+    printf ("Hello World\n");
+    iFile.OpenIniFile  ("Test.Ini");
+    iFile.WriteString  ("Test", "Name", "Value");
+    iFile.WriteString  ("Test", "Name", "OverWrittenValue");
+    iFile.WriteString  ("Test", "Port", "COM1");
+    iFile.WriteString  ("Test", "User", "James Brown jr.");
+    iFile.WriteString  ("Configuration", "eDriver", "MBM2.VXD");
+    iFile.WriteString  ("Configuration", "Wrap", "LPT.VXD");
+    iFile.WriteInt     ("IO-Port", "Com", 2);
+    iFile.WriteBool    ("IO-Port", "IsValid", 0);
+    iFile.WriteDouble  ("TheMoney", "TheMoney", 67892.00241);
+    iFile.WriteInt     ("Test"    , "ToDelete", 1234);
+    iFile.WriteIniFile ("Test.Ini");
+    printf ("Key ToDelete created. Check ini file. Any key to continue");
+    while (!kbhit());
+    iFile.OpenIniFile  ("Test.Ini");
+    iFile.DeleteKey    ("Test"      , "ToDelete");
+    iFile.WriteIniFile ("Test.Ini");
+    printf ("[Test] Name = %s\n", iFile.ReadString ("Test", "Name", "NotFound"));
+    printf ("[Test] Port = %s\n", iFile.ReadString ("Test", "Port", "NotFound"));
+    printf ("[Test] User = %s\n", iFile.ReadString ("Test", "User", "NotFound"));
+    printf ("[Configuration] eDriver = %s\n", iFile.ReadString ("Configuration", "eDriver", "NotFound"));
+    printf ("[Configuration] Wrap = %s\n", iFile.ReadString ("Configuration", "Wrap", "NotFound"));
+    printf ("[IO-Port] Com = %d\n", iFile.ReadInt ("IO-Port", "Com", 0));
+    printf ("[IO-Port] IsValid = %d\n", iFile.ReadBool ("IO-Port", "IsValid", 0));
+    printf ("[TheMoney] TheMoney = %1.10lf\n", iFile.ReadDouble ("TheMoney", "TheMoney", 111));
+    iFile.CloseIniFile ();
+    return 0;
 }
 #endif
 

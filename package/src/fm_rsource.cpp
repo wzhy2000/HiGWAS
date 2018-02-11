@@ -1,6 +1,6 @@
-/* fm_rsource.cpp  -	Run R Script
+/* fm_rsource.cpp  -    Run R Script
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 

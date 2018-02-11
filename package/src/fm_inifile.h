@@ -108,25 +108,25 @@ public:
 
     void    CloseIniFile ();
     bool    WriteIniFile (CCHR *pFileName);
-	bool	DeleteKey (CCHR *pSection, CCHR *pKey);
+    bool    DeleteKey (CCHR *pSection, CCHR *pKey);
 
     static int SplitFloat(CCHR *szlist, double* pValue, int nMaxLen=100);
 
 protected:
-	struct  ENTRY *m_pEntry;
-	struct  ENTRY *m_pCurEntry;
-	char    m_result [255];
+    struct  ENTRY *m_pEntry;
+    struct  ENTRY *m_pCurEntry;
+    char    m_result [255];
 
-	FILE    *m_pIniFile;
-	void    AddKey     (struct ENTRY *pEntry, CCHR *pKey, CCHR *pValue);
-	BOOL    AddItem    (char Type, CCHR *pText);
-	bool    AddItemAt (struct ENTRY *pEntryAt, char Mode, CCHR *pText);
-	void    FreeMem    (void *pPtr);
-	void    FreeAllMem (void);
-	bool    FindKey    (CCHR *pSection, CCHR *pKey, EFIND *pList);
-	bool    AddSectionAndKey (CCHR *pSection, CCHR *pKey, CCHR *pValue);
-	struct  ENTRY *MakeNewEntry (void);
-	struct  ENTRY *FindSection (CCHR *pSection);
+    FILE    *m_pIniFile;
+    void    AddKey     (struct ENTRY *pEntry, CCHR *pKey, CCHR *pValue);
+    BOOL    AddItem    (char Type, CCHR *pText);
+    bool    AddItemAt (struct ENTRY *pEntryAt, char Mode, CCHR *pText);
+    void    FreeMem    (void *pPtr);
+    void    FreeAllMem (void);
+    bool    FindKey    (CCHR *pSection, CCHR *pKey, EFIND *pList);
+    bool    AddSectionAndKey (CCHR *pSection, CCHR *pKey, CCHR *pValue);
+    struct  ENTRY *MakeNewEntry (void);
+    struct  ENTRY *FindSection (CCHR *pSection);
 private:
 };
 

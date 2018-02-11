@@ -9,20 +9,13 @@
 extern "C" {
 #endif
 
-#include <R.h>
+//#include <R.h>
 #include <cstddef>
 
 class CFmNewTemp {
 public:
-    void * allocate ( size_t size)
-    {
-        void* p = Calloc( size, char );
-        return(p);
-    }
-    void deallocate ( void * p)
-    {
-        Free(p);
-    }
+    void * allocate ( size_t size);
+    void deallocate ( void * p);
 };
 
 void operator delete (void * p, CFmNewTemp  & arena);

@@ -1,6 +1,6 @@
-/* GLS_res.cpp  -	BLS Result Object
+/* GLS_res.cpp  -    BLS Result Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -57,7 +57,7 @@ GLS_res::GLS_res(CMDOPTIONS *pCmd, GLS_cfg* pCfg)
     m_pRefit_PSRF     = NULL;
 
     m_pRefitSnps  = NULL;
-    m_pSigSnps	  = NULL;
+    m_pSigSnps      = NULL;
     m_pSigAddSnps = NULL;
     m_pSigDomSnps = NULL;
     m_nTotalSnp = 0;
@@ -85,7 +85,7 @@ GLS_res::~GLS_res()
     if(m_pRefit_BestQ) destroy( m_pRefit_BestQ );
     if(m_pRefit_PSRF) destroy( m_pRefit_PSRF );
 
-	if(m_pRefitSnps) destroy( m_pRefitSnps );
+    if(m_pRefitSnps) destroy( m_pRefitSnps );
     if(m_pSigSnps) destroy( m_pSigSnps );
     if(m_pSigAddSnps) destroy( m_pSigAddSnps );
     if(m_pSigDomSnps) destroy( m_pSigDomSnps );
@@ -131,10 +131,10 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
 {
     _log_debug(_HI_, "SetMcmcResults: bRefit=%d, pMat.Dim(%d,%d)", bRefit?1:0, pMatRet->GetNumRows(), pMatRet->GetNumCols());
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     if (bRefit)
     {
-		int nSnp = m_nRefitSnp;
+        int nSnp = m_nRefitSnp;
 
         m_pRefit_SnpName = new (refNew) CFmVectorStr(pVctSnpName);
         m_pRefit_SnpChr  = new (refNew) CFmVector(pVctChr);
@@ -145,21 +145,21 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
         m_pRefit_Ra      = new (refNew) CFmMatrix(nSnp, LG*4+3);
         m_pRefit_Rd      = new (refNew) CFmMatrix(nSnp, LG*4+3);
 
-		SortoutMcmc(pMatRet, m_pRefit_Mu, m_pRefit_Alpha, m_pRefit_Ra, m_pRefit_Rd, nSnp, nCov);
+        SortoutMcmc(pMatRet, m_pRefit_Mu, m_pRefit_Alpha, m_pRefit_Ra, m_pRefit_Rd, nSnp, nCov);
 
-		m_pRefit_Ra->SetRowNames(m_pRefit_SnpName);
-		m_pRefit_Rd->SetRowNames(m_pRefit_SnpName);
+        m_pRefit_Ra->SetRowNames(m_pRefit_SnpName);
+        m_pRefit_Rd->SetRowNames(m_pRefit_SnpName);
 
-		m_pRefit_BestQ = new (refNew) CFmMatrix(nSnp, (LG*4+3)*2 );
-		SortoutBestQ( pMatRet, m_pRefit_BestQ , nSnp, nCov );
-		m_pRefit_BestQ->SetRowNames( m_pRefit_SnpName );
+        m_pRefit_BestQ = new (refNew) CFmMatrix(nSnp, (LG*4+3)*2 );
+        SortoutBestQ( pMatRet, m_pRefit_BestQ , nSnp, nCov );
+        m_pRefit_BestQ->SetRowNames( m_pRefit_SnpName );
 
-		m_pRefit_PSRF = new (refNew) CFmMatrix(0, 0 );
-		SortoutPSRF( pMatRet, m_pRefit_PSRF, nSnp, nCov);
+        m_pRefit_PSRF = new (refNew) CFmMatrix(0, 0 );
+        SortoutPSRF( pMatRet, m_pRefit_PSRF, nSnp, nCov);
     }
     else
     {
-		int nSnp = m_nSnpP;
+        int nSnp = m_nSnpP;
 
         m_pVarsel_SnpName = new (refNew) CFmVectorStr(pVctSnpName);
         m_pVarsel_SnpChr  = new (refNew) CFmVector(pVctChr);
@@ -170,17 +170,17 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
         m_pVarsel_Ra      = new (refNew) CFmMatrix(nSnp, LG*4+3);
         m_pVarsel_Rd      = new (refNew) CFmMatrix(nSnp, LG*4+3);
 
-		SortoutMcmc(pMatRet, m_pVarsel_Mu, m_pVarsel_Alpha, m_pVarsel_Ra, m_pVarsel_Rd, nSnp, nCov);
+        SortoutMcmc(pMatRet, m_pVarsel_Mu, m_pVarsel_Alpha, m_pVarsel_Ra, m_pVarsel_Rd, nSnp, nCov);
 
-		m_pVarsel_Ra->SetRowNames(m_pVarsel_SnpName);
-		m_pVarsel_Rd->SetRowNames(m_pVarsel_SnpName);
+        m_pVarsel_Ra->SetRowNames(m_pVarsel_SnpName);
+        m_pVarsel_Rd->SetRowNames(m_pVarsel_SnpName);
 
-		m_pVarsel_BestQ = new (refNew) CFmMatrix(nSnp, (LG*4+3)*2);
-		SortoutBestQ( pMatRet, m_pVarsel_BestQ , nSnp, nCov );
-		m_pVarsel_BestQ->SetRowNames( m_pVarsel_SnpName );
+        m_pVarsel_BestQ = new (refNew) CFmMatrix(nSnp, (LG*4+3)*2);
+        SortoutBestQ( pMatRet, m_pVarsel_BestQ , nSnp, nCov );
+        m_pVarsel_BestQ->SetRowNames( m_pVarsel_SnpName );
 
-		m_pVarsel_PSRF = new (refNew) CFmMatrix(0, 0 );
-		SortoutPSRF( pMatRet, m_pVarsel_PSRF, nSnp, nCov);
+        m_pVarsel_PSRF = new (refNew) CFmMatrix(0, 0 );
+        SortoutPSRF( pMatRet, m_pVarsel_PSRF, nSnp, nCov);
     }
 
     return(0);
@@ -188,33 +188,33 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
 
 int GLS_res::SortoutMcmc(CFmFileMatrix* pMatRet, CFmMatrix* pMu, CFmMatrix* pAlpha, CFmMatrix* pRa, CFmMatrix* pRd, int nSnp, int nCov)
 {
-	_log_debug(_HI_, "SortoutMcmc: AD matrix file(%s). SNP=%d nCov=%d q_add=%.4f q_dom=%.4f", pMatRet->GetFileName(), nSnp, nCov, m_pCfg->m_fQval_add, m_pCfg->m_fQval_dom );
+    _log_debug(_HI_, "SortoutMcmc: AD matrix file(%s). SNP=%d nCov=%d q_add=%.4f q_dom=%.4f", pMatRet->GetFileName(), nSnp, nCov, m_pCfg->m_fQval_add, m_pCfg->m_fQval_dom );
 
-	CFmVector fmTmp(0, 0.0);
-	CFmVector fmModel(0, 0.0);
+    CFmVector fmTmp(0, 0.0);
+    CFmVector fmModel(0, 0.0);
 
-	GetMcmcInfo( pMatRet, 0, &fmTmp, &fmModel, m_pCfg->m_fQval_add );
-	pMu->SetRow(0, fmTmp);
+    GetMcmcInfo( pMatRet, 0, &fmTmp, &fmModel, m_pCfg->m_fQval_add );
+    pMu->SetRow(0, fmTmp);
 
-	for (long int i=0; i<nCov-1; i++)
+    for (long int i=0; i<nCov-1; i++)
     {
-		GetMcmcInfo( pMatRet, i+1, &fmTmp, &fmModel, m_pCfg->m_fQval_add );
-		pAlpha->SetRow(i, fmTmp);
-	}
+        GetMcmcInfo( pMatRet, i+1, &fmTmp, &fmModel, m_pCfg->m_fQval_add );
+        pAlpha->SetRow(i, fmTmp);
+    }
 
-	for (long int i=0; i< nSnp; i++)
+    for (long int i=0; i< nSnp; i++)
     {
-		GetMcmcInfo( pMatRet, nCov+i*2, &fmTmp, &fmModel, m_pCfg->m_fQval_add );
-		pRa->SetRow(i, fmTmp);
+        GetMcmcInfo( pMatRet, nCov+i*2, &fmTmp, &fmModel, m_pCfg->m_fQval_add );
+        pRa->SetRow(i, fmTmp);
 
-		if (fmModel.Sum()>0)
-			_log_debug(_HI_, "significant Add [%d], %.4f", i+1, fmTmp[4]);
+        if (fmModel.Sum()>0)
+            _log_debug(_HI_, "significant Add [%d], %.4f", i+1, fmTmp[4]);
 
-		GetMcmcInfo( pMatRet, nCov+i*2+1, &fmTmp, &fmModel, m_pCfg->m_fQval_dom );
-		pRd->SetRow(i, fmTmp);
+        GetMcmcInfo( pMatRet, nCov+i*2+1, &fmTmp, &fmModel, m_pCfg->m_fQval_dom );
+        pRd->SetRow(i, fmTmp);
 
-		if (fmModel.Sum()>0)
-			_log_debug(_HI_, "significant Dom [%d], %.4f", i+1, fmTmp[4]);
+        if (fmModel.Sum()>0)
+            _log_debug(_HI_, "significant Dom [%d], %.4f", i+1, fmTmp[4]);
     }
 
     _log_debug(_HI_, "SortoutMcmc: Successful to sort out.");
@@ -227,11 +227,11 @@ int GLS_res::GetMcmcInfo(CFmFileMatrix* pMatRet, int idx, CFmVector* pFmInfo, CF
     int q1 = (int)floor( fQval *nMcmc);
     int q2 = (int)floor(( 1 - fQval )*nMcmc -1 );
 
-	pFmInfo->Resize(0);
-	pFmModel->Resize(0);
+    pFmInfo->Resize(0);
+    pFmModel->Resize(0);
 
-	CFmVector fmVct(0, 0.0);
-	CFmVector fmModel(0, 0.0);
+    CFmVector fmVct(0, 0.0);
+    CFmVector fmModel(0, 0.0);
     CFmVector fmQ(0, 0.0);
     CFmMatrix fmMat( q2-q1+1, LG);
 
@@ -242,69 +242,69 @@ int GLS_res::GetMcmcInfo(CFmFileMatrix* pMatRet, int idx, CFmVector* pFmInfo, CF
 
         fmVct.Sort();
 
-		fmQ.Resize(0);
-		for(int qx=q1; qx<=q2; qx++)
-			fmQ.Put(fmVct[qx]);
+        fmQ.Resize(0);
+        for(int qx=q1; qx<=q2; qx++)
+            fmQ.Put(fmVct[qx]);
 
-		fmMat.SetCol(k, fmQ );
+        fmMat.SetCol(k, fmQ );
         if (fmVct[q1]<=0 && fmVct[q2]>=0)
             fmModel.Put( 0.0 );
-		else
+        else
             fmModel.Put( 1.0 );
-	}
+    }
 
-	CFmVector fmMedian(0, 0.0);
-	CFmVector fmMin(0, 0.0);
-	CFmVector fmMax(0, 0.0);
-	CFmVector fmTmp(0, 0.0);
+    CFmVector fmMedian(0, 0.0);
+    CFmVector fmMin(0, 0.0);
+    CFmVector fmMax(0, 0.0);
+    CFmVector fmTmp(0, 0.0);
     for(int k=0; k< LG ; k++)
     {
-		fmTmp = fmMat.GetCol(k);
-		fmMedian.Put(fmTmp.GetMedian());
-		fmMin.Put(fmTmp.GetMin());
-		fmMax.Put(fmTmp.GetMax());
-	}
+        fmTmp = fmMat.GetCol(k);
+        fmMedian.Put(fmTmp.GetMedian());
+        fmMin.Put(fmTmp.GetMin());
+        fmMax.Put(fmTmp.GetMax());
+    }
 
-	pFmModel->Append(fmModel);
-	pFmInfo->Append(fmModel);
+    pFmModel->Append(fmModel);
+    pFmInfo->Append(fmModel);
 
-	fmTmp = fmMedian * fmModel;
-	fmTmp = fmTmp*fmTmp;
-	pFmInfo->Put(fmTmp.Sum());
-	pFmInfo->Append(fmMedian);
+    fmTmp = fmMedian * fmModel;
+    fmTmp = fmTmp*fmTmp;
+    pFmInfo->Put(fmTmp.Sum());
+    pFmInfo->Append(fmMedian);
 
-	fmTmp = fmMin * fmModel;
-	fmTmp = fmTmp*fmTmp;
-	pFmInfo->Put(fmTmp.Sum());
-	pFmInfo->Append(fmMin);
+    fmTmp = fmMin * fmModel;
+    fmTmp = fmTmp*fmTmp;
+    pFmInfo->Put(fmTmp.Sum());
+    pFmInfo->Append(fmMin);
 
-	fmTmp = fmMax * fmModel;
-	fmTmp = fmTmp*fmTmp;
-	pFmInfo->Put(fmTmp.Sum());
-	pFmInfo->Append(fmMax);
+    fmTmp = fmMax * fmModel;
+    fmTmp = fmTmp*fmTmp;
+    pFmInfo->Put(fmTmp.Sum());
+    pFmInfo->Append(fmMax);
 
-	return(0);
+    return(0);
 }
 
 int GLS_res::InitRefit(int nMcmcIter)
 {
     if (m_pRefitSnps) destroy( m_pRefitSnps );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pRefitSnps = new (refNew) CFmVector( 0, 0.0 );
     for(int i=0;i<m_nSnpP; i++)
     {
-		int nSumA=0;
-		for(int j=0;j<LG;j++)
-			nSumA = nSumA + (int)m_pVarsel_Ra->Get(i, j);
+        int nSumA=0;
+        for(int j=0;j<LG;j++)
+            nSumA = nSumA + (int)m_pVarsel_Ra->Get(i, j);
 
-		int nSumD=0;
-		for(int j=0;j<LG;j++)
-			nSumD = nSumD + (int)m_pVarsel_Rd->Get(i, j);
+        int nSumD=0;
+        for(int j=0;j<LG;j++)
+            nSumD = nSumD + (int)m_pVarsel_Rd->Get(i, j);
 
-		if(nSumA+nSumD>0)
-			m_pRefitSnps->Put(i);
-	}
+        if(nSumA+nSumD>0)
+            m_pRefitSnps->Put(i);
+    }
 
     if (m_pRefitSnps->GetLength()<=0)
     {
@@ -324,28 +324,28 @@ int GLS_res::GetSigSNP()
     if (m_pSigAddSnps) destroy( m_pSigAddSnps );
     if (m_pSigDomSnps) destroy( m_pSigDomSnps );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSigSnps    = new (refNew) CFmVector( 0, 0.0 );
     m_pSigAddSnps = new (refNew) CFmVector( 0, 0.0 );
     m_pSigDomSnps = new (refNew) CFmVector( 0, 0.0 );
 
     for(int i=0;i<m_nRefitSnp; i++)
     {
-		int nSumA=0;
-		for(int j=0;j<LG;j++)
-			nSumA = nSumA + (int)m_pRefit_Ra->Get(i, j);
-		if(nSumA>0)
-			m_pSigAddSnps->Put(i);
+        int nSumA=0;
+        for(int j=0;j<LG;j++)
+            nSumA = nSumA + (int)m_pRefit_Ra->Get(i, j);
+        if(nSumA>0)
+            m_pSigAddSnps->Put(i);
 
-		int nSumD=0;
-		for(int j=0;j<LG;j++)
-			nSumD = nSumD + (int)m_pRefit_Rd->Get(i, j);
-		if(nSumD>0)
-			m_pSigDomSnps->Put(i);
+        int nSumD=0;
+        for(int j=0;j<LG;j++)
+            nSumD = nSumD + (int)m_pRefit_Rd->Get(i, j);
+        if(nSumD>0)
+            m_pSigDomSnps->Put(i);
 
-		if(nSumA+nSumD>0)
-			m_pSigSnps->Put(i);
-	}
+        if(nSumA+nSumD>0)
+            m_pSigSnps->Put(i);
+    }
 
     if (m_pSigSnps->GetLength()<=0)
     {
@@ -423,63 +423,63 @@ int GLS_res::SaveRData( char* szRdataFile )
 
     CFmRls rls(szRdataFile);
 
-	CFmMatrix matVs1(0,0);
-	matVs1.Cbind( *m_pVarsel_SnpChr, (char*)"Chr");
-	matVs1.Cbind( *m_pVarsel_SnpPos, (char*)"Pos");
-	matVs1.Cbind( *m_pVarsel_Ra);
-	matVs1.SetRowNames( m_pVarsel_SnpName);
+    CFmMatrix matVs1(0,0);
+    matVs1.Cbind( *m_pVarsel_SnpChr, (char*)"Chr");
+    matVs1.Cbind( *m_pVarsel_SnpPos, (char*)"Pos");
+    matVs1.Cbind( *m_pVarsel_Ra);
+    matVs1.SetRowNames( m_pVarsel_SnpName);
 
     rls.SetData( (char*)"varsel.add", &matVs1);
 
     matVs1.Resize(0,0);
-	matVs1.Cbind( *m_pVarsel_SnpChr, (char*)"Chr");
-	matVs1.Cbind( *m_pVarsel_SnpPos, (char*)"Pos");
-	matVs1.Cbind( *m_pVarsel_Rd);
-	matVs1.SetRowNames(m_pVarsel_SnpName);
+    matVs1.Cbind( *m_pVarsel_SnpChr, (char*)"Chr");
+    matVs1.Cbind( *m_pVarsel_SnpPos, (char*)"Pos");
+    matVs1.Cbind( *m_pVarsel_Rd);
+    matVs1.SetRowNames(m_pVarsel_SnpName);
     rls.SetData( (char*)"varsel.dom", &matVs1);
 
     if (m_pVarsel_Mu)
-	    rls.SetData( (char*)"varsel.mu", m_pVarsel_Mu);
+        rls.SetData( (char*)"varsel.mu", m_pVarsel_Mu);
 
     if (m_pVarsel_Alpha)
-	    rls.SetData( (char*)"varsel.cov", m_pVarsel_Mu);
+        rls.SetData( (char*)"varsel.cov", m_pVarsel_Mu);
 
     if (m_pVarsel_BestQ)
-		rls.SetData( (char*)"varsel.Qbest", m_pVarsel_BestQ);
+        rls.SetData( (char*)"varsel.Qbest", m_pVarsel_BestQ);
     if (m_pVarsel_PSRF)
-		rls.SetData( (char*)"varsel.PSRF", m_pVarsel_PSRF);
+        rls.SetData( (char*)"varsel.PSRF", m_pVarsel_PSRF);
 
     if (m_pRefit_SnpName)
     {
         if (m_pRefit_Ra)
         {
-	        CFmMatrix matVs2(0,0);
-	        matVs2.Cbind( *m_pRefit_SnpChr, (char*)"Chr");
-	        matVs2.Cbind( *m_pRefit_SnpPos, (char*)"Pos");
-	        matVs2.Cbind( *m_pRefit_Ra);
-	        matVs2.SetRowNames(m_pRefit_SnpName);
-			rls.SetData( (char*)"refit.add", &matVs2);
+            CFmMatrix matVs2(0,0);
+            matVs2.Cbind( *m_pRefit_SnpChr, (char*)"Chr");
+            matVs2.Cbind( *m_pRefit_SnpPos, (char*)"Pos");
+            matVs2.Cbind( *m_pRefit_Ra);
+            matVs2.SetRowNames(m_pRefit_SnpName);
+            rls.SetData( (char*)"refit.add", &matVs2);
         }
         if (m_pRefit_Rd)
-		{
-	        CFmMatrix matVs2(0,0);
-	        matVs2.Cbind( *m_pRefit_SnpChr, (char*)"Chr");
-	        matVs2.Cbind( *m_pRefit_SnpPos, (char*)"Pos");
-	        matVs2.Cbind( *m_pRefit_Rd);
-	        matVs2.SetRowNames(m_pRefit_SnpName);
-			rls.SetData( (char*)"refit.dom", &matVs2);
-		}
+        {
+            CFmMatrix matVs2(0,0);
+            matVs2.Cbind( *m_pRefit_SnpChr, (char*)"Chr");
+            matVs2.Cbind( *m_pRefit_SnpPos, (char*)"Pos");
+            matVs2.Cbind( *m_pRefit_Rd);
+            matVs2.SetRowNames(m_pRefit_SnpName);
+            rls.SetData( (char*)"refit.dom", &matVs2);
+        }
         if (m_pRefit_Mu)
-			rls.SetData( (char*)"refit.mu", m_pRefit_Mu);
+            rls.SetData( (char*)"refit.mu", m_pRefit_Mu);
 
         if (m_pRefit_Alpha)
-			rls.SetData( (char*)"refit.cov", m_pRefit_Alpha);
+            rls.SetData( (char*)"refit.cov", m_pRefit_Alpha);
 
         if (m_pRefit_BestQ)
-			rls.SetData( (char*)"refit.Qbest", m_pRefit_BestQ);
+            rls.SetData( (char*)"refit.Qbest", m_pRefit_BestQ);
 
         if (m_pRefit_PSRF)
-			rls.SetData( (char*)"refit.PSRF", m_pRefit_PSRF);
+            rls.SetData( (char*)"refit.PSRF", m_pRefit_PSRF);
     }
 
      int nRet = rls.SaveRData( szRdataFile );
@@ -494,148 +494,148 @@ SEXP GLS_res::GetRObj()
 {
     _log_info(_HI_, "GetRObj: Start to save the matrix to R.");
 
-	SEXP sRet, t;
-	int nList = 5;
-	if (m_pRefit_SnpName) nList = 10;
+    SEXP sRet, t;
+    int nList = 5;
+    if (m_pRefit_SnpName) nList = 10;
 
-   	PROTECT(sRet = t = allocList(nList));
+       PROTECT(sRet = t = allocList(nList));
 
     // #NO1: ret.vs
     if (m_pVarsel_Ra)
     {
-		CFmMatrix matVs1(0,0);
-	    matVs1.Cbind( *m_pVarsel_SnpChr );
-	    matVs1.Cbind( *m_pVarsel_SnpPos );
-	    matVs1.Cbind( *m_pVarsel_Ra);
-		matVs1.SetRowNames(m_pVarsel_SnpName);
+        CFmMatrix matVs1(0,0);
+        matVs1.Cbind( *m_pVarsel_SnpChr );
+        matVs1.Cbind( *m_pVarsel_SnpPos );
+        matVs1.Cbind( *m_pVarsel_Ra);
+        matVs1.SetRowNames(m_pVarsel_SnpName);
 
-		SEXP expVS = GetSEXP(&matVs1);
-		SETCAR( t, expVS );
-		SET_TAG(t, install("varsel_add") );
-		t = CDR(t);
+        SEXP expVS = GetSEXP(&matVs1);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("varsel_add") );
+        t = CDR(t);
      }
 
     if (m_pVarsel_Rd)
     {
-		CFmMatrix matVs1(0,0);
-	    matVs1.Cbind( *m_pVarsel_SnpChr );
-	    matVs1.Cbind( *m_pVarsel_SnpPos );
-	    matVs1.Cbind( *m_pVarsel_Rd);
-		matVs1.SetRowNames(m_pVarsel_SnpName);
+        CFmMatrix matVs1(0,0);
+        matVs1.Cbind( *m_pVarsel_SnpChr );
+        matVs1.Cbind( *m_pVarsel_SnpPos );
+        matVs1.Cbind( *m_pVarsel_Rd);
+        matVs1.SetRowNames(m_pVarsel_SnpName);
 
-		SEXP expVS = GetSEXP(&matVs1);
-		SETCAR( t, expVS );
-		SET_TAG(t, install("varsel_dom") );
-		t = CDR(t);
-	}
+        SEXP expVS = GetSEXP(&matVs1);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("varsel_dom") );
+        t = CDR(t);
+    }
 
     if (m_pVarsel_Mu)
     {
-		CFmMatrix matVs1(0,0);
-		CFmVector fmTmp(0, 0.0);
-		matVs1.Cbind(m_pVarsel_Mu->GetRow(0) );
+        CFmMatrix matVs1(0,0);
+        CFmVector fmTmp(0, 0.0);
+        matVs1.Cbind(m_pVarsel_Mu->GetRow(0) );
         if (m_pVarsel_Alpha)
         {
-			for(int k=0; k<m_pVarsel_Alpha->GetNumRows();k++)
-			{
-				fmTmp = m_pVarsel_Alpha->GetRow(k);
-				matVs1.Cbind( fmTmp );
-			}
+            for(int k=0; k<m_pVarsel_Alpha->GetNumRows();k++)
+            {
+                fmTmp = m_pVarsel_Alpha->GetRow(k);
+                matVs1.Cbind( fmTmp );
+            }
         }
 
-		matVs1.Transpose();
-  		SEXP expCoeff = GetSEXP(&matVs1);
-		SETCAR( t, expCoeff );
-		SET_TAG(t, install("varsel_cov") );
-		t = CDR(t);
-	}
+        matVs1.Transpose();
+          SEXP expCoeff = GetSEXP(&matVs1);
+        SETCAR( t, expCoeff );
+        SET_TAG(t, install("varsel_cov") );
+        t = CDR(t);
+    }
 
     if (m_pVarsel_BestQ)
     {
-  		SEXP expQBest = GetSEXP(m_pVarsel_BestQ);
-		SETCAR( t, expQBest );
-		SET_TAG(t, install("varsel_Qbest") );
-		t = CDR(t);
-	}
+          SEXP expQBest = GetSEXP(m_pVarsel_BestQ);
+        SETCAR( t, expQBest );
+        SET_TAG(t, install("varsel_Qbest") );
+        t = CDR(t);
+    }
 
     if (m_pVarsel_PSRF)
     {
-  		SEXP expPSRF = GetSEXP(m_pVarsel_PSRF);
-		SETCAR( t, expPSRF );
-		SET_TAG(t, install("varsel_PSRF") );
-		t = CDR(t);
-	}
+          SEXP expPSRF = GetSEXP(m_pVarsel_PSRF);
+        SETCAR( t, expPSRF );
+        SET_TAG(t, install("varsel_PSRF") );
+        t = CDR(t);
+    }
 
     // #NO2: ret.refit
     if (m_pRefit_SnpName)
     {
         if (m_pRefit_Ra)
         {
-			CFmMatrix matVs1(0,0);
-			matVs1.Cbind( *m_pRefit_SnpChr );
-			matVs1.Cbind( *m_pRefit_SnpPos );
-			matVs1.Cbind( *m_pRefit_Ra);
-			matVs1.SetRowNames(m_pRefit_SnpName);
+            CFmMatrix matVs1(0,0);
+            matVs1.Cbind( *m_pRefit_SnpChr );
+            matVs1.Cbind( *m_pRefit_SnpPos );
+            matVs1.Cbind( *m_pRefit_Ra);
+            matVs1.SetRowNames(m_pRefit_SnpName);
 
-			SEXP expVS = GetSEXP(&matVs1);
-			SETCAR( t, expVS );
-			SET_TAG(t, install("refit_add") );
-			t = CDR(t);
+            SEXP expVS = GetSEXP(&matVs1);
+            SETCAR( t, expVS );
+            SET_TAG(t, install("refit_add") );
+            t = CDR(t);
         }
 
         if (m_pRefit_Rd)
         {
-			CFmMatrix matVs1(0,0);
-			matVs1.Cbind( *m_pRefit_SnpChr );
-			matVs1.Cbind( *m_pRefit_SnpPos );
-			matVs1.Cbind( *m_pRefit_Rd);
-			matVs1.SetRowNames(m_pRefit_SnpName);
+            CFmMatrix matVs1(0,0);
+            matVs1.Cbind( *m_pRefit_SnpChr );
+            matVs1.Cbind( *m_pRefit_SnpPos );
+            matVs1.Cbind( *m_pRefit_Rd);
+            matVs1.SetRowNames(m_pRefit_SnpName);
 
-			SEXP expVS = GetSEXP(&matVs1);
-			SETCAR( t, expVS );
-			SET_TAG(t, install("refit_dom") );
-			t = CDR(t);
+            SEXP expVS = GetSEXP(&matVs1);
+            SETCAR( t, expVS );
+            SET_TAG(t, install("refit_dom") );
+            t = CDR(t);
         }
 
         if (m_pRefit_Mu)
         {
-			CFmMatrix matVs1(0,0);
-			CFmVector fmTmp(0, 0.0);
-			matVs1.Cbind(m_pRefit_Mu->GetRow(0) );
-	        if (m_pRefit_Alpha)
-	        {
-				for(int k=0; k<m_pRefit_Alpha->GetNumRows();k++)
-				{
-					fmTmp = m_pRefit_Alpha->GetRow(k);
-					matVs1.Cbind( fmTmp );
-				}
-	        }
-			matVs1.Transpose();
+            CFmMatrix matVs1(0,0);
+            CFmVector fmTmp(0, 0.0);
+            matVs1.Cbind(m_pRefit_Mu->GetRow(0) );
+            if (m_pRefit_Alpha)
+            {
+                for(int k=0; k<m_pRefit_Alpha->GetNumRows();k++)
+                {
+                    fmTmp = m_pRefit_Alpha->GetRow(k);
+                    matVs1.Cbind( fmTmp );
+                }
+            }
+            matVs1.Transpose();
 
-	  		SEXP expCoeff = GetSEXP(&matVs1);
-			SETCAR( t, expCoeff );
-			SET_TAG(t, install("refit_cov") );
-			t = CDR(t);
-		}
+              SEXP expCoeff = GetSEXP(&matVs1);
+            SETCAR( t, expCoeff );
+            SET_TAG(t, install("refit_cov") );
+            t = CDR(t);
+        }
 
-		if (m_pRefit_BestQ)
-		{
-			SEXP expQBest = GetSEXP(m_pRefit_BestQ);
-			SETCAR( t, expQBest );
-			SET_TAG(t, install("refit_Qbest") );
-			t = CDR(t);
-		}
+        if (m_pRefit_BestQ)
+        {
+            SEXP expQBest = GetSEXP(m_pRefit_BestQ);
+            SETCAR( t, expQBest );
+            SET_TAG(t, install("refit_Qbest") );
+            t = CDR(t);
+        }
 
-		if (m_pRefit_PSRF)
-		{
-			SEXP expPSRF = GetSEXP(m_pRefit_PSRF);
-			SETCAR( t, expPSRF );
-			SET_TAG(t, install("refit_PSRF") );
-			t = CDR(t);
-		}
+        if (m_pRefit_PSRF)
+        {
+            SEXP expPSRF = GetSEXP(m_pRefit_PSRF);
+            SETCAR( t, expPSRF );
+            SET_TAG(t, install("refit_PSRF") );
+            t = CDR(t);
+        }
     }
 
-	UNPROTECT(1);
+    UNPROTECT(1);
 
     _log_debug(_HI_, "GetRObj: Successful to save the matrix to R.");
 
@@ -684,7 +684,7 @@ int GLS_res::SaveSigFile( char* szCsvFile, bool bRefit )
         fmSig.Cbind( *m_pRefit_SnpPos );
         fmSig.Cbind( *m_pRefit_Ra  );
         fmSig.Cbind( *m_pRefit_Rd  );
-	    fmSig.SetRowNames( m_pRefit_SnpName );
+        fmSig.SetRowNames( m_pRefit_SnpName );
     }
     else
     {
@@ -692,7 +692,7 @@ int GLS_res::SaveSigFile( char* szCsvFile, bool bRefit )
         fmSig.Cbind( *m_pVarsel_SnpPos );
         fmSig.Cbind( *m_pVarsel_Ra  );
         fmSig.Cbind( *m_pVarsel_Rd  );
-	    fmSig.SetRowNames( m_pVarsel_SnpName );
+        fmSig.SetRowNames( m_pVarsel_SnpName );
     }
 
     fmSig.WriteAsCSVFile(szCsvFile, false);
@@ -702,75 +702,75 @@ int GLS_res::SaveSigFile( char* szCsvFile, bool bRefit )
 
 int GLS_res::SortoutBestQ(CFmFileMatrix* pMatRet, CFmMatrix* pBestQ, int nSnp, int nCov)
 {
-	_log_debug(_HI_, "SortoutBestQ: AD matrix file(%s). SNP=%d nCov=%d", pMatRet->GetFileName(), nSnp, nCov);
+    _log_debug(_HI_, "SortoutBestQ: AD matrix file(%s). SNP=%d nCov=%d", pMatRet->GetFileName(), nSnp, nCov);
 
-	CFmVector fmQBest(LG, 0.0);
-	CFmVector fmQPosMean(LG, 0.0);
-	CFmVector fmQPosMin(LG, 0.0);
-	CFmVector fmQPosMax(LG, 0.0);
-	CFmVector fmQ(LG*4, 0.0);
-	CFmVector fmTmp(0, 0.0);
+    CFmVector fmQBest(LG, 0.0);
+    CFmVector fmQPosMean(LG, 0.0);
+    CFmVector fmQPosMin(LG, 0.0);
+    CFmVector fmQPosMax(LG, 0.0);
+    CFmVector fmQ(LG*4, 0.0);
+    CFmVector fmTmp(0, 0.0);
 
-	GetBestQInfo( pMatRet, 0, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
-	{
-		fmQ.Append(fmQBest);
-		fmTmp = fmQPosMean*fmQPosMean;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMean);
-		fmTmp = fmQPosMin*fmQPosMin;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMin);
-		fmTmp = fmQPosMax*fmQPosMax;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMax);
-	}
-
-	for (long int i=0; i<nCov-1; i++)
+    GetBestQInfo( pMatRet, 0, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
     {
-		GetBestQInfo( pMatRet, i+1, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
+        fmQ.Append(fmQBest);
+        fmTmp = fmQPosMean*fmQPosMean;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMean);
+        fmTmp = fmQPosMin*fmQPosMin;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMin);
+        fmTmp = fmQPosMax*fmQPosMax;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMax);
+    }
 
-		fmQ.Append(fmQBest);
-		fmTmp = fmQPosMean*fmQPosMean;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMean);
-		fmTmp = fmQPosMin*fmQPosMin;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMin);
-		fmTmp = fmQPosMax*fmQPosMax;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMax);
-	}
-
-	for (long int i=0; i< nSnp; i++)
+    for (long int i=0; i<nCov-1; i++)
     {
-		fmQ.Resize(0);
-		GetBestQInfo( pMatRet, nCov+i*2, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
+        GetBestQInfo( pMatRet, i+1, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
 
-		fmQ.Append(fmQBest);
-		fmTmp = fmQPosMean*fmQPosMean;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMean);
-		fmTmp = fmQPosMin*fmQPosMin;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMin);
-		fmTmp = fmQPosMax*fmQPosMax;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMax);
+        fmQ.Append(fmQBest);
+        fmTmp = fmQPosMean*fmQPosMean;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMean);
+        fmTmp = fmQPosMin*fmQPosMin;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMin);
+        fmTmp = fmQPosMax*fmQPosMax;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMax);
+    }
 
-		GetBestQInfo( pMatRet, nCov+i*2+1, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
+    for (long int i=0; i< nSnp; i++)
+    {
+        fmQ.Resize(0);
+        GetBestQInfo( pMatRet, nCov+i*2, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
 
-		fmQ.Append(fmQBest);
-		fmTmp = fmQPosMean*fmQPosMean;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMean);
-		fmTmp = fmQPosMin*fmQPosMin;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMin);
-		fmTmp = fmQPosMax*fmQPosMax;
-		fmQ.Put(fmTmp.Sum());
-		fmQ.Append(fmQPosMax);
+        fmQ.Append(fmQBest);
+        fmTmp = fmQPosMean*fmQPosMean;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMean);
+        fmTmp = fmQPosMin*fmQPosMin;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMin);
+        fmTmp = fmQPosMax*fmQPosMax;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMax);
 
-		pBestQ->SetRow(i, fmQ);
+        GetBestQInfo( pMatRet, nCov+i*2+1, fmQBest, fmQPosMean, fmQPosMin, fmQPosMax );
+
+        fmQ.Append(fmQBest);
+        fmTmp = fmQPosMean*fmQPosMean;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMean);
+        fmTmp = fmQPosMin*fmQPosMin;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMin);
+        fmTmp = fmQPosMax*fmQPosMax;
+        fmQ.Put(fmTmp.Sum());
+        fmQ.Append(fmQPosMax);
+
+        pBestQ->SetRow(i, fmQ);
     }
 
     _log_debug(_HI_, "SortoutBestQ: Successful to sort out.");
@@ -781,161 +781,161 @@ int GLS_res::GetBestQInfo(CFmFileMatrix* pMatRet, int idx, CFmVector& fmQBest, C
 {
     int nMcmc= m_pCfg->m_nMcmcIter - m_pCfg->GetBurnInRound();
 
-	fmQBest.Resize( LG );
-	fmQPosMean.Resize( LG );
-	fmQPosMin.Resize( LG );
-	fmQPosMax.Resize( LG );
+    fmQBest.Resize( LG );
+    fmQPosMean.Resize( LG );
+    fmQPosMin.Resize( LG );
+    fmQPosMax.Resize( LG );
 
-	CFmVector fmVct(nMcmc, 0.0);
-	CFmVector fmTmp(nMcmc, 0.0);
+    CFmVector fmVct(nMcmc, 0.0);
+    CFmVector fmTmp(nMcmc, 0.0);
 
     for(int k=0; k< LG ; k++)
     {
-		fmQBest[k]    = R_NaN;
-		fmQPosMean[k] = R_NaN;
-		fmQPosMin[k]  = R_NaN;
-		fmQPosMax[k]  = R_NaN;
+        fmQBest[k]    = R_NaN;
+        fmQPosMean[k] = R_NaN;
+        fmQPosMin[k]  = R_NaN;
+        fmQPosMax[k]  = R_NaN;
         int ret = pMatRet->GetCacheCol(idx*LG + k, fmVct);
         if(ret!=0) return(ret);
 
         fmVct.Sort();
 
-		for(int qx=0 ; qx < nMcmc/2; qx++)
-			if(( fmVct[qx]>0 && fmVct[nMcmc-1-qx]>0 ) || ( fmVct[qx]<0 && fmVct[nMcmc-1-qx]<0 ) )
-			{
-				fmQBest[k]    = qx/(nMcmc*1.0 );
+        for(int qx=0 ; qx < nMcmc/2; qx++)
+            if(( fmVct[qx]>0 && fmVct[nMcmc-1-qx]>0 ) || ( fmVct[qx]<0 && fmVct[nMcmc-1-qx]<0 ) )
+            {
+                fmQBest[k]    = qx/(nMcmc*1.0 );
 
-				fmTmp.Resize(0);
-				for(int qxi = qx; qxi <= nMcmc-1-qx; qxi++)
-					fmTmp.Put(fmVct[qxi]);
+                fmTmp.Resize(0);
+                for(int qxi = qx; qxi <= nMcmc-1-qx; qxi++)
+                    fmTmp.Put(fmVct[qxi]);
 
-				fmQPosMean[k] = fmTmp.GetMedian();
-				fmQPosMin[k]  = fmTmp.GetMin();
-				fmQPosMax[k]  = fmTmp.GetMax();
-				break;
-			}
+                fmQPosMean[k] = fmTmp.GetMedian();
+                fmQPosMin[k]  = fmTmp.GetMin();
+                fmQPosMax[k]  = fmTmp.GetMax();
+                break;
+            }
 
-		if(isnan(fmQBest[k]))
-		{
-			fmQBest[k]    = 0.5;
-			fmQPosMean[k] = fmVct[nMcmc/2];
-			fmQPosMin[k]  = fmVct[nMcmc/2];
-			fmQPosMax[k]  = fmVct[nMcmc/2];
-		}
-	}
+        if(isnan(fmQBest[k]))
+        {
+            fmQBest[k]    = 0.5;
+            fmQPosMean[k] = fmVct[nMcmc/2];
+            fmQPosMin[k]  = fmVct[nMcmc/2];
+            fmQPosMax[k]  = fmVct[nMcmc/2];
+        }
+    }
 
-	return(0);
+    return(0);
 }
 
 double PSRF_fun_R(CFmVector* pMcmcVct0, CFmVector* pMcmcVct1)
 {
-	double M = 2;
-	double N = pMcmcVct0->GetLength();
-	double fMu0 = pMcmcVct0->GetMean();
-	double fMu1 = pMcmcVct1->GetMean();
-	double fMu  = (fMu0 + fMu1)/2;
+    double M = 2;
+    double N = pMcmcVct0->GetLength();
+    double fMu0 = pMcmcVct0->GetMean();
+    double fMu1 = pMcmcVct1->GetMean();
+    double fMu  = (fMu0 + fMu1)/2;
 
-	double W = 0;
-	for(int i=0;i<pMcmcVct0->GetLength();i++)
-		W = W + ( pMcmcVct0->Get(i) - fMu0)*( pMcmcVct0->Get(i) - fMu0);
-	for(int i=0;i<pMcmcVct1->GetLength();i++)
-		W = W + ( pMcmcVct1->Get(i) - fMu1)*( pMcmcVct1->Get(i) - fMu1);
+    double W = 0;
+    for(int i=0;i<pMcmcVct0->GetLength();i++)
+        W = W + ( pMcmcVct0->Get(i) - fMu0)*( pMcmcVct0->Get(i) - fMu0);
+    for(int i=0;i<pMcmcVct1->GetLength();i++)
+        W = W + ( pMcmcVct1->Get(i) - fMu1)*( pMcmcVct1->Get(i) - fMu1);
 
-	W = W/(N-1)/M;
+    W = W/(N-1)/M;
 
-	double B = ( (fMu1-fMu)*(fMu1-fMu) + (fMu0-fMu)*(fMu0-fMu) )*N;
-	double S2 = (N-1)/N*W + B/N;
-	double R = (M+1)/M * S2 / W - ( N-1)/(M*N);
+    double B = ( (fMu1-fMu)*(fMu1-fMu) + (fMu0-fMu)*(fMu0-fMu) )*N;
+    double S2 = (N-1)/N*W + B/N;
+    double R = (M+1)/M * S2 / W - ( N-1)/(M*N);
 
-	return(R);
+    return(R);
 }
 
 int PSRF_fun(CFmVector& fmMcmcVct, CFmMatrix& fmMat)
 {
-	CFmVector fmVct0(0, 0.0);
-	CFmVector fmVct1(0, 0.0);
-	CFmVector fmR(2, 0.0);
+    CFmVector fmVct0(0, 0.0);
+    CFmVector fmVct1(0, 0.0);
+    CFmVector fmR(2, 0.0);
 
-	for(int k=1;k<100;k++)
-	{
-		if ( fmMcmcVct.GetLength() < k*100 )
-			break;
+    for(int k=1;k<100;k++)
+    {
+        if ( fmMcmcVct.GetLength() < k*100 )
+            break;
 
-		fmVct0.Resize(0);
-		fmVct1.Resize(0);
+        fmVct0.Resize(0);
+        fmVct1.Resize(0);
 
-		int nLen = floor( k*100/3 );
-		for(int i=0;i<nLen;i++)
-			fmVct0.Put(fmMcmcVct[i]);
-		for(int i= k*100-nLen;i<k*100;i++)
-			fmVct1.Put(fmMcmcVct[i]);
+        int nLen = floor( k*100/3 );
+        for(int i=0;i<nLen;i++)
+            fmVct0.Put(fmMcmcVct[i]);
+        for(int i= k*100-nLen;i<k*100;i++)
+            fmVct1.Put(fmMcmcVct[i]);
 
-		double R = PSRF_fun_R(&fmVct0, &fmVct1);
-		fmR[0] = k*100.0;
-		fmR[1] = R;
+        double R = PSRF_fun_R(&fmVct0, &fmVct1);
+        fmR[0] = k*100.0;
+        fmR[1] = R;
 
-		fmMat.Cbind(fmR);
-	}
+        fmMat.Cbind(fmR);
+    }
 
-	fmMat.Transpose();
+    fmMat.Transpose();
 
-	return(0);
+    return(0);
 }
 
 int GLS_res::GetPSRFInfo(CFmFileMatrix* pMatRet, int idx, CFmMatrix& fmMatR)
 {
     int nMcmc= m_pCfg->m_nMcmcIter - m_pCfg->GetBurnInRound();
 
-	CFmMatrix fmMatTmp( 0, 0 );
-	CFmVector fmVct(nMcmc, 0.0);
+    CFmMatrix fmMatTmp( 0, 0 );
+    CFmVector fmVct(nMcmc, 0.0);
 
     for(int k=0; k< LG ; k++)
     {
         int ret = pMatRet->GetCacheCol(idx*LG + k, fmVct);
         if(ret!=0) return(ret);
 
-		fmMatTmp.Resize(0,0);
-		PSRF_fun(fmVct, fmMatTmp);
-		if(k==0)
-			fmMatR = fmMatTmp;
-		else
-			fmMatR.Cbind( fmMatTmp.GetCol(1) );
-	}
+        fmMatTmp.Resize(0,0);
+        PSRF_fun(fmVct, fmMatTmp);
+        if(k==0)
+            fmMatR = fmMatTmp;
+        else
+            fmMatR.Cbind( fmMatTmp.GetCol(1) );
+    }
 
-	return(0);
+    return(0);
 }
 
 int GLS_res::SortoutPSRF(CFmFileMatrix* pMatRet, CFmMatrix* pMatPSRF, int nSnp, int nCov)
 {
-	_log_debug(_HI_, "SortoutPSRF: AD matrix file(%s). SNP=%d nCov=%d", pMatRet->GetFileName(), nSnp, nCov);
+    _log_debug(_HI_, "SortoutPSRF: AD matrix file(%s). SNP=%d nCov=%d", pMatRet->GetFileName(), nSnp, nCov);
 
-	CFmMatrix fmMatR(0,0);
-	pMatPSRF->Resize(0,0);
+    CFmMatrix fmMatR(0,0);
+    pMatPSRF->Resize(0,0);
 
-	GetPSRFInfo( pMatRet, 0, fmMatR );
-	//pMatPSRF->Cbind(fmMatR);
+    GetPSRFInfo( pMatRet, 0, fmMatR );
+    //pMatPSRF->Cbind(fmMatR);
 
-	pMatPSRF->Cbind(fmMatR.GetCol(0));
+    pMatPSRF->Cbind(fmMatR.GetCol(0));
 
-	for (long int i=0; i<nCov-1; i++)
-	{
-		GetPSRFInfo( pMatRet, i+1, fmMatR );
-		//for(int k=1;k<=LG;k++)
-		//	pMatPSRF->Cbind(fmMatR.GetCol(k));
-	}
-
-	for (long int i=0; i< nSnp; i++)
+    for (long int i=0; i<nCov-1; i++)
     {
-		GetPSRFInfo( pMatRet, nCov+i*2, fmMatR );
-		for(int k=1;k<=LG;k++)
-			pMatPSRF->Cbind(fmMatR.GetCol(k));
-
-		GetPSRFInfo( pMatRet, nCov+i*2+1, fmMatR );
-		for(int k=1;k<=LG;k++)
-			pMatPSRF->Cbind(fmMatR.GetCol(k));
+        GetPSRFInfo( pMatRet, i+1, fmMatR );
+        //for(int k=1;k<=LG;k++)
+        //    pMatPSRF->Cbind(fmMatR.GetCol(k));
     }
 
-	pMatPSRF->Transpose();
+    for (long int i=0; i< nSnp; i++)
+    {
+        GetPSRFInfo( pMatRet, nCov+i*2, fmMatR );
+        for(int k=1;k<=LG;k++)
+            pMatPSRF->Cbind(fmMatR.GetCol(k));
+
+        GetPSRFInfo( pMatRet, nCov+i*2+1, fmMatR );
+        for(int k=1;k<=LG;k++)
+            pMatPSRF->Cbind(fmMatR.GetCol(k));
+    }
+
+    pMatPSRF->Transpose();
 
     _log_debug(_HI_, "SortoutPSRF: Successful to sort out.");
     return(0);
@@ -943,7 +943,7 @@ int GLS_res::SortoutPSRF(CFmFileMatrix* pMatRet, CFmMatrix* pMatPSRF, int nSnp, 
 
 void destroy(GLS_res* p)
 {
-	CFmNewTemp  fmRef;
-	p->~GLS_res();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~GLS_res();
+    operator delete(p, fmRef);
 }

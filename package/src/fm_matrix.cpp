@@ -1,6 +1,6 @@
-/* matrix.cpp  -	CFmMatrix Class
+/* matrix.cpp  -    CFmMatrix Class
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *  Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -39,21 +39,21 @@ int CFmMatrix::_DM=0;
 // default constructor, create a 1 * 1 array
 CFmMatrix::CFmMatrix( bool bReused )
 {
-	if (bReused)
+    if (bReused)
     {
         m_nObjId = g_nObjCount++;
     }
-	else
-		m_nObjId = -1;
+    else
+        m_nObjId = -1;
 #ifdef _DEBUG
     TRACE("Creating CFmMatrix object %1d - default constructor\n", m_nObjId) ;
 #endif
 
     m_pId = NULL;
     m_nRefer = 0;
-	m_bReuse = bReused;
-	m_nNumCols = 1 ;
-	m_nNumRows = 1 ;
+    m_bReuse = bReused;
+    m_nNumCols = 1 ;
+    m_nNumRows = 1 ;
     m_nMaxRows = MAX_MARGIN_ROW ;
     m_nMaxCols = MAX_MARGIN_COL ;
 
@@ -74,12 +74,12 @@ CFmMatrix::CFmMatrix(const CFmMatrix& pOther)
 // copy other's data
 CFmMatrix::CFmMatrix(const CFmMatrix *pOther, bool bReused )
 {
-	if (bReused)
+    if (bReused)
     {
         m_nObjId = g_nObjCount++;
     }
     else
-		m_nObjId = -1;
+        m_nObjId = -1;
 #ifdef _DEBUG
     TRACE("Creating CFmMatrix object %1d - default constructor\n", m_nObjId) ;
 #endif
@@ -87,7 +87,7 @@ CFmMatrix::CFmMatrix(const CFmMatrix *pOther, bool bReused )
 
     m_pId = NULL;
     m_nRefer = 0;
-	m_bReuse = bReused;
+    m_bReuse = bReused;
     m_nNumCols = pOther->m_nNumCols;
     m_nNumRows = pOther->m_nNumRows;
     m_nMaxRows = pOther->m_nMaxRows;
@@ -108,21 +108,21 @@ CFmMatrix::CFmMatrix(const CFmMatrix *pOther, bool bReused )
 
 CFmMatrix::CFmMatrix(int nRows, int nCols, bool bReused )
 {
-	if (bReused)
+    if (bReused)
     {
         m_nObjId = g_nObjCount++;
     }
     else
-		m_nObjId = -1;
+        m_nObjId = -1;
 #ifdef _DEBUG
     TRACE("Creating CFmMatrix object %1d - default constructor\n", m_nObjId) ;
 #endif
 
     m_pId = NULL;
     m_nRefer = 0;
-	m_bReuse = bReused;
-	m_nNumCols = nCols ;
-	m_nNumRows = nRows ;
+    m_bReuse = bReused;
+    m_nNumCols = nCols ;
+    m_nNumRows = nRows ;
     m_nMaxCols = nCols>=MAX_MARGIN_COL?nCols:MAX_MARGIN_COL;
     m_nMaxRows = nRows>=MAX_MARGIN_ROW?nRows:MAX_MARGIN_ROW;
 
@@ -131,27 +131,27 @@ CFmMatrix::CFmMatrix(int nRows, int nCols, bool bReused )
     m_pRowNames = NULL;
     m_pColNames = NULL;
 
-	AddRef() ;
+    AddRef() ;
 }
 
 // construct a square matrix with 1.0's on the diagonal if required
 CFmMatrix::CFmMatrix(int size, bool set_diagonal, double init_val, bool bReused )
 {
-	if (bReused)
+    if (bReused)
     {
         m_nObjId = g_nObjCount++;
     }
     else
-		m_nObjId = -1;
+        m_nObjId = -1;
 #ifdef _DEBUG
     TRACE("Creating CFmMatrix object %1d - default constructor\n", m_nObjId) ;
 #endif
 
     m_pId = NULL;
     m_nRefer = 0;
-	m_bReuse = bReused;
-	m_nNumCols = size ;
-	m_nNumRows = size ;
+    m_bReuse = bReused;
+    m_nNumCols = size ;
+    m_nNumRows = size ;
     m_nMaxCols = size>=MAX_MARGIN_COL?size:MAX_MARGIN_COL;
     m_nMaxRows = size>=MAX_MARGIN_ROW?size:MAX_MARGIN_ROW;
 
@@ -160,22 +160,22 @@ CFmMatrix::CFmMatrix(int size, bool set_diagonal, double init_val, bool bReused 
     m_pRowNames = NULL;
     m_pColNames = NULL;
 
-	AddRef();
+    AddRef();
 
-	// set the dialognal if required
-	if (set_diagonal)
-		for (int i = 0 ; i < size ; ++i)
-			Set(i, i, init_val) ;
+    // set the dialognal if required
+    if (set_diagonal)
+        for (int i = 0 ; i < size ; ++i)
+            Set(i, i, init_val) ;
 }
 
 CFmMatrix::CFmMatrix(int nRows, int nCols, int nMaxRows, int nMaxCols, bool bReused )
 {
-	if (bReused)
+    if (bReused)
     {
         m_nObjId = g_nObjCount++;
     }
     else
-		m_nObjId = -1;
+        m_nObjId = -1;
 
 #ifdef _DEBUG
     TRACE("Creating CFmMatrix object %1d - default constructor\n", m_nObjId) ;
@@ -183,18 +183,18 @@ CFmMatrix::CFmMatrix(int nRows, int nCols, int nMaxRows, int nMaxCols, bool bReu
 
     m_pId = NULL;
     m_nRefer = 0;
-	m_bReuse = bReused;
-	m_nNumCols = nRows ;
-	m_nNumRows = nCols ;
-	m_nMaxRows = nMaxRows;
-	m_nMaxCols = nMaxCols;
+    m_bReuse = bReused;
+    m_nNumCols = nRows ;
+    m_nNumRows = nCols ;
+    m_nMaxRows = nMaxRows;
+    m_nMaxCols = nMaxCols;
 
     m_pData = AllocateDouble(m_nMaxRows, m_nMaxCols) ;
 
     m_pRowNames = NULL;
     m_pColNames = NULL;
 
-	AddRef();
+    AddRef();
 }
 
 CFmMatrix::~CFmMatrix()
@@ -204,7 +204,7 @@ CFmMatrix::~CFmMatrix()
 #endif
 //    Rprintf("Destroying CFmMatrix object %X\n", this ) ;
 
-	Release() ;
+    Release() ;
 }
 
 void CFmMatrix::SetId(const char* szId)
@@ -234,50 +234,50 @@ void CFmMatrix::FreeDouble( double* pData )
 #ifdef _DEBUG
 void CFmMatrix::Dump(CDumpContext& dc) const
 {
-	UNUSED_PARAMETER(dc) ;
+    UNUSED_PARAMETER(dc) ;
     TRACE("CFmMatrix object    #%1d\n", m_nObjId) ;
-	TRACE("Num columns     : %1d\n", m_nNumCols) ;
-	TRACE("Num rows        : %1d\n", m_nNumRows) ;
-	TRACE("Data pointer    : %lx\n", m_pData) ;
-	TRACE("Reference count : %1d\n", GetReferenceCount()) ;
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-	{
-		TRACE("Row %2d,", i) ;
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-		{
-			TRACE("%e,", Get(j, i)) ;
-		}
+    TRACE("Num columns     : %1d\n", m_nNumCols) ;
+    TRACE("Num rows        : %1d\n", m_nNumRows) ;
+    TRACE("Data pointer    : %lx\n", m_pData) ;
+    TRACE("Reference count : %1d\n", GetReferenceCount()) ;
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+    {
+        TRACE("Row %2d,", i) ;
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+        {
+            TRACE("%e,", Get(j, i)) ;
+        }
 
-		TRACE("\n") ;
-		// this is to allow all element data to be traced for very large matrices!
-		Sleep(m_nNumCols *2) ;
-	}
+        TRACE("\n") ;
+        // this is to allow all element data to be traced for very large matrices!
+        Sleep(m_nNumCols *2) ;
+    }
 }
 #endif
 
 void CFmMatrix::Show(const char* szName)
 {
     Rprintf("\n\n\n%s: Resuable=%d Refer=%d\n",szName,m_bReuse, m_nRefer );
-	if( m_pColNames !=NULL)
-	{
-		Rprintf("\nColNames:\t");
-		for(int i=0; i<m_pColNames->GetLength(); i++)
-			Rprintf("%s\t",m_pColNames->Get(i) );
-		Rprintf("\n");
-	}
-	if( m_pRowNames !=NULL)
-	{
-		Rprintf("\nRowNames:\t");
-		for(int i=0; i<m_pRowNames->GetLength(); i++)
-			Rprintf("%s\t",m_pRowNames->Get(i) );
-		Rprintf("\n");
-	}
+    if( m_pColNames !=NULL)
+    {
+        Rprintf("\nColNames:\t");
+        for(int i=0; i<m_pColNames->GetLength(); i++)
+            Rprintf("%s\t",m_pColNames->Get(i) );
+        Rprintf("\n");
+    }
+    if( m_pRowNames !=NULL)
+    {
+        Rprintf("\nRowNames:\t");
+        for(int i=0; i<m_pRowNames->GetLength(); i++)
+            Rprintf("%s\t",m_pRowNames->Get(i) );
+        Rprintf("\n");
+    }
     show_matrix2( m_pData, m_nNumRows, m_nNumCols, szName );
 }
 
 double* CFmMatrix::AllocateDouble( int nRows, int nCols )
 {
-    double	*pData = NULL;
+    double    *pData = NULL;
 //*MEMTEST:Rprintf("ALLOC MEMORY(CFmMatrix): %d[%d,%d]\n", (nCols * nRows + 1)*sizeof(double), nRows, nCols );
 
     if( nCols * nRows * sizeof(double)>1024*1024)
@@ -286,276 +286,276 @@ double* CFmMatrix::AllocateDouble( int nRows, int nCols )
     pData = Calloc( nCols * nRows + 1, double);
 //Rprintf("%d DOUBLEs allocated(%X)!\n",  nCols * nRows + 1, pData);
 
-	if (pData==NULL)
-	{
+    if (pData==NULL)
+    {
         _log_fatal( _HI_ , "MEMORY: failed to allocate %d bytes to CFmMatrix[%d,%d] for %s.", (nCols * nRows + 1)*sizeof(double), nRows, nCols, m_pId );
-	}
+    }
 
-	memset(pData, 0, sizeof(double) * (nCols * nRows + 1)) ;
-	return pData ;
+    memset(pData, 0, sizeof(double) * (nCols * nRows + 1)) ;
+    return pData ;
 }
 
 //R: r = Me + Mo;
 CFmMatrix& CFmMatrix::operator+(CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  r = Me + Mo;\n");
+    if (_DM) Rprintf("op:  r = Me + Mo;\n");
 
-	// first check for a valid addition operation
-	if (m_nNumCols !=0 && m_nNumRows!=0)
-	{
-		if (m_nNumCols != other.m_nNumCols)
-			throw("Invalid operation in op(+)") ;
+    // first check for a valid addition operation
+    if (m_nNumCols !=0 && m_nNumRows!=0)
+    {
+        if (m_nNumCols != other.m_nNumCols)
+            throw("Invalid operation in op(+)") ;
 
-		if (m_nNumRows != other.m_nNumRows)
-			throw("Invalid operation in op(+)") ;
-	}
-	else
-	{
-		if (other.m_nNumRows * other.m_nNumCols>m_nMaxRows*m_nMaxCols)
-			throw("Insufficient memory.") ;
+        if (m_nNumRows != other.m_nNumRows)
+            throw("Invalid operation in op(+)") ;
+    }
+    else
+    {
+        if (other.m_nNumRows * other.m_nNumCols>m_nMaxRows*m_nMaxCols)
+            throw("Insufficient memory.") ;
 
-		m_nNumRows = other.m_nNumRows;
-		m_nNumCols = other.m_nNumCols;
-	}
+        m_nNumRows = other.m_nNumRows;
+        m_nNumCols = other.m_nNumCols;
+    }
 
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	for (int i = 0 ; i < m_nNumRows; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			pTmp->Set(i, j, Get(i, j) + other.Get(i, j)) ;
+    for (int i = 0 ; i < m_nNumRows; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            pTmp->Set(i, j, Get(i, j) + other.Get(i, j)) ;
 
-	if ( other.IsReusable()) other.Release();
-	if ( IsReusable()) Release();
+    if ( other.IsReusable()) other.Release();
+    if ( IsReusable()) Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 //R: r = Me - Mo;
 CFmMatrix& CFmMatrix::operator-( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  r = Me - Mo;\n");
+    if (_DM) Rprintf("op:  r = Me - Mo;\n");
 
-	// first check for a valid subtraction operation
-	if (m_nNumCols != other.m_nNumCols)
-		throw("Invalid operation in op(-)");
-	if (m_nNumRows != other.m_nNumRows)
-		throw("Invalid operation in op(-)") ;
+    // first check for a valid subtraction operation
+    if (m_nNumCols != other.m_nNumCols)
+        throw("Invalid operation in op(-)");
+    if (m_nNumRows != other.m_nNumRows)
+        throw("Invalid operation in op(-)") ;
 
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	// now subtract the other matrix
-	for (int i = 0 ; i < m_nNumRows; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			pTmp->Set(i, j, Get(i, j) - other.Get(i, j)) ;
+    // now subtract the other matrix
+    for (int i = 0 ; i < m_nNumRows; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            pTmp->Set(i, j, Get(i, j) - other.Get(i, j)) ;
 
-	if ( other.IsReusable()) other.Release();
-	if ( this->IsReusable()) this->Release();
+    if ( other.IsReusable()) other.Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 //R: r = Me %*% Mo;
 CFmMatrix& CFmMatrix::operator*( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  r = Me * Mo;\n");
+    if (_DM) Rprintf("op:  r = Me * Mo;\n");
 
-	// first check for a valid multiplication operation
-	if (m_nNumCols != other.m_nNumRows)
-	{
-		throw("Matrices do not have common size in op(* matrix)");
-	}
+    // first check for a valid multiplication operation
+    if (m_nNumCols != other.m_nNumRows)
+    {
+        throw("Matrices do not have common size in op(* matrix)");
+    }
 
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, other.m_nNumCols );
 
-	// e.g.
-	// [A][B][C]   [G][H]     [A*G + B*I + C*K][A*H + B*J + C*L]
-	// [D][E][F] * [I][J] =   [D*G + E*I + F*K][D*H + E*J + F*L]
-	//             [K][L]
-	//
-    /*double	 value ;
-	for (int i = 0 ; i < pTmp->m_nNumRows; i++)
-		for (int j = 0 ; j < pTmp->m_nNumCols ; j++)
-			{
-				value = 0.0 ;
-				for (int k = 0 ; k < m_nNumCols; k++)
-					value += Get(i, k) * other.Get(k, j) ;
+    // e.g.
+    // [A][B][C]   [G][H]     [A*G + B*I + C*K][A*H + B*J + C*L]
+    // [D][E][F] * [I][J] =   [D*G + E*I + F*K][D*H + E*J + F*L]
+    //             [K][L]
+    //
+    /*double     value ;
+    for (int i = 0 ; i < pTmp->m_nNumRows; i++)
+        for (int j = 0 ; j < pTmp->m_nNumCols ; j++)
+            {
+                value = 0.0 ;
+                for (int k = 0 ; k < m_nNumCols; k++)
+                    value += Get(i, k) * other.Get(k, j) ;
 
-				pTmp->Set(i, j, value) ;
+                pTmp->Set(i, j, value) ;
             }*/
 
 
     matprod( m_pData, GetNumRows(), GetNumCols(), 'N',
             other.GetData(), other.GetNumRows(), other.GetNumCols(), 'N', pTmp->GetData() );
 
-	if ( other.IsReusable()) other.Release();
-	if ( this->IsReusable()) this->Release();
+    if ( other.IsReusable()) other.Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 //R: r = Me %*% Vo;
 CFmMatrix& CFmMatrix::operator*(CFmVector &other)
 {
-	if (_DM) Rprintf("op:  r = Me * V;\n");
+    if (_DM) Rprintf("op:  r = Me * V;\n");
 
-	// first check for a valid multiplication operation
-	if (m_nNumCols != other.GetLength() )
+    // first check for a valid multiplication operation
+    if (m_nNumCols != other.GetLength() )
     {
         Rprintf("[%d,%d]*%d", m_nNumRows, m_nNumCols, other.GetLength() );
-		throw( "Matrices do not have common size in op(* vector)" );
+        throw( "Matrices do not have common size in op(* vector)" );
     }
 
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, 1 );
 
-    /*double	 value ;
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-	{
-		value = 0.0 ;
-		for (int k = 0 ; k < m_nNumCols ; ++k)
-			value += Get(i, k) * other.Get(k) ;
+    /*double     value ;
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+    {
+        value = 0.0 ;
+        for (int k = 0 ; k < m_nNumCols ; ++k)
+            value += Get(i, k) * other.Get(k) ;
 
-		pTmp->Set(i, 0, value) ;
+        pTmp->Set(i, 0, value) ;
     }*/
 
     matprod( m_pData, GetNumRows(), GetNumCols(), 'N',
             other.GetData(), other.GetLength(), 1, 'N', pTmp->GetData() );
 
 
-	if ( other.IsReusable()) other.Release();
-	if ( this->IsReusable()) this->Release();
+    if ( other.IsReusable()) other.Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 //R: b = (Me == Mo);
 bool CFmMatrix::operator==( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  b = Me == Mo;\n");
+    if (_DM) Rprintf("op:  b = Me == Mo;\n");
 
-	if (&other == this)
-		return true ;
+    if (&other == this)
+        return true ;
 
-	if (m_pData == other.m_pData)
-		return true ;
+    if (m_pData == other.m_pData)
+        return true ;
 
-	// different dimensions
-	if (m_nNumCols != other.m_nNumCols || m_nNumRows != other.m_nNumRows)
-		return false ;
+    // different dimensions
+    if (m_nNumCols != other.m_nNumCols || m_nNumRows != other.m_nNumRows)
+        return false ;
 
-	// buffers are the same
-	if (memcmp(m_pData, other.m_pData, sizeof(double) * m_nNumCols * m_nNumRows) == 0)
-		return true ;
+    // buffers are the same
+    if (memcmp(m_pData, other.m_pData, sizeof(double) * m_nNumCols * m_nNumRows) == 0)
+        return true ;
 
-	if ( other.IsReusable()) other.Release();
-	if ( IsReusable()) Release();
+    if ( other.IsReusable()) other.Release();
+    if ( IsReusable()) Release();
 
-	return false ;
+    return false ;
 }
 
 //R: r = Me + v;
 CFmMatrix& CFmMatrix::operator+(double value)
 {
-	if (_DM) Rprintf("op:  r = Me + v;\n");
+    if (_DM) Rprintf("op:  r = Me + v;\n");
 
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-		for (int j = 0 ; j < m_nNumCols ; j++)
-			pTmp->Set(i, j, Get(i, j) + value ) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+        for (int j = 0 ; j < m_nNumCols ; j++)
+            pTmp->Set(i, j, Get(i, j) + value ) ;
 
-	if ( IsReusable()) Release();
+    if ( IsReusable()) Release();
 
-	return *pTmp;
+    return *pTmp;
 }
 
 //R: r = Me - v;
 CFmMatrix& CFmMatrix::operator-(double value)
 {
-	if (_DM) Rprintf("op:  r = Me - v;\n");
+    if (_DM) Rprintf("op:  r = Me - v;\n");
 
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-		for (int j = 0 ; j < m_nNumCols ; j++)
-			pTmp->Set(i, j, Get(i, j) - value ) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+        for (int j = 0 ; j < m_nNumCols ; j++)
+            pTmp->Set(i, j, Get(i, j) - value ) ;
 
-	if ( IsReusable()) Release();
+    if ( IsReusable()) Release();
 
-	return *pTmp;
+    return *pTmp;
 
 }
 
 CFmMatrix& CFmMatrix::operator*(double value)
 {
-	if (_DM) Rprintf("op:  r = Me * v;\n");
+    if (_DM) Rprintf("op:  r = Me * v;\n");
 
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-		for (int j = 0 ; j < m_nNumCols ; j++)
-			pTmp->Set(i, j, Get(i, j) * value ) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+        for (int j = 0 ; j < m_nNumCols ; j++)
+            pTmp->Set(i, j, Get(i, j) * value ) ;
 
-	if ( this->IsReusable()) this->Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp;
+    return *pTmp;
 }
 
 CFmMatrix& CFmMatrix::operator/(double value)
 {
-	if (_DM) Rprintf("op:  r = Me / v;\n");
+    if (_DM) Rprintf("op:  r = Me / v;\n");
 
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-		for (int j = 0 ; j < m_nNumCols ; j++)
-			pTmp->Set(i, j, Get(i, j) / value ) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+        for (int j = 0 ; j < m_nNumCols ; j++)
+            pTmp->Set(i, j, Get(i, j) / value ) ;
 
-	if ( this->IsReusable()) this->Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp;
+    return *pTmp;
 }
 
 CFmMatrix& CFmMatrix::operator^(double value)
 {
-	if (_DM) Rprintf("op:  r = Me ^ v;\n");
+    if (_DM) Rprintf("op:  r = Me ^ v;\n");
 
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-		for (int j = 0 ; j < m_nNumCols ; j++)
-			pTmp->Set(i, j, pow(Get(i, j), value) ) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+        for (int j = 0 ; j < m_nNumCols ; j++)
+            pTmp->Set(i, j, pow(Get(i, j), value) ) ;
 
-	if ( this->IsReusable()) this->Release();
+    if ( this->IsReusable()) this->Release();
 
-	return *pTmp;
+    return *pTmp;
 }
 
 
 //R: Me = f;
 void CFmMatrix::operator=( double value)
 {
-	if (_DM) Rprintf("op:  Me = v;\n");
+    if (_DM) Rprintf("op:  Me = v;\n");
 
-	m_nNumCols = 0;
-	m_nNumRows = 0;
-	for (int i = 0 ; i < m_nMaxCols*m_nMaxRows; i++)
-		m_pData[i] = value;
+    m_nNumCols = 0;
+    m_nNumRows = 0;
+    for (int i = 0 ; i < m_nMaxCols*m_nMaxRows; i++)
+        m_pData[i] = value;
 }
 
 
 //R: Me = Mo;
 void CFmMatrix::operator=( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  Me = Mo;\n");
+    if (_DM) Rprintf("op:  Me = Mo;\n");
 
-	// first check for a valid addition operation
-	if (m_nMaxCols*m_nMaxRows < other.m_nNumCols*other.m_nNumRows)
+    // first check for a valid addition operation
+    if (m_nMaxCols*m_nMaxRows < other.m_nNumCols*other.m_nNumRows)
     {
         double* pData = AllocateDouble(other.m_nMaxRows, other.m_nMaxCols);
         FreeDouble( m_pData );
@@ -564,22 +564,22 @@ void CFmMatrix::operator=( CFmMatrix &other)
         m_nMaxCols = other.m_nMaxCols;
     }
 
-	m_nNumCols = other.m_nNumCols;
-	m_nNumRows = other.m_nNumRows;
-	for (int i = 0 ; i < m_nNumRows ; i++)
-		for (int j = 0 ; j <m_nNumCols ; j++)
-			Set(i, j, other.Get(i, j)) ;
+    m_nNumCols = other.m_nNumCols;
+    m_nNumRows = other.m_nNumRows;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+        for (int j = 0 ; j <m_nNumCols ; j++)
+            Set(i, j, other.Get(i, j)) ;
 
-	if (other.IsReusable() )
-		other.Release();
+    if (other.IsReusable() )
+        other.Release();
 }
 
 //R: Me += Mo;
 void CFmMatrix::operator+=( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  Me += Mo;\n");
+    if (_DM) Rprintf("op:  Me += Mo;\n");
 
-	// first check for a valid addition operation
+    // first check for a valid addition operation
     if (m_nNumCols==0 && m_nNumRows==0)
     {
         if (m_nMaxCols>=other.m_nNumCols &&
@@ -593,164 +593,164 @@ void CFmMatrix::operator+=( CFmMatrix &other)
     }
     else
     {
-	if (m_nNumCols != other.m_nNumCols)
-		throw( "Invalid operation in op(+=)" );
-	if (m_nNumRows != other.m_nNumRows)
-		throw( "Invalid operation in op(+=)" );
+    if (m_nNumCols != other.m_nNumCols)
+        throw( "Invalid operation in op(+=)" );
+    if (m_nNumRows != other.m_nNumRows)
+        throw( "Invalid operation in op(+=)" );
     }
 
-	for (int i = 0 ; i < m_nNumRows; ++i)
-		for (int j = 0 ; j < m_nNumCols; ++j)
-			Set(i, j, Get(i, j) + other.Get(i, j)) ;
+    for (int i = 0 ; i < m_nNumRows; ++i)
+        for (int j = 0 ; j < m_nNumCols; ++j)
+            Set(i, j, Get(i, j) + other.Get(i, j)) ;
 
-	if (other.IsReusable() )
-		other.Release();
+    if (other.IsReusable() )
+        other.Release();
 }
 
 //R: Me -= Mo;
 void CFmMatrix::operator-=( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  Me -= Mo;\n");
+    if (_DM) Rprintf("op:  Me -= Mo;\n");
 
-	// first check for a valid subtraction operation
-	if (m_nNumCols != other.m_nNumCols)
-		throw( "Invalid operation in op(-=)" );
-	if (m_nNumRows != other.m_nNumRows)
-		throw( "Invalid operation in op(-=)" );
+    // first check for a valid subtraction operation
+    if (m_nNumCols != other.m_nNumCols)
+        throw( "Invalid operation in op(-=)" );
+    if (m_nNumRows != other.m_nNumRows)
+        throw( "Invalid operation in op(-=)" );
 
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			Set(i, j, Get(i, j) - other.Get(i, j) ) ;
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            Set(i, j, Get(i, j) - other.Get(i, j) ) ;
 
-	if (other.IsReusable() )
-		other.Release();
+    if (other.IsReusable() )
+        other.Release();
 }
 
 //R: Me *= f;
 void CFmMatrix::operator*=( CFmMatrix &other)
 {
-	if (_DM) Rprintf("op:  Me *= Mo;\n");
+    if (_DM) Rprintf("op:  Me *= Mo;\n");
 
-	// first check for a valid multiplication operation
-	if (m_nNumRows != other.m_nNumCols)
-		throw( "Matrices do not have common size in op(*= vector)" );
+    // first check for a valid multiplication operation
+    if (m_nNumRows != other.m_nNumCols)
+        throw( "Matrices do not have common size in op(*= vector)" );
 
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, other.m_nNumCols );
 
-	double	 value ;
-	for (int i = 0 ; i < pTmp->m_nNumRows; i++)
-		for (int j = 0 ; j < pTmp->m_nNumCols ; j++)
-			{
-				value = 0.0 ;
-				for (int k = 0 ; k < m_nNumCols; k++)
-					value += Get(i, k) * other.Get(k, j) ;
+    double     value ;
+    for (int i = 0 ; i < pTmp->m_nNumRows; i++)
+        for (int j = 0 ; j < pTmp->m_nNumCols ; j++)
+            {
+                value = 0.0 ;
+                for (int k = 0 ; k < m_nNumCols; k++)
+                    value += Get(i, k) * other.Get(k, j) ;
 
-				pTmp->Set(i, j, value) ;
-			}
+                pTmp->Set(i, j, value) ;
+            }
 
-	m_nNumRows = pTmp->m_nNumRows;
-	m_nNumCols = pTmp->m_nNumCols;
-	for (int i = 0 ; i < pTmp->m_nNumRows; i++)
-		for (int j = 0 ; j < pTmp->m_nNumCols ; j++)
-			Set(i,j, pTmp->Get(i,j));
+    m_nNumRows = pTmp->m_nNumRows;
+    m_nNumCols = pTmp->m_nNumCols;
+    for (int i = 0 ; i < pTmp->m_nNumRows; i++)
+        for (int j = 0 ; j < pTmp->m_nNumCols ; j++)
+            Set(i,j, pTmp->Get(i,j));
 
-	if ( other.IsReusable()) other.Release();
-	if ( pTmp->IsReusable()) pTmp->Release();
+    if ( other.IsReusable()) other.Release();
+    if ( pTmp->IsReusable()) pTmp->Release();
 }
 
 //R: Me += f;
 void CFmMatrix::operator+=(double value)
 {
-	if (_DM) Rprintf("op:  Me += f;\n");
+    if (_DM) Rprintf("op:  Me += f;\n");
 
-	if (m_nNumCols==0 || m_nNumRows==0)
-	{
-		for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
-			m_pData[i] += value;
+    if (m_nNumCols==0 || m_nNumRows==0)
+    {
+        for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
+            m_pData[i] += value;
 
-		return;
-	}
+        return;
+    }
 
-	// just multiply the elements by the value
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			Set(i, j, Get(i, j) + value) ;
+    // just multiply the elements by the value
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            Set(i, j, Get(i, j) + value) ;
 }
 
 //R: Me -= f;
 void CFmMatrix::operator-=(double value)
 {
-	if (_DM) Rprintf("op:  Me -= f;\n");
+    if (_DM) Rprintf("op:  Me -= f;\n");
 
-	if (m_nNumCols==0 || m_nNumRows==0)
-	{
-		for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
-			m_pData[i] -= value;
+    if (m_nNumCols==0 || m_nNumRows==0)
+    {
+        for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
+            m_pData[i] -= value;
 
-		return;
-	}
+        return;
+    }
 
-	// just multiply the elements by the value
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			Set(i, j, Get(i, j) - value) ;
+    // just multiply the elements by the value
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            Set(i, j, Get(i, j) - value) ;
 }
 
 //R: Me *= f;
 void CFmMatrix::operator*=(double value)
 {
-	if (_DM) Rprintf("op:  Me *= f;\n");
+    if (_DM) Rprintf("op:  Me *= f;\n");
 
-	if (m_nNumCols==0 || m_nNumRows==0)
-	{
-		for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
-			m_pData[i] *= value;
+    if (m_nNumCols==0 || m_nNumRows==0)
+    {
+        for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
+            m_pData[i] *= value;
 
-		return;
-	}
+        return;
+    }
 
-	// just multiply the elements by the value
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			Set(i, j, Get(i, j) / value) ;
+    // just multiply the elements by the value
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            Set(i, j, Get(i, j) / value) ;
 }
 
 //R: Me /= f;
 void CFmMatrix::operator/=(double value)
 {
-	if (_DM) Rprintf("op:  Me /= f;\n");
+    if (_DM) Rprintf("op:  Me /= f;\n");
 
-	if (m_nNumCols==0 || m_nNumRows==0)
-	{
-		for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
-			m_pData[i] /= value;
+    if (m_nNumCols==0 || m_nNumRows==0)
+    {
+        for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
+            m_pData[i] /= value;
 
-		return;
-	}
+        return;
+    }
 
-	// just multiply the elements by the value
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			Set(i, j, Get(i, j) / value) ;
+    // just multiply the elements by the value
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            Set(i, j, Get(i, j) / value) ;
 }
 
 //R: Me ^= f;
 void CFmMatrix::operator^=(double value)
 {
-	if (_DM) Rprintf("op:  Me ^= f;\n");
+    if (_DM) Rprintf("op:  Me ^= f;\n");
 
-	if (m_nNumCols==0 || m_nNumRows==0)
-	{
-		for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
-			m_pData[i] = pow( m_pData[i], value) ;
+    if (m_nNumCols==0 || m_nNumRows==0)
+    {
+        for(int i=0; i<m_nMaxRows*m_nMaxCols; i++)
+            m_pData[i] = pow( m_pData[i], value) ;
 
-		return;
-	}
+        return;
+    }
 
-	// just multiply the elements by the value
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-		for (int j = 0 ; j < m_nNumCols ; ++j)
-			Set(i, j, pow( Get(i, j),  value ) ) ;
+    // just multiply the elements by the value
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+        for (int j = 0 ; j < m_nNumCols ; ++j)
+            Set(i, j, pow( Get(i, j),  value ) ) ;
 }
 
 void CFmMatrix::ValueMultiple( CFmMatrix &other)
@@ -773,7 +773,7 @@ void CFmMatrix::ValueMultiple( CFmMatrix &other)
 // release version is in-line
 double CFmMatrix::Get(int nRow, int nCol) const
 {
-	return m_pData[MI(m_nNumRows, m_nNumCols, nRow, nCol)] ;
+    return m_pData[MI(m_nNumRows, m_nNumCols, nRow, nCol)] ;
 }
 #endif
 
@@ -782,7 +782,7 @@ double CFmMatrix::Get(int nRow, int nCol) const
 //
 void CFmMatrix::AddRef()
 {
-	m_nRefer ++;
+    m_nRefer ++;
     //if (m_nRefer==1 && !m_bReuse)
     //    g_matList.push_back( this );
 
@@ -800,49 +800,49 @@ void CFmMatrix::GlobalDump()
 
 void CFmMatrix::Release()
 {
-	m_nRefer --;
-	if ( m_nRefer == 0)
-	{
-		if (!m_bReuse)
-		{
+    m_nRefer --;
+    if ( m_nRefer == 0)
+    {
+        if (!m_bReuse)
+        {
             //Rprintf("Before CFmMatrix:%d, %s,%d[%d,%d]\n", g_matList.size(), m_pId, m_nObjId, m_nNumCols, m_nNumRows );
             //g_matList.remove(this);
             //Rprintf("After CFmMatrix:%d\n", g_matList.size());
 
             FreeMemory();
-		}
-		else
-		{
-			if (_DM) Rprintf("***RECYCLE M(%d):\n", m_nObjId);
-		}
+        }
+        else
+        {
+            if (_DM) Rprintf("***RECYCLE M(%d):\n", m_nObjId);
+        }
 
-	}
+    }
 }
 
 CFmMatrix& CFmMatrix::GetAbs()
 {
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumRows, m_nNumCols  );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-			for (int j = 0 ; j < m_nNumCols ; j++)
-				pTmp->Set(i, j, abs( (int)Get(i, j) ) ) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+            for (int j = 0 ; j < m_nNumCols ; j++)
+                pTmp->Set(i, j, abs( (int)Get(i, j) ) ) ;
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return (*pTmp);
+    return (*pTmp);
 }
 
 double CFmMatrix::RowProd(int nRow1, int nRow2)
 {
-	// construct the object we are going to return
-	double sum = 0;
-	for (int i = 0 ; i < m_nNumCols ; i++)
-		sum += Get(nRow1, i)*Get(nRow2,i) ;
+    // construct the object we are going to return
+    double sum = 0;
+    for (int i = 0 ; i < m_nNumCols ; i++)
+        sum += Get(nRow1, i)*Get(nRow2,i) ;
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return (sum);
+    return (sum);
 }
 
 double CFmMatrix::ColProd(int nCol1, int nCol2)
@@ -859,37 +859,37 @@ double CFmMatrix::ColProd(int nCol1, int nCol2)
 
 CFmMatrix& CFmMatrix::GetTransposed()
 {
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix* pTmp = FindReuseMatrix( m_nNumCols, m_nNumRows );
 
-	for (int i = 0 ; i < m_nNumRows ; i++)
-			for (int j = 0 ; j < m_nNumCols ; j++)
-				pTmp->Set(j, i, Get(i, j)) ;
+    for (int i = 0 ; i < m_nNumRows ; i++)
+            for (int j = 0 ; j < m_nNumCols ; j++)
+                pTmp->Set(j, i, Get(i, j)) ;
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return (*pTmp);
+    return (*pTmp);
 }
 
 void CFmMatrix::Transpose()
 {
-	// construct the object we are going to return
+    // construct the object we are going to return
     CFmMatrix& pTmp = GetTransposed();
 
     m_nNumCols = pTmp.m_nNumCols ;
     m_nNumRows = pTmp.m_nNumRows ;
 
     // copy across the transposed data
-	for (int i = 0 ; i < m_nNumRows ; ++i)
-			for (int j = 0 ; j <  m_nNumCols; ++j)
-				Set(i, j, pTmp.Get(i, j)) ;
+    for (int i = 0 ; i < m_nNumRows ; ++i)
+            for (int j = 0 ; j <  m_nNumCols; ++j)
+                Set(i, j, pTmp.Get(i, j)) ;
 
     CFmVectorStr* vct = m_pRowNames;
     m_pRowNames = m_pColNames;
     m_pColNames = vct;
 
-	if (pTmp.IsReusable() )
-		pTmp.Release();
+    if (pTmp.IsReusable() )
+        pTmp.Release();
 }
 
 double CFmMatrix::GetSum()
@@ -905,13 +905,13 @@ double CFmMatrix::GetSum()
 // matrix inversion will only work on square matrices
 CFmMatrix& CFmMatrix::GetInverted( bool bCheck )
 {
-	if (m_nNumCols != m_nNumRows)
-		throw( "Matrix must be square." );
+    if (m_nNumCols != m_nNumRows)
+        throw( "Matrix must be square." );
 
     CFmMatrix* pDiag = FindReuseMatrix( m_nNumCols, m_nNumRows );
-	pDiag->Square(m_nNumCols, true, 1.0);
+    pDiag->Square(m_nNumCols, true, 1.0);
 
-	int ret = solve(m_pData, m_nNumCols, pDiag->m_pData, m_nNumCols, m_nNumCols);
+    int ret = solve(m_pData, m_nNumCols, pDiag->m_pData, m_nNumCols, m_nNumCols);
     if (ret!=0)
         throw("error in solve method.");
 
@@ -928,21 +928,21 @@ CFmMatrix& CFmMatrix::GetInverted( bool bCheck )
         }
     }
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return(*pDiag);
+    return(*pDiag);
 }
 
 // matrix inversion will only work on square matrices
 int CFmMatrix::Invert(  bool bCheck )
 {
-	if (m_nNumCols != m_nNumRows)
-		throw( "Matrix must be square." );
+    if (m_nNumCols != m_nNumRows)
+        throw( "Matrix must be square." );
 
     CFmMatrix* pDiag = FindReuseMatrix( m_nNumCols, m_nNumRows );
-	pDiag->Square(m_nNumCols, true, 1.0);
+    pDiag->Square(m_nNumCols, true, 1.0);
 
-	int ret = solve(m_pData, m_nNumCols, pDiag->m_pData, m_nNumCols, m_nNumCols);
+    int ret = solve(m_pData, m_nNumCols, pDiag->m_pData, m_nNumCols, m_nNumCols);
     if (ret!=0 )
     {
         if (bCheck)
@@ -969,90 +969,90 @@ int CFmMatrix::Invert(  bool bCheck )
         }
     }
 
-	memcpy(m_pData, pDiag->m_pData, m_nNumCols*m_nNumCols*sizeof(double) );
-	pDiag->Release();
+    memcpy(m_pData, pDiag->m_pData, m_nNumCols*m_nNumCols*sizeof(double) );
+    pDiag->Release();
 
     return(0);
 }
 
 CFmMatrix& CFmMatrix::SubMatrix(int row_start, int row_size, int col_start, int col_size)
 {
-	// make sure the requested sub matrix is in the current matrix
-	if (col_start + col_size > m_nNumCols)
-		throw( "Sub matrix is not contained in source");
+    // make sure the requested sub matrix is in the current matrix
+    if (col_start + col_size > m_nNumCols)
+        throw( "Sub matrix is not contained in source");
 
-	if (row_start + row_size > m_nNumRows)
-		throw( "Sub matrix is not contained in source") ;
+    if (row_start + row_size > m_nNumRows)
+        throw( "Sub matrix is not contained in source") ;
 
     CFmMatrix* pTmp = FindReuseMatrix( row_size, col_size );
 
-	for (int i = 0; i < row_size; i++)
-		for (int j = 0; j <col_size; j++)
-			pTmp->Set(i, j, Get(row_start + i,  col_start+ j)) ;
+    for (int i = 0; i < row_size; i++)
+        for (int j = 0; j <col_size; j++)
+            pTmp->Set(i, j, Get(row_start + i,  col_start+ j)) ;
 
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return *pTmp ;
+    return *pTmp ;
 }
 
 void CFmMatrix::SetSubMatrix(CFmMatrix &other, int row_start, int col_start )
 {
-	if (col_start + other.m_nNumCols> m_nNumCols)
-		throw( "Sub matrix is not contained in source" );
+    if (col_start + other.m_nNumCols> m_nNumCols)
+        throw( "Sub matrix is not contained in source" );
 
-	if (row_start + other.m_nNumRows> m_nNumRows)
-		throw( "Sub matrix is not contained in source" );
+    if (row_start + other.m_nNumRows> m_nNumRows)
+        throw( "Sub matrix is not contained in source" );
 
-	for (int i = 0 ; i < other.m_nNumRows ; i++)
-		for (int j = 0 ; j < other.m_nNumCols ; j++)
-			Set( row_start+ i, col_start + j, other.Get(i, j)) ;
+    for (int i = 0 ; i < other.m_nNumRows ; i++)
+        for (int j = 0 ; j < other.m_nNumCols ; j++)
+            Set( row_start+ i, col_start + j, other.Get(i, j)) ;
 
-	if ( other.IsReusable()) other.Release();
+    if ( other.IsReusable()) other.Release();
 }
 
 void CFmMatrix::CopyMatrix( CFmMatrix* other, int row_start, int row_size, int col_start, int col_size)
 {
-	if ( col_start!=-1)
-	{
-		if ( col_size> m_nMaxCols)
-			throw( "over column size" );
+    if ( col_start!=-1)
+    {
+        if ( col_size> m_nMaxCols)
+            throw( "over column size" );
 
-		if (col_start + col_size> other->m_nNumCols)
-			throw( "Sub matrix is not contained in source" );
-	}
-	else
-	{
-		col_start = 0;
-		col_size = other->m_nNumCols;
-	}
+        if (col_start + col_size> other->m_nNumCols)
+            throw( "Sub matrix is not contained in source" );
+    }
+    else
+    {
+        col_start = 0;
+        col_size = other->m_nNumCols;
+    }
 
-	if ( row_start!=-1)
-	{
-		if (row_size> m_nMaxRows)
-			throw( "over row size" );
+    if ( row_start!=-1)
+    {
+        if (row_size> m_nMaxRows)
+            throw( "over row size" );
 
-		if (row_start + row_size> other->m_nNumRows)
-			throw( "Sub matrix is not contained in source" );
-	}
-	else
-	{
-		row_start = 0;
-		row_size = other->m_nNumRows;
-	}
+        if (row_start + row_size> other->m_nNumRows)
+            throw( "Sub matrix is not contained in source" );
+    }
+    else
+    {
+        row_start = 0;
+        row_size = other->m_nNumRows;
+    }
 
 
-	m_nNumRows = row_size;
-	m_nNumCols = col_size;
+    m_nNumRows = row_size;
+    m_nNumCols = col_size;
 
-	for (int i = 0 ; i < row_size ; i++)
-		for (int j = 0 ; j < col_size ; j++)
-		{
-			if ( !Set( i, j, other->Get(row_start+i, col_start+j)) )
-				Rprintf("Failed to set %d, %d\n", i, j);
-		}
+    for (int i = 0 ; i < row_size ; i++)
+        for (int j = 0 ; j < col_size ; j++)
+        {
+            if ( !Set( i, j, other->Get(row_start+i, col_start+j)) )
+                Rprintf("Failed to set %d, %d\n", i, j);
+        }
 
-	if ( other->IsReusable()) other->Release();
+    if ( other->IsReusable()) other->Release();
 }
 
 void CFmMatrix::ResetRow( int nRow, CFmVector& vct)
@@ -1072,29 +1072,29 @@ void CFmMatrix::ResetRow( int nRow, CFmVector& vct)
 
 void CFmMatrix::SetRow( int nRow, CFmVector& vct, char* szRowName )
 {
-	if ( nRow >= m_nNumRows)
-		throw("over maximum rows' size." );
+    if ( nRow >= m_nNumRows)
+        throw("over maximum rows' size." );
 
-	if (m_nNumCols != vct.GetLength() )
+    if (m_nNumCols != vct.GetLength() )
         throw( "Cannot SetRow(), not same size" );
 
-	// now add the other matrix
-	for (int j = 0 ; j <m_nNumCols; ++j)
-		Set(nRow, j, vct.Get(j)) ;
+    // now add the other matrix
+    for (int j = 0 ; j <m_nNumCols; ++j)
+        Set(nRow, j, vct.Get(j)) ;
 
     SetRowName(nRow, szRowName);
 
-	if ( vct.IsReusable()) vct.Release();
+    if ( vct.IsReusable()) vct.Release();
 }
 
 void CFmMatrix::SetRow( int nRow, double* fBuf , char* szRowName)
 {
-	if ( nRow >= m_nNumRows)
-		throw("over maximum rows' size." );
+    if ( nRow >= m_nNumRows)
+        throw("over maximum rows' size." );
 
-	// now add the other matrix
-	for (int j = 0 ; j <m_nNumCols; ++j)
-		Set(nRow, j, fBuf[j] ) ;
+    // now add the other matrix
+    for (int j = 0 ; j <m_nNumCols; ++j)
+        Set(nRow, j, fBuf[j] ) ;
 
     SetRowName(nRow, szRowName);
 }
@@ -1113,29 +1113,29 @@ void CFmMatrix::SetRow( int nRow, double fVal , char* szRowName)
 
 void CFmMatrix::SetCol( int nCol, CFmVector& vct , char* szColName)
 {
-	if ( nCol >= m_nNumCols)
-		throw("over maximum columns' size." );
+    if ( nCol >= m_nNumCols)
+        throw("over maximum columns' size." );
 
-	if (m_nNumRows != vct.GetLength() )
+    if (m_nNumRows != vct.GetLength() )
         throw( "Cannot SetCol(), not same size" );
 
-	// now add the other matrix
-	for (int i = 0 ; i <m_nNumRows; i++)
-		Set(i, nCol, vct.Get(i)) ;
+    // now add the other matrix
+    for (int i = 0 ; i <m_nNumRows; i++)
+        Set(i, nCol, vct.Get(i)) ;
 
     SetColName(nCol, szColName);
 
-	if ( vct.IsReusable()) vct.Release();
+    if ( vct.IsReusable()) vct.Release();
 }
 
 void CFmMatrix::SetCol( int nCol, double* fBuf, char* szColName )
 {
-	if ( nCol >= m_nNumCols)
-		throw("over maximum columns' size." );
+    if ( nCol >= m_nNumCols)
+        throw("over maximum columns' size." );
 
-	// now add the other matrix
-	for (int i = 0 ; i <m_nNumRows; i++)
-		Set(i, nCol, fBuf[i]) ;
+    // now add the other matrix
+    for (int i = 0 ; i <m_nNumRows; i++)
+        Set(i, nCol, fBuf[i]) ;
 
     SetColName(nCol, szColName);
 }
@@ -1143,12 +1143,12 @@ void CFmMatrix::SetCol( int nCol, double* fBuf, char* szColName )
 // concatinate the other matrix to ourselves
 void CFmMatrix::Cbind(CFmMatrix &other)
 {
-	if (m_nNumRows!=0 && m_nNumCols!=0 )
-	{
-		if (m_nNumRows != other.m_nNumRows)
+    if (m_nNumRows!=0 && m_nNumCols!=0 )
+    {
+        if (m_nNumRows != other.m_nNumRows)
             throw( "Cannot concatenate matrices(Cbind), not same size" );
-	}
-	else
+    }
+    else
     {
         m_nNumRows = other.m_nNumRows;
         if (m_nMaxRows < m_nNumRows)
@@ -1175,50 +1175,50 @@ void CFmMatrix::Cbind(CFmMatrix &other)
         SetColName( i, other.GetColName( i - oldCols ) );
 
 
-	if ( other.IsReusable()) other.Release();
+    if ( other.IsReusable()) other.Release();
 }
 
 
 /*void CFmMatrix::Rbind(CFmMatrix &other)
 {
-	if (m_nNumCols !=0 && m_nNumRows !=0)
-	{
-		if (m_nNumCols != other.m_nNumCols)
+    if (m_nNumCols !=0 && m_nNumRows !=0)
+    {
+        if (m_nNumCols != other.m_nNumCols)
             throw( "Cannot concatenate matrices(Rbind), not same size" );
-	}
-	else
-		m_nNumCols = other.m_nNumCols;
+    }
+    else
+        m_nNumCols = other.m_nNumCols;
 
-	if (m_nNumRows + other.m_nNumRows> m_nMaxRows)
-		throw( "over maximum rows' size." );
+    if (m_nNumRows + other.m_nNumRows> m_nMaxRows)
+        throw( "over maximum rows' size." );
 
-	// now add the other matrix
-	for (int i = 0 ; i < other.m_nNumRows ; ++i)
-		for (int j = 0 ; j <m_nNumCols; ++j)
-			Set(i+ m_nNumRows, j , other.Get(i, j)) ;
+    // now add the other matrix
+    for (int i = 0 ; i < other.m_nNumRows ; ++i)
+        for (int j = 0 ; j <m_nNumCols; ++j)
+            Set(i+ m_nNumRows, j , other.Get(i, j)) ;
 
-	m_nNumRows += other.m_nNumRows;
+    m_nNumRows += other.m_nNumRows;
 
     for(int i=m_nNumRows - other.m_nNumRows; i<m_nNumRows; i++ )
         SetRowName( i, other.GetRowName( i - (m_nNumRows - other.m_nNumRows) ) );
 
-	if ( other.IsReusable()) other.Release();
+    if ( other.IsReusable()) other.Release();
 }*/
 
 
 // concatinate the other matrix to ourselves
 void CFmMatrix::Cbind(CFmVector &other, char* szColName)
 {
-	if (m_nNumRows!=0 && m_nNumCols!=0 )
-	{
-		if (m_nNumRows != other.GetLength())
+    if (m_nNumRows!=0 && m_nNumCols!=0 )
+    {
+        if (m_nNumRows != other.GetLength())
         {
             Rprintf("%d!=%d", m_nNumRows, other.GetLength() );
             other.Show("Vector");
             throw("Cannot concatenate matrices(Cbind), not same size" );
         }
-	}
-	else
+    }
+    else
     {
         m_nNumRows = other.GetLength();
         if (m_nMaxRows < m_nNumRows)
@@ -1230,7 +1230,7 @@ void CFmMatrix::Cbind(CFmVector &other, char* szColName)
         }
     }
 
-	if (m_nNumCols + 1 > m_nMaxCols)
+    if (m_nNumCols + 1 > m_nMaxCols)
         EnlargeCols(m_nNumCols*12/10 );
 
     m_nNumCols += 1;
@@ -1238,45 +1238,45 @@ void CFmMatrix::Cbind(CFmVector &other, char* szColName)
         Set(i, m_nNumCols-1, other.Get(i)) ;
 
     SetColName( m_nNumCols-1, szColName);
-	if ( other.IsReusable())
-		other.Release();
+    if ( other.IsReusable())
+        other.Release();
 }
 
 
 /*void CFmMatrix::Rbind(CFmVector &other, char* szRowName)
 {
-	if (m_nNumCols !=0 && m_nNumRows !=0)
-	{
-		if (m_nNumCols != other.GetLength())
+    if (m_nNumCols !=0 && m_nNumRows !=0)
+    {
+        if (m_nNumCols != other.GetLength())
             throw( "Cannot concatenate matrices(Rbind), not same size" );
-	}
-	else
-		m_nNumCols = other.GetLength();
+    }
+    else
+        m_nNumCols = other.GetLength();
 
-	if (m_nNumRows + 1 > m_nMaxRows)
-		throw( "over maximum rows' size." );
+    if (m_nNumRows + 1 > m_nMaxRows)
+        throw( "over maximum rows' size." );
 
-	// now add the other matrix
-	for (int i = 0 ; i < m_nNumCols ; ++i)
-			Set(m_nNumRows+0, i, other.Get(i)) ;
+    // now add the other matrix
+    for (int i = 0 ; i < m_nNumCols ; ++i)
+            Set(m_nNumRows+0, i, other.Get(i)) ;
 
     m_nNumRows += 1;
     SetColName(m_nNumRows-1, szRowName);
 
 
-	if ( other.IsReusable())
-		other.Release();
+    if ( other.IsReusable())
+        other.Release();
 }*/
 
 
 void CFmMatrix::Cbind(const double *pData, int nLen, char* szColName)
 {
-	if (m_nNumCols !=0 && m_nNumRows !=0)
-	{
-		if (m_nNumRows != nLen )
+    if (m_nNumCols !=0 && m_nNumRows !=0)
+    {
+        if (m_nNumRows != nLen )
             throw( "Cannot concatenate matrices(Cbind), not same size" );
-	}
-	else
+    }
+    else
     {
         m_nNumRows = nLen;
         if (m_nMaxRows < m_nNumRows)
@@ -1288,12 +1288,12 @@ void CFmMatrix::Cbind(const double *pData, int nLen, char* szColName)
         }
     }
 
-	if (m_nNumCols + 1 > m_nMaxCols)
+    if (m_nNumCols + 1 > m_nMaxCols)
         EnlargeCols( m_nNumCols *12/10 );
 
     m_nNumCols += 1;
     // now add the new row
-	for (int i = 0 ; i < m_nNumRows ; ++i)
+    for (int i = 0 ; i < m_nNumRows ; ++i)
         Set(i, m_nNumCols-1, pData[i]) ;
 
     SetColName(m_nNumCols-1, szColName);
@@ -1301,20 +1301,20 @@ void CFmMatrix::Cbind(const double *pData, int nLen, char* szColName)
 
 /*void CFmMatrix::Rbind(const double *pData, int nLen, char* szRowName)
 {
-	if (m_nNumCols !=0 && m_nNumRows !=0)
-	{
-		if (m_nNumCols != nLen )
+    if (m_nNumCols !=0 && m_nNumRows !=0)
+    {
+        if (m_nNumCols != nLen )
             throw( "Cannot concatenate matrices(Rbind), not same size" );
-	}
-	else
-		m_nNumCols = nLen;
+    }
+    else
+        m_nNumCols = nLen;
 
-	if (m_nNumRows + 1 > m_nMaxRows)
-		throw( "over maximum columns' size." );
+    if (m_nNumRows + 1 > m_nMaxRows)
+        throw( "over maximum columns' size." );
 
-	// now add the new row
-	for (int i = 0 ; i < m_nNumCols ; ++i)
-		Set(m_nNumRows, i,  pData[i]) ;
+    // now add the new row
+    for (int i = 0 ; i < m_nNumCols ; ++i)
+        Set(m_nNumRows, i,  pData[i]) ;
 
     m_nNumRows += 1;
     SetRowName(m_nNumRows-1, szRowName);
@@ -1322,12 +1322,12 @@ void CFmMatrix::Cbind(const double *pData, int nLen, char* szColName)
 
 void CFmMatrix::Cbind(const double val, int nLen, char* szColName)
 {
-	if (m_nNumCols !=0 && m_nNumRows !=0)
-	{
-		if (m_nNumRows != nLen )
+    if (m_nNumCols !=0 && m_nNumRows !=0)
+    {
+        if (m_nNumRows != nLen )
             throw( "Cannot concatenate matrices(Cbind), not same size" );
-	}
-	else
+    }
+    else
     {
         m_nNumRows = nLen;
         if (m_nMaxRows < m_nNumRows)
@@ -1339,14 +1339,14 @@ void CFmMatrix::Cbind(const double val, int nLen, char* szColName)
         }
     }
 
-	if (m_nNumCols + 1 > m_nMaxCols)
+    if (m_nNumCols + 1 > m_nMaxCols)
     {
         EnlargeCols( m_nNumCols *12/10 );
     }
 
     m_nNumCols += 1;
     // now add the new row
-	for (int i = 0 ; i < m_nNumRows ; ++i)
+    for (int i = 0 ; i < m_nNumRows ; ++i)
         Set(i, m_nNumCols-1, val) ;
 
     SetColName(m_nNumCols-1, szColName);
@@ -1354,20 +1354,20 @@ void CFmMatrix::Cbind(const double val, int nLen, char* szColName)
 
 /*void CFmMatrix::Rbind(const double val, int nLen, char* szRowName)
 {
-	if (m_nNumCols !=0 && m_nNumRows !=0)
-	{
-		if (m_nNumCols != nLen )
+    if (m_nNumCols !=0 && m_nNumRows !=0)
+    {
+        if (m_nNumCols != nLen )
             throw( "Cannot concatenate matrices(Rbind), not same size" );
-	}
-	else
-		m_nNumCols = nLen;
+    }
+    else
+        m_nNumCols = nLen;
 
-	if (m_nNumRows + 1 > m_nMaxRows)
-		throw( "over maximum columns' size." );
+    if (m_nNumRows + 1 > m_nMaxRows)
+        throw( "over maximum columns' size." );
 
-	// now add the new row
-	for (int i = 0 ; i < m_nNumCols ; ++i)
-		Set(m_nNumRows, i,  val) ;
+    // now add the new row
+    for (int i = 0 ; i < m_nNumCols ; ++i)
+        Set(m_nNumRows, i,  val) ;
 
     m_nNumRows -= 1;
     SetRowName(m_nNumRows, szRowName);
@@ -1384,7 +1384,7 @@ bool CFmMatrix::SetRowName(int nRow, char* szRowName)
 
     if (szRowName)
     {
-		CFmNewTemp fmRef;
+        CFmNewTemp fmRef;
         if (m_pRowNames==NULL)
             m_pRowNames = new (fmRef) CFmVectorStr( m_nNumRows, m_nMaxRows );
 
@@ -1406,7 +1406,7 @@ bool CFmMatrix::SetColName(int nCol, char* szColName)
 
     if (szColName)
     {
-		CFmNewTemp fmRef;
+        CFmNewTemp fmRef;
         if (m_pColNames==NULL)
             m_pColNames = new (fmRef) CFmVectorStr( m_nNumCols, m_nMaxCols );
 
@@ -1446,53 +1446,53 @@ char* CFmMatrix::GetColName(int nCol)
 void CFmMatrix::Square(int nSize, bool diagonal, double int_value)
 {
     if (m_nMaxRows<nSize || m_nMaxCols < nSize)
-	{
+    {
         double* pNew = AllocateDouble(nSize, nSize);
-		m_nMaxRows = nSize;
-		m_nMaxCols = nSize;
+        m_nMaxRows = nSize;
+        m_nMaxCols = nSize;
 
         FreeMemory();
 
         m_pData = pNew;
-	}
+    }
 
     m_nNumRows = nSize;
-	m_nNumCols = nSize;
+    m_nNumCols = nSize;
 
     if (m_pRowNames) m_pRowNames->Reset(m_nNumRows);
     if (m_pColNames) m_pColNames->Reset(m_nNumCols);
 
-	for (int i=0; i<nSize; i++)
-		for (int j=0; j<nSize; j++)
-		{
-			Set(i, j, 0.0);
-			if (diagonal && i==j )
-				Set(i,j, int_value);
-		}
+    for (int i=0; i<nSize; i++)
+        for (int j=0; j<nSize; j++)
+        {
+            Set(i, j, 0.0);
+            if (diagonal && i==j )
+                Set(i,j, int_value);
+        }
 
-	return;
+    return;
 }
 
 CFmVector& CFmMatrix::GetRowNonzero( int nRow )
 {
-	if (nRow<0 || nRow>= m_nNumRows)
+    if (nRow<0 || nRow>= m_nNumRows)
         throw( "invalid row value." );
 
     CFmVector* pVct = CFmVector::FindReuseVector( m_nNumCols );
 
-	int jj=0;
-	for (int j=0; j<m_nNumCols; j++)
-		if (Get(nRow,j)!=0)
-		{
-			pVct->Set(jj, Get(nRow,j) );
-			jj++;
-		}
+    int jj=0;
+    for (int j=0; j<m_nNumCols; j++)
+        if (Get(nRow,j)!=0)
+        {
+            pVct->Set(jj, Get(nRow,j) );
+            jj++;
+        }
 
-	pVct->SetLength( jj );
+    pVct->SetLength( jj );
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return(*pVct);
+    return(*pVct);
 }
 
 CFmVector& CFmMatrix::GetRowNonNan( int nRow )
@@ -1527,14 +1527,14 @@ void CFmMatrix::ResetNanvalue(double fNan)
 
 int CFmMatrix::GetNanCount()
 {
-	int k=0;
-	for (int i=0; i<m_nNumCols*m_nNumRows; i++)
+    int k=0;
+    for (int i=0; i<m_nNumCols*m_nNumRows; i++)
         if (isnan(m_pData[i]))
-			k++;
+            k++;
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return k;
+    return k;
 }
 
 double CFmMatrix::GetDet()
@@ -1542,7 +1542,7 @@ double CFmMatrix::GetDet()
     if (m_nNumRows != m_nNumCols)
         throw("'A' must be a square matrix");
 
-	return( GetDeterminant( m_pData, m_nNumRows ) );
+    return( GetDeterminant( m_pData, m_nNumRows ) );
 }
 
 double CFmMatrix::GetMean()
@@ -1584,98 +1584,98 @@ double CFmMatrix::GetSd()
 
 double CFmMatrix::SumColumn(int column)
 {
-	//ASSERT(column >= 0) ;					// bad column
-	//ASSERT(column < m_nNumCols) ;				// bad column
-	double	sum = 0.0 ;
+    //ASSERT(column >= 0) ;                    // bad column
+    //ASSERT(column < m_nNumCols) ;                // bad column
+    double    sum = 0.0 ;
 
     for (int i = 0 ; i < m_nNumRows ; ++i)
         sum += Get(i, column) ;
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return sum ;
+    return sum ;
 }
 
 double CFmMatrix::SumRow(int row)
 {
-	//ASSERT(row >= 0) ;						// bad row
-	//ASSERT(row < m_nNumRows) ;					// bad row
-	double	sum = 0.0 ;
+    //ASSERT(row >= 0) ;                        // bad row
+    //ASSERT(row < m_nNumRows) ;                    // bad row
+    double    sum = 0.0 ;
 
     for (int i = 0 ; i < m_nNumCols ; ++i)
         sum += Get( row, i ) ;
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return sum ;
+    return sum ;
 }
 
 // returns the minimum value in a row of the matrix
 double CFmMatrix::GetRowMin(int row)
 {
-	//ASSERT(row >= 0) ;
-	//ASSERT(row < m_nNumRows) ;
-	double	value = Get(0, row) ;
-	for (int i = 1 ; i < m_nNumCols ; ++i)
-		{
-		if (Get(i, row) < value)
-			value = Get(i, row) ;
-		}
+    //ASSERT(row >= 0) ;
+    //ASSERT(row < m_nNumRows) ;
+    double    value = Get(0, row) ;
+    for (int i = 1 ; i < m_nNumCols ; ++i)
+        {
+        if (Get(i, row) < value)
+            value = Get(i, row) ;
+        }
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return value ;
+    return value ;
 }
 
 // returns the maximum value in a row of the matrix
 double CFmMatrix::GetRowMax(int row)
 {
-	//ASSERT(row >= 0) ;
-	//ASSERT(row < m_nNumRows) ;
-	double	value = Get(0, row) ;
-	for (int i = 1 ; i < m_nNumCols ; ++i)
-		{
-		if (Get(i, row) > value)
-			value = Get(i, row) ;
-		}
+    //ASSERT(row >= 0) ;
+    //ASSERT(row < m_nNumRows) ;
+    double    value = Get(0, row) ;
+    for (int i = 1 ; i < m_nNumCols ; ++i)
+        {
+        if (Get(i, row) > value)
+            value = Get(i, row) ;
+        }
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return value ;
+    return value ;
 }
 
 // returns the minimum value in a column of the matrix
 double CFmMatrix::GetColumnMin(int column)
 {
-	//ASSERT(column >= 0) ;
-	//ASSERT(column < m_nNumCols) ;
-	double	value = Get(column, 0) ;
-	for (int i = 1 ; i < m_nNumRows ; ++i)
-		{
-		if (Get(column, i) < value)
-			value = Get(column, i) ;
-		}
+    //ASSERT(column >= 0) ;
+    //ASSERT(column < m_nNumCols) ;
+    double    value = Get(column, 0) ;
+    for (int i = 1 ; i < m_nNumRows ; ++i)
+        {
+        if (Get(column, i) < value)
+            value = Get(column, i) ;
+        }
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return value ;
+    return value ;
 }
 
 // returns the maximum value in a column of the matrix
 double CFmMatrix::GetColumnMax(int column)
 {
-	//ASSERT(column >= 0) ;
-	//ASSERT(column < m_nNumCols) ;
-	double	value = Get(column, 0) ;
-	for (int i = 1 ; i < m_nNumRows ; ++i)
+    //ASSERT(column >= 0) ;
+    //ASSERT(column < m_nNumCols) ;
+    double    value = Get(column, 0) ;
+    for (int i = 1 ; i < m_nNumRows ; ++i)
     {
-		if (Get(column, i) > value)
-			value = Get(column, i) ;
+        if (Get(column, i) > value)
+            value = Get(column, i) ;
     }
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return value ;
+    return value ;
 }
 
 int CFmMatrix::WriteAsCSVFile(const char* filename, bool bAppend, const char* szTag, const char* szFloatFmt) const
@@ -1856,13 +1856,13 @@ int CFmMatrix::ReadFromCSVFile(const char* filename, bool bColName, bool bRowNam
         for(int j=0; j<m_nNumCols; j++)
             m_pData[MI(m_nNumRows, m_nNumCols, i, j)] = t_mat.Get(j, i);
 
-   	if(bRowName)
-    	for(int i=0; i<m_nNumRows; i++)
-    	    SetRowName(i, vctRowNames.Get(i));
+       if(bRowName)
+        for(int i=0; i<m_nNumRows; i++)
+            SetRowName(i, vctRowNames.Get(i));
 
-	if(bColName)
-	    for(int i=0; i<m_nNumCols; i++)
-	        SetColName(i, vctColNames.Get(i));
+    if(bColName)
+        for(int i=0; i<m_nNumCols; i++)
+            SetColName(i, vctColNames.Get(i));
 
     return(0);
 }
@@ -1871,24 +1871,24 @@ CFmVector& CFmMatrix::GetRow(int nRow)
 {
     CFmVector* pTmp = CFmVector::FindReuseVector( m_nNumCols );
 
-	for(int i=0; i<m_nNumCols; i++)
-		pTmp->Set(i, Get(nRow, i));
+    for(int i=0; i<m_nNumCols; i++)
+        pTmp->Set(i, Get(nRow, i));
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return *pTmp;
+    return *pTmp;
 }
 
 CFmVector& CFmMatrix::GetCol(int nCol)
 {
     CFmVector* pTmp = CFmVector::FindReuseVector( m_nNumRows );
 
-	for(int i=0; i<m_nNumRows; i++)
-		pTmp->Set(i, Get(i, nCol));
+    for(int i=0; i<m_nNumRows; i++)
+        pTmp->Set(i, Get(i, nCol));
 
-	if (IsReusable() ) Release();
+    if (IsReusable() ) Release();
 
-	return *pTmp;
+    return *pTmp;
 }
 
 bool CFmMatrix::IsFitted(int nRows, int nCols)
@@ -1919,53 +1919,53 @@ void CFmMatrix::Resize(int nRows, int nCols, bool reset)
         memset( m_pData, 0, sizeof(double)*m_nNumRows*m_nNumCols);
 }
 
-#define REUSE_MATRIX_COUNT	1000
+#define REUSE_MATRIX_COUNT    1000
 CFmMatrix* CFmMatrix::FindReuseMatrix(int nRows, int nCols)
 {
-	if (g_pReused==NULL)
-	{
+    if (g_pReused==NULL)
+    {
         g_pReused = (CFmMatrix**)Calloc( REUSE_MATRIX_COUNT, CFmMatrix* );
         memset(g_pReused, 0, sizeof(CFmMatrix*)*REUSE_MATRIX_COUNT );
 
 //**MEMTEST: Rprintf("ALLOC MEMORY: %d\n", sizeof(CFmMatrix*)*REUSE_MATRIX_COUNT);
-	}
+    }
 
-	for(int i=0; i<REUSE_MATRIX_COUNT; i++)
-	{
+    for(int i=0; i<REUSE_MATRIX_COUNT; i++)
+    {
         CFmMatrix* pTmp = (CFmMatrix* )(g_pReused[i]);
-		if ( pTmp!=NULL &&
-			 pTmp->GetRefer()==0 &&
-			 pTmp->IsFitted(nRows, nCols))
-		{
-			pTmp->Resize(nRows, nCols, true);
-			pTmp->AddRef();
+        if ( pTmp!=NULL &&
+             pTmp->GetRefer()==0 &&
+             pTmp->IsFitted(nRows, nCols))
+        {
+            pTmp->Resize(nRows, nCols, true);
+            pTmp->AddRef();
 
-			if (_DM) Rprintf("***REUSE M(%d)\n", pTmp->m_nObjId);
-			return(pTmp);
-		}
+            if (_DM) Rprintf("***REUSE M(%d)\n", pTmp->m_nObjId);
+            return(pTmp);
+        }
         if (_DM && pTmp) Rprintf("***------TMP M(%d, %d)\n", pTmp->m_nObjId, pTmp->GetRefer());
     }
 
-	CFmNewTemp fmRef;
+    CFmNewTemp fmRef;
     CFmMatrix* pMat = new (fmRef)CFmMatrix(nRows, nCols, true);
     if (_DM)
         Rprintf("***NEW M(%d): Len=%d\n", pMat->m_nObjId, nRows*nCols);
-	if ( pMat->m_nObjId > 5000 )
-		_DM=1;
-	if ( pMat->m_nObjId > 5000*2 )
+    if ( pMat->m_nObjId > 5000 )
+        _DM=1;
+    if ( pMat->m_nObjId > 5000*2 )
         throw("Resue Matrics have big problem\n...");
 
-	for(int i=0; i<REUSE_MATRIX_COUNT; i++)
-	{
+    for(int i=0; i<REUSE_MATRIX_COUNT; i++)
+    {
         CFmMatrix* pTmp = (CFmMatrix* )(g_pReused[i]);
-		if ( pTmp==NULL)
-		{
-			g_pReused[i] = pMat;
-			break;
-		}
-	}
+        if ( pTmp==NULL)
+        {
+            g_pReused[i] = pMat;
+            break;
+        }
+    }
 
-	return(pMat);
+    return(pMat);
 }
 
 bool CFmMatrix::RemoveRows(CFmVector& nRows)
@@ -2032,7 +2032,7 @@ bool CFmMatrix::SetColNames(CFmVectorStr* pNames)
     if (m_pColNames)
         destroy( m_pColNames);
 
-	CFmNewTemp fmRef;
+    CFmNewTemp fmRef;
     m_pColNames = new (fmRef) CFmVectorStr( pNames );
     return(true);
 }
@@ -2045,15 +2045,15 @@ bool CFmMatrix::SetRowNames(CFmVectorStr* pNames)
     if (m_pRowNames)
         destroy( m_pRowNames);
 
-	CFmNewTemp fmRef;
+    CFmNewTemp fmRef;
     m_pRowNames = new (fmRef)CFmVectorStr( pNames );
     return(true);
 }
 
 int CFmMatrix::FindColumn(const char* szColumn)
 {
-	if (m_pColNames==NULL)
-		return(-1);
+    if (m_pColNames==NULL)
+        return(-1);
 
     for (int i=0;i<m_nNumCols; i++)
     {
@@ -2111,7 +2111,7 @@ SEXP GetSEXP(CFmMatrix* pMat)
         UNPROTECT(nProtected+1);
     }
 
-	UNPROTECT(1);
+    UNPROTECT(1);
     return sep;
 }
 
@@ -2143,45 +2143,45 @@ int GetMatrix(SEXP pExp, CFmMatrix* pMat)
     }
 
 
-	SEXP dimnames = getAttrib( pExp, R_DimNamesSymbol );
-	SEXP colnames = VECTOR_ELT(dimnames, 1);
+    SEXP dimnames = getAttrib( pExp, R_DimNamesSymbol );
+    SEXP colnames = VECTOR_ELT(dimnames, 1);
 
-	for (int j = 0; j < length(colnames); j++)
-		pMat->SetColName( j, (char*)CHAR( STRING_ELT( colnames, j) ) );
+    for (int j = 0; j < length(colnames); j++)
+        pMat->SetColName( j, (char*)CHAR( STRING_ELT( colnames, j) ) );
 
-	SEXP rownames = VECTOR_ELT(dimnames, 0);
-	for (int i = 0; i < length(rownames); i++)
-		pMat->SetRowName( i, (char*)CHAR( STRING_ELT( rownames, i) ) );
+    SEXP rownames = VECTOR_ELT(dimnames, 0);
+    for (int i = 0; i < length(rownames); i++)
+        pMat->SetRowName( i, (char*)CHAR( STRING_ELT( rownames, i) ) );
 
     return(0);
 }
 
 void CFmMatrix::StatCache(int* pnTotal, int* pnUsed)
 {
-	if (g_pReused==NULL)
-	{
-		*pnTotal = 0;
-		*pnUsed = 0;
-		return;
-	}
+    if (g_pReused==NULL)
+    {
+        *pnTotal = 0;
+        *pnUsed = 0;
+        return;
+    }
 
-	for(int i=0; i<REUSE_MATRIX_COUNT; i++)
-	{
+    for(int i=0; i<REUSE_MATRIX_COUNT; i++)
+    {
         CFmMatrix* pTmp = (CFmMatrix* )(g_pReused[i]);
-		if ( pTmp==NULL )
-			continue;
+        if ( pTmp==NULL )
+            continue;
 
-		*pnTotal = *pnTotal + 1;
-		if( pTmp->GetRefer()> 0)
-			*pnUsed = *pnUsed + 1;
-	}
+        *pnTotal = *pnTotal + 1;
+        if( pTmp->GetRefer()> 0)
+            *pnUsed = *pnUsed + 1;
+    }
 
-	return;
+    return;
 }
 
 void destroy(CFmMatrix* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmMatrix();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmMatrix();
+    operator delete(p, fmRef);
 }

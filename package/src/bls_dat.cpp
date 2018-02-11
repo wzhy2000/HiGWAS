@@ -1,5 +1,5 @@
-/* BLS_dat.cpp  -	BLS Data Object
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+/* BLS_dat.cpp  -    BLS Data Object
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -59,16 +59,16 @@ void BLS_dat::ResetAllObjects()
 {
     if (m_pPlink)
     {
-		// m_pPackedSNP is a reference of the inner object of m_pPlink
-		m_pPackedSNP = NULL;
-		destroy( m_pPlink );
-	}
+        // m_pPackedSNP is a reference of the inner object of m_pPlink
+        m_pPackedSNP = NULL;
+        destroy( m_pPlink );
+    }
     if (m_pSimple)
     {
-		// m_pPackedSNP is a reference of the inner object of m_pSimple
-		m_pPackedSNP = NULL;
-		destroy( m_pSimple );
-	}
+        // m_pPackedSNP is a reference of the inner object of m_pSimple
+        m_pPackedSNP = NULL;
+        destroy( m_pSimple );
+    }
     if (m_pSimulate) destroy( m_pSimulate );
     if (m_pPhenoY) destroy( m_pPhenoY );
     if (m_pCovars) destroy( m_pCovars );
@@ -108,7 +108,7 @@ int BLS_dat::LoadPlink( char* szFile_tped, char* szFile_tfam, char* szFile_pheno
     m_sPheno_file = Strdup(szFile_pheno);
     m_sGeno_file = Strdup(szFile_tped);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pPlink = new (refNew) CFmDat_Plink( szFile_tped, szFile_tfam);
     int ret = m_pPlink->Load(szFile_presig);
     if (ret!=0)
@@ -152,7 +152,7 @@ int BLS_dat::LoadSimple( char* szFile_snp, char* szFile_pheno,bool bZnorm, char*
 
     _log_info( _HI_, "LoadSimple: Start to read the SNP file(%s)", szFile_snp);
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     m_pSimple = new (refNew) CFmDat_Simple( szFile_snp );
     int ret =  m_pSimple->Load(szFile_presig);
@@ -198,7 +198,7 @@ int BLS_dat::AttachSnpmat( CFmMatrix* pFmPhe, CFmMatrix* pFmSnp, bool bZnorm  )
 
     _log_info( _HI_, "AttachSnpmat: Start to read the SNPMAT" );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     m_pPackedSNP = new (refNew) CFmPackedSNP();
     m_pPackedSNP->InitData( pFmSnp->GetNumCols()-2, pFmSnp->GetNumRows() );
@@ -229,11 +229,11 @@ int BLS_dat::AttachSnpmat( CFmMatrix* pFmPhe, CFmMatrix* pFmSnp, bool bZnorm  )
     int ret = m_pPackedSNP->RemoveRareSNP( 0.01 );
     if (ret!=0)
     {
-		_log_fatal( _HI_, "Failed to remove rare SNPs");
-		return( ERR_SNPFILE_LONG );
-	}
-	else
-	    _log_prompt( _HI_, "Total SNPs: %d, Rare SNPs: %d, Rare MAF= %.3f", nSnpP, nSnpP - m_pPackedSNP->GetNumSnps(), 0.01 );
+        _log_fatal( _HI_, "Failed to remove rare SNPs");
+        return( ERR_SNPFILE_LONG );
+    }
+    else
+        _log_prompt( _HI_, "Total SNPs: %d, Rare SNPs: %d, Rare MAF= %.3f", nSnpP, nSnpP - m_pPackedSNP->GetNumSnps(), 0.01 );
 
     m_pSnpNames = new (refNew) CFmVectorStr( m_pPackedSNP->GetNumSnps() );
     for (int i=0;i<m_pPackedSNP->GetNumSnps();i++)
@@ -270,7 +270,7 @@ int BLS_dat::AttachSnpmat( CFmMatrix* pFmPhe, CFmMatrix* pFmSnp, bool bZnorm  )
     m_pCovars = new (refNew) CFmMatrix( pPheno->m_pCovars );
 
     destroy( pPheno );
-	destroy( pSubids);
+    destroy( pSubids);
 
     _log_info( _HI_, "AttachSnpmat: successful, nSubjN=%d", m_nSubjN );
     return(0);
@@ -280,13 +280,13 @@ int BLS_dat::LoadPhenoOnly(char* szFile_pheno, bool bZnorm )
 {
     _log_info( _HI_, "LoadPhenoOnly: Start to read the phenotype file(%s, Znorm=%d)", szFile_pheno, bZnorm?1:0 );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
-	CFmVectorStr* pSubjs = NULL;
-	if (m_pPlink)
-		pSubjs = m_pPlink->m_pSubIds;
-	if (m_pPlink)
-		pSubjs = m_pSimple->m_pSubIds;
+    CFmVectorStr* pSubjs = NULL;
+    if (m_pPlink)
+        pSubjs = m_pPlink->m_pSubIds;
+    if (m_pPlink)
+        pSubjs = m_pSimple->m_pSubIds;
 
     CFmDat_Pheno* pPheno = new (refNew) CFmDat_Pheno( szFile_pheno, bZnorm, m_pCmd->szYname, NULL, m_pCmd->szXname);
     int ret = pPheno->LoadNonlongdt( m_pPackedSNP, pSubjs );
@@ -335,7 +335,7 @@ int BLS_dat::Simulate( BLS_par* par, CMDOPTIONS* pCmd )
     simu_par.simu_covar_prange= par->simu_covar_range;
     simu_par.sig_p          = par->sig_p;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
 
     CFmSimulate* m_pSimulate = new (refNew) CFmSimulate( &simu_par );
     int nRet = m_pSimulate->Simulate( pCmd->szSnpoutFile, pCmd->szPheoutFile, (char*)"0" );
@@ -401,7 +401,7 @@ int BLS_dat::GetPartialSNP( CFmSnpMat* pMat, int nSnpStart, int nSnpCnt )
         pMat->SetSnp(i, fSNPs, m_nSubjN, pSnpId, pChr, pPos );
     }
 
-	delete fSNPs;
+    delete fSNPs;
 
     _log_debug( _HI_, "GetPartialSNP(), Successful.");
     return(0);
@@ -467,7 +467,7 @@ int BLS_dat::AppendSnp(CFmSnpMat* pMat)
 {
     _log_debug(_HI_, "AppendSnp: pMat[%d,%d]", pMat->GetNumSnps(), pMat->GetNumSubjs() );
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     if (m_pPackedSNP == NULL)
         m_pPackedSNP = new (refNew) CFmPackedSNP();
 
@@ -560,7 +560,7 @@ int BLS_dat::Summary(char* szOutFile)
 
 void destroy(BLS_dat* p)
 {
-	CFmNewTemp  fmRef;
-	p->~BLS_dat();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~BLS_dat();
+    operator delete(p, fmRef);
 }

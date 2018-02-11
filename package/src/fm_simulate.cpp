@@ -27,7 +27,7 @@ CFmSimulate::CFmSimulate( SIMU_PARAM* par  )
     m_nSnpP  = par->simu_p;
     m_nMesuTime = 1;
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pPhenoY  = new (refNew) CFmMatrix( m_nSubjN, m_nMesuTime );
     m_pCovarX  = new (refNew) CFmMatrix( m_nSubjN, par->simu_covar_len );
     m_pSimuSnps= new (refNew) CFmMatrix( m_nSnpP, m_nSubjN);
@@ -47,7 +47,7 @@ CFmSimulate::CFmSimulate( SIMU_PARAM_LONGDT* par  )
     m_nSnpP  = par->simu_p;
     m_nMesuTime = par->simu_z_count[1];
 
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pPhenoY = new (refNew) CFmMatrix( m_nSubjN, m_nMesuTime );
     m_pCovarZ = new (refNew) CFmMatrix( m_nSubjN, m_nMesuTime );
     m_pCovarX = new (refNew) CFmMatrix( m_nSubjN, par->simu_covar_len );
@@ -57,11 +57,11 @@ CFmSimulate::CFmSimulate( SIMU_PARAM_LONGDT* par  )
 
 CFmSimulate::~CFmSimulate()
 {
-	if(m_pPhenoY) destroy( m_pPhenoY );
-	if(m_pCovarZ) destroy( m_pCovarZ );
-	if(m_pCovarX) destroy( m_pCovarX );
-	if(m_pSimuSnps) destroy( m_pSimuSnps );
-	if(m_pZRange) destroy( m_pZRange );
+    if(m_pPhenoY) destroy( m_pPhenoY );
+    if(m_pCovarZ) destroy( m_pCovarZ );
+    if(m_pCovarX) destroy( m_pCovarX );
+    if(m_pSimuSnps) destroy( m_pSimuSnps );
+    if(m_pZRange) destroy( m_pZRange );
 }
 
 int CFmSimulate::Simulate(char *szSnpoutFile, char* szPheoutFile, char* szGrpId)
@@ -89,16 +89,16 @@ int CFmSimulate::Simulate(char *szSnpoutFile, char* szPheoutFile, char* szGrpId)
     }
     else
     {
-		CFmVector vctY(m_nSubjN, 0.0);
+        CFmVector vctY(m_nSubjN, 0.0);
         ret = Simu_pheno(m_pSimuSnps->GetData(), m_pCovarX, &vctY );
-		m_pPhenoY->SetCol( 0, vctY, (char*)"y" );
+        m_pPhenoY->SetCol( 0, vctY, (char*)"y" );
     }
 
     if(ret!=0)
         return(ret);
 
     //--create a list for the snps' name.
-	CFmNewTemp refNew;
+    CFmNewTemp refNew;
     m_pSnpNames = new (refNew) CFmVectorStr(m_nSnpP);
     for (int i=0;i<m_nSnpP;i++)
     {
@@ -243,12 +243,12 @@ int CFmSimulate::Simu_geno( double* gen_r )
     //R: all_SNPs <-c();
     //   for (i in 1:par$simu_p)
     //   {
-    //		fi <- which(sig_pos==i);
-    //		if (length(fi)>0)
-    //			all_SNPs <- cbind(all_SNPs, x[,fi[[1]]]);
-    //		else
-    //			all_SNPs <- cbind(all_SNPs, rnorm(par$simu_n, mean=0, sd=1) );
-    //	}
+    //        fi <- which(sig_pos==i);
+    //        if (length(fi)>0)
+    //            all_SNPs <- cbind(all_SNPs, x[,fi[[1]]]);
+    //        else
+    //            all_SNPs <- cbind(all_SNPs, rnorm(par$simu_n, mean=0, sd=1) );
+    //    }
     SEXP all_snps;
     PROTECT( all_snps = allocMatrix( REALSXP, simu_n, simu_p ) );
     double* all_snps_r = REAL( all_snps );
@@ -274,12 +274,12 @@ int CFmSimulate::Simu_geno( double* gen_r )
     //R:-----------------------------------
     //R: for (i in 1:par$simu_n)
     //   {
-    //		for(j in 1:par$simu_p)
-    //		{
-    //			tmp <- all_SNPs[i,j];
-    //			all_SNPs[i,j] <- -1*(tmp<c) + (tmp>-c);
-    //		}
-    //	}
+    //        for(j in 1:par$simu_p)
+    //        {
+    //            tmp <- all_SNPs[i,j];
+    //            all_SNPs[i,j] <- -1*(tmp<c) + (tmp>-c);
+    //        }
+    //    }
     SEXP ans;
     PROTECT( ans = allocMatrix( INTSXP, simu_n, simu_p ) );
     int* ans_r = INTEGER( ans );
@@ -321,19 +321,19 @@ int CFmSimulate::Simu_geno( double* gen_r )
     PROTECT( ret = R_tryEval(e1, R_GlobalEnv, &errorOccurred) );
     int* ret_r = INTEGER(ret);
 
-	//Add Missing SNP
-	if(simu_snpmiss!=0)
+    //Add Missing SNP
+    if(simu_snpmiss!=0)
     for (int i=0; i<simu_p; i++)
     {
         GetRNGstate();
-		int n_miss = round( runif( 0, simu_n * simu_snpmiss) );
-		for (int k=0; k<n_miss ; k++)
-		{
-			int j = round( runif(1, simu_n) ) - 1;
-        	ret_r[ MI(simu_p, simu_n, i, j) ] = -9;
-		}
+        int n_miss = round( runif( 0, simu_n * simu_snpmiss) );
+        for (int k=0; k<n_miss ; k++)
+        {
+            int j = round( runif(1, simu_n) ) - 1;
+            ret_r[ MI(simu_p, simu_n, i, j) ] = -9;
+        }
         PutRNGstate();
-	}
+    }
 
     //R:-----------------------------------
     //gen_r <- ret;
@@ -386,7 +386,7 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
     //R:-----------------------------------
     //R: add_mat<-array(0, dim=c(par$simu_p, length(par$simu_a_effect[1,]));
     //   for (i in 1:length(par$simu_a_pos) )
-    //		add_mat[ par$simu_a_pos[i], ] <- par$simu_a_effect[i];
+    //        add_mat[ par$simu_a_pos[i], ] <- par$simu_a_effect[i];
     SEXP add_mat;
     PROTECT( add_mat = allocMatrix( REALSXP, simu_p, 4 ) );
     double* add_mat_r = REAL( add_mat );
@@ -401,7 +401,7 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
     //R:-----------------------------------
     //R: dom_mat<-array(0, dim=c(par$simu_p, length(par$simu_d_effect[1,]));
     //   for (i in 1:length(par$simu_d_pos) )
-    //		dom_mat[ par$simu_d_pos[i], ] <- par$simu_d_effect[i];
+    //        dom_mat[ par$simu_d_pos[i], ] <- par$simu_d_effect[i];
     SEXP dom_mat;
     PROTECT( dom_mat = allocMatrix( REALSXP, simu_p, 4 ) );
     double* dom_mat_r = REAL( dom_mat );
@@ -435,7 +435,7 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
 
     //R:-----------------------------------
     //R: for(i in 1:par$simu_n)
-    //		ind.Z[i,1:ind.mesu[i]] <- sort( sample(par$simu_age[1]:par$simu_age[2], ind.mesu[i]) );
+    //        ind.Z[i,1:ind.mesu[i]] <- sort( sample(par$simu_age[1]:par$simu_age[2], ind.mesu[i]) );
     bool bAlikeReal=false;
     SEXP z_range;
     if (bAlikeReal)
@@ -546,8 +546,8 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
     for (int nCov=0; nCov<simu_covar_len; nCov++)
     for (int i=0; i<simu_n; i++)
     {
-		if ( nCov==0)
-			ind_X_r[MI(simu_n, simu_covar_len, i, nCov)] = round(runif( 0, 1) )*1.0;
+        if ( nCov==0)
+            ind_X_r[MI(simu_n, simu_covar_len, i, nCov)] = round(runif( 0, 1) )*1.0;
         else
             ind_X_r[MI(simu_n, simu_covar_len, i, nCov)] = runif( simu_covar_range[0], simu_covar_range[1] ) ;
     }
@@ -590,10 +590,10 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
         double* ui_r = REAL(ui );
         for (int nRow=0; nRow<nozero_len; nRow++)
         {
-            ui_r[MI( nozero_len, 4, nRow, 0)]	 = 1;
-            ui_r[MI( nozero_len, 4, nRow, 1)]	 = tp_r[nRow];
-            ui_r[MI( nozero_len, 4, nRow, 2)]	 = (3*pow(tp_r[nRow],2)-1)/2;
-            ui_r[MI( nozero_len, 4, nRow, 3)]	 = (5*pow(tp_r[nRow],3)-3*tp_r[nRow])/2;
+            ui_r[MI( nozero_len, 4, nRow, 0)]     = 1;
+            ui_r[MI( nozero_len, 4, nRow, 1)]     = tp_r[nRow];
+            ui_r[MI( nozero_len, 4, nRow, 2)]     = (3*pow(tp_r[nRow],2)-1)/2;
+            ui_r[MI( nozero_len, 4, nRow, 3)]     = (5*pow(tp_r[nRow],3)-3*tp_r[nRow])/2;
         }
 
         _log_debug(_HI_, "P5, gen_effect,%d,[%d]", i,nozero_len);
@@ -608,12 +608,12 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
 
         matprod(ui_r, nozero_len, 4, 'N', simu_mu, 4, 1, 'N', gen_effect_r);
 
-		for( int nCov=0; nCov<simu_covar_len; nCov++)
-		{
-			matprod(ui_r, nozero_len, 4, 'N', m_par_longdt->simu_covar_effect[nCov], 4, 1, 'N', tmp_prod_r);
-			for (int k=0; k< nozero_len; k++)
-				 gen_effect_r[k] = gen_effect_r[k]+	tmp_prod_r[k]*ind_X_r[ MI(simu_n, simu_covar_len, i, nCov) ];
-		}
+        for( int nCov=0; nCov<simu_covar_len; nCov++)
+        {
+            matprod(ui_r, nozero_len, 4, 'N', m_par_longdt->simu_covar_effect[nCov], 4, 1, 'N', tmp_prod_r);
+            for (int k=0; k< nozero_len; k++)
+                 gen_effect_r[k] = gen_effect_r[k]+    tmp_prod_r[k]*ind_X_r[ MI(simu_n, simu_covar_len, i, nCov) ];
+        }
 
         for (int j=0; j< simu_p; j++)
         {
@@ -628,7 +628,7 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
                 matprod(ui_r, nozero_len, 4, 'N', add_mat_rj, 4, 1, 'N', tmp_prod_r);
 
                 for (int k=0; k< nozero_len; k++)
-                    gen_effect_r[k] = gen_effect_r[k]+	tmp_prod_r[k]*gen_a_r[MI(simu_n, simu_p, i, j)];
+                    gen_effect_r[k] = gen_effect_r[k]+    tmp_prod_r[k]*gen_a_r[MI(simu_n, simu_p, i, j)];
             }
 
 
@@ -642,7 +642,7 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
 
                 matprod(ui_r, nozero_len, 4, 'N', dom_mat_rj, 4, 1, 'N', tmp_prod_r);
                 for (int k=0; k< nozero_len; k++)
-                    gen_effect_r[k] = gen_effect_r[k]+	tmp_prod_r[k]*gen_d_r[MI(simu_n, simu_p, i, j)];
+                    gen_effect_r[k] = gen_effect_r[k]+    tmp_prod_r[k]*gen_d_r[MI(simu_n, simu_p, i, j)];
             }
 
         }
@@ -691,9 +691,9 @@ int CFmSimulate::Simu_pheno_longdt( double* snp, double* vct_X_r, double* mat_Y_
         _log_debug(_HI_, "P8, %d", i );
     }
 
-    for(int i= 0; i<simu_n * simu_z_count[1]; i++)	mat_Y_r[i] = ind_Y_r[i];
-    for(int i= 0; i<simu_n * simu_z_count[1]; i++)	mat_Z_r[i] = ind_Z_r[i];
-    for(int i= 0; i<simu_n * simu_covar_len; i++)	vct_X_r[i] = ind_X_r[i];
+    for(int i= 0; i<simu_n * simu_z_count[1]; i++)    mat_Y_r[i] = ind_Y_r[i];
+    for(int i= 0; i<simu_n * simu_z_count[1]; i++)    mat_Z_r[i] = ind_Z_r[i];
+    for(int i= 0; i<simu_n * simu_covar_len; i++)    vct_X_r[i] = ind_X_r[i];
 
     UNPROTECT(8);
 
@@ -738,7 +738,7 @@ int CFmSimulate::Simu_pheno( double* snp, CFmMatrix* pMat_cov, CFmVector* pVct_Y
     //R:-----------------------------------
     //R: add_mat<-array(0, dim=c(par$simu_p, length(par$simu_a_effect[1,]));
     //   for (i in 1:length(par$simu_a_pos) )
-    //		add_mat[ par$simu_a_pos[i], ] <- par$simu_a_effect[i];
+    //        add_mat[ par$simu_a_pos[i], ] <- par$simu_a_effect[i];
     SEXP add_vct;
     PROTECT( add_vct = allocVector( REALSXP, simu_p  ) );
     double* add_vct_r = REAL( add_vct );
@@ -752,7 +752,7 @@ int CFmSimulate::Simu_pheno( double* snp, CFmMatrix* pMat_cov, CFmVector* pVct_Y
     //R:-----------------------------------
     //R: dom_mat<-array(0, dim=c(par$simu_p, length(par$simu_d_effect[1,]));
     //   for (i in 1:length(par$simu_d_pos) )
-    //		dom_mat[ par$simu_d_pos[i], ] <- par$simu_d_effect[i];
+    //        dom_mat[ par$simu_d_pos[i], ] <- par$simu_d_effect[i];
     SEXP dom_vct;
     PROTECT( dom_vct = allocVector( REALSXP, simu_p ) );
     double* dom_vct_r = REAL( dom_vct );
@@ -766,14 +766,14 @@ int CFmSimulate::Simu_pheno( double* snp, CFmMatrix* pMat_cov, CFmVector* pVct_Y
     GetRNGstate();
     for (int k=0; k<simu_cov_len; k++)
     {
-	    for (int i=0; i<simu_n; i++)
+        for (int i=0; i<simu_n; i++)
         {
-			if (k==0)
-				pMat_cov->Set( i, k, round( runif( 1, 2 ) ) - 1 );
-			else
-				pMat_cov->Set( i, k, runif( -1, 1 ) );
-		}
-	}
+            if (k==0)
+                pMat_cov->Set( i, k, round( runif( 1, 2 ) ) - 1 );
+            else
+                pMat_cov->Set( i, k, runif( -1, 1 ) );
+        }
+    }
 
     //R:-----------------------------------
     //R:simu_Y <- rnorm(par$simu_n, mean=0, sd=sqrt(par$simu_sigma2) )
@@ -785,7 +785,7 @@ int CFmSimulate::Simu_pheno( double* snp, CFmMatrix* pMat_cov, CFmVector* pVct_Y
 
     CFmVector vct_Y( simu_n, simu_mu );
     for (int k=0; k<simu_cov_len; k++)
-	    vct_Y = vct_Y + pMat_cov->GetCol(k) * simu_covar_pcoefs[k];
+        vct_Y = vct_Y + pMat_cov->GetCol(k) * simu_covar_pcoefs[k];
 
     for (int i=0; i< simu_n; i++)
     {
@@ -803,7 +803,7 @@ int CFmSimulate::Simu_pheno( double* snp, CFmMatrix* pMat_cov, CFmVector* pVct_Y
 
     PutRNGstate();
 
- 	*pVct_Y = vct_Y;
+     *pVct_Y = vct_Y;
 
     UNPROTECT(4);
 
@@ -850,11 +850,11 @@ int CFmSimulate::SaveSnpFile( char* szSnpoutFile )
 
             for(int j=0; j < m_pSimuSnps->GetNumCols(); j++)
             {
-            	if ( m_pSimuSnps->Get(i,j) ==-9 )
-            		fprintf(fp, ",NA");
-				else
-               		fprintf(fp, ",%d", (int)(m_pSimuSnps->Get(i,j)+1) );
-			}
+                if ( m_pSimuSnps->Get(i,j) ==-9 )
+                    fprintf(fp, ",NA");
+                else
+                       fprintf(fp, ",%d", (int)(m_pSimuSnps->Get(i,j)+1) );
+            }
             fprintf(fp, "\n");
         }
 
@@ -881,19 +881,19 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
     fprintf(fp, "ID");
 
     if ( m_pCovarX->GetNumCols()==1)
-	    fprintf(fp, ",X");
+        fprintf(fp, ",X");
 
     if ( m_pCovarX->GetNumCols()>1)
     {
-		fprintf(fp, ",X_1");
+        fprintf(fp, ",X_1");
         for(int i=1; i<m_pCovarX->GetNumCols(); i++)
         {
             fprintf(fp, ",X_%d", i+1);
         }
-	}
+    }
 
-	if(m_pCovarZ)
-	{
+    if(m_pCovarZ)
+    {
         if ( m_pCovarZ->GetNumCols()==1)
             fprintf(fp, ",Z");
         else if ( m_pCovarZ->GetNumCols()>1)
@@ -901,7 +901,7 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
             {
                 fprintf(fp, ",Z_%d", i+1);
             }
-	}
+    }
 
     if ( m_pPhenoY->GetNumCols()==1)
         fprintf(fp, ",Y");
@@ -918,11 +918,11 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
 
         for(int j=0; j<m_pCovarX->GetNumCols(); j++)
         {
-			fprintf(fp, ",%.3f", m_pCovarX->Get(i,j));
+            fprintf(fp, ",%.3f", m_pCovarX->Get(i,j));
         }
 
-	    if(m_pCovarZ)
-	    {
+        if(m_pCovarZ)
+        {
             for(int j=0; j<m_pCovarZ->GetNumCols(); j++)
             {
                 if ( !isnan(m_pCovarZ->Get(i,j)))
@@ -934,7 +934,7 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
                     fprintf(fp, ", ");
                 }
             }
-	    }
+        }
 
         for(int j=0; j<m_pPhenoY->GetNumCols(); j++)
         {
@@ -960,7 +960,7 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
 
 void destroy(CFmSimulate* p)
 {
-	CFmNewTemp  fmRef;
-	p->~CFmSimulate();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~CFmSimulate();
+    operator delete(p, fmRef);
 }

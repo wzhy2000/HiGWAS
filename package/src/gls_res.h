@@ -18,7 +18,7 @@
 #define TMP_FILE_RALPHA 3
 #define TMP_FILE_RMU    4
 
-#define LG	4
+#define LG    4
 
 class CFmVectorStr;
 class CFmMatrix;
@@ -65,9 +65,9 @@ private:
     CFmVectorStr* m_pVarsel_SnpName;
     CFmVector* m_pVarsel_SnpChr;
     CFmVector* m_pVarsel_SnpPos;
-    CFmMatrix* m_pVarsel_Mu;	//[1,19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
+    CFmMatrix* m_pVarsel_Mu;    //[1,19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pVarsel_Alpha; //[nCovar, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
-    CFmMatrix* m_pVarsel_Ra;	//[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
+    CFmMatrix* m_pVarsel_Ra;    //[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pVarsel_Rd;    //[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pVarsel_BestQ; //[P, 19], 1-4: Q; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pVarsel_PSRF;
@@ -75,9 +75,9 @@ private:
     CFmVectorStr* m_pRefit_SnpName;
     CFmVector* m_pRefit_SnpChr;
     CFmVector* m_pRefit_SnpPos;
-    CFmMatrix* m_pRefit_Mu;	//[1,19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
+    CFmMatrix* m_pRefit_Mu;     //[1,19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pRefit_Alpha;  //[nCovar, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
-    CFmMatrix* m_pRefit_Ra;	//[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
+    CFmMatrix* m_pRefit_Ra;     //[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pRefit_Rd;     //[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pRefit_BestQ;  //[P, 19], 1-4: Q; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pRefit_PSRF;

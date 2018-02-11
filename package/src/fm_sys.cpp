@@ -1,6 +1,6 @@
-/* bls_sys.cpp  -	BLS System Object
+/* bls_sys.cpp  -    BLS System Object
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -70,16 +70,16 @@ int CFmSys::GetTempId(char* szGrpId)
 
 int CFmSys::GetTempFile(char* szFile, const char*szExt, int nLen)
 {
-	SEXP sexpFile = run_script((char*)"tempfile()");
-	const char* pszTmpfile = CHAR(STRING_ELT(sexpFile,0));
+    SEXP sexpFile = run_script((char*)"tempfile()");
+    const char* pszTmpfile = CHAR(STRING_ELT(sexpFile,0));
 
     if ( (unsigned int )nLen <= strlen(pszTmpfile) )
         return(-1);
 
-	if(strlen(szExt)>0)
-    	sprintf( szFile, "%s.%s",pszTmpfile, szExt);
+    if(strlen(szExt)>0)
+        sprintf( szFile, "%s.%s",pszTmpfile, szExt);
     else
-    	strcpy( szFile, pszTmpfile);
+        strcpy( szFile, pszTmpfile);
 
     return(0);
 }

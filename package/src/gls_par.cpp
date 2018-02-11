@@ -1,6 +1,6 @@
-/* gls_par.cpp  -	GLS Parameter Object for simulation
+/* gls_par.cpp  -    GLS Parameter Object for simulation
  *
- *	Copyright (C) 2011 THe Center for Statistical Genetics
+ *    Copyright (C) 2011 THe Center for Statistical Genetics
  *  http://statgen.psu.edu
  */
 
@@ -339,7 +339,7 @@ int GLS_par::Load(char* szParFile)
 
     _log_info(_HI_, "parameter file is loaded successfully.(sig_p:%d)", sig_p);
 
-	return(0);
+    return(0);
 }
 
 int GLS_par::Summary( char* szOutFile )
@@ -362,7 +362,7 @@ int GLS_par::Summary( char* szOutFile )
     sprintf(szTemp, "%s PARAMETER simu_mu     = %.2f %.2f %.2f %.2f\n",
                         szTemp, simu_mu[0], simu_mu[1], simu_mu[2], simu_mu[3] );
 
-	for(int i =0; i< simu_covar_len; i++)
+    for(int i =0; i< simu_covar_len; i++)
     sprintf(szTemp, "%s PARAMETER simu_covar[%d] = %.2f %.2f %.2f %.2f\n",
                         szTemp, i+1, simu_covar_effect[i][0], simu_covar_effect[i][1], simu_covar_effect[i][2], simu_covar_effect[i][3] );
 
@@ -407,7 +407,7 @@ int GLS_par::Summary( char* szOutFile )
 
 void destroy(GLS_par* p)
 {
-	CFmNewTemp  fmRef;
-	p->~GLS_par();
-	operator delete(p, fmRef);
+    CFmNewTemp  fmRef;
+    p->~GLS_par();
+    operator delete(p, fmRef);
 }

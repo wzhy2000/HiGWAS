@@ -26,7 +26,7 @@ class CFmMapMat
 {
 public:
     CFmMapMat() ;
-    virtual	~CFmMapMat();
+    virtual    ~CFmMapMat();
 
     int  GetNumChrs();
     int  GetNumMarkers();
@@ -45,9 +45,9 @@ public:
     int  WriteCSV(const char* filename, bool bAppend=false, const char* szTag=NULL);
 
 private:
-	// private internal functions
-    char*			AllocateChar(int nRows, int nCols) ;
-    void			FreeMemory();
+    // private internal functions
+    char* AllocateChar(int nRows, int nCols) ;
+    void FreeMemory();
 
     CFmMatrix * m_pMap;
     CFmVectorStr* m_pMarkers;

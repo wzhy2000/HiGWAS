@@ -2,6 +2,8 @@
 
 Implementing Lasso methods to identify significant SNPs and estimate joint genetic effects for non-longitudinal traits or longitudinal traits in GWAS.
 
+The package has been moved from http://statgen.psu.edu/software/fgwas-r2.html to here.
+
 # Reference
 
 [1]. Li, J., Das, K., Fu, G., Li, R., & Wu, R. (2011). The Bayesian lasso for genome-wide association studies. *Bioinformatics*, 27(4), 516-523.

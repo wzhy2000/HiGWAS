@@ -61,6 +61,9 @@ BLS_res::BLS_res(CMDOPTIONS *pCmd, BLS_cfg* pCfg)
     m_pSigAddSnps = NULL;
     m_pSigDomSnps = NULL;
     m_pCovNames    = NULL;
+
+    m_varsel_max = 0.0;
+    m_refit_max = 0.0;
 }
 
 BLS_res::~BLS_res()
@@ -226,11 +229,27 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
         m_pRefit_Rd = new (refNew) CFmMatrix(0, 0);
         m_pRefit_Rh2 = new (refNew) CFmVector(0, 0.0);
 
-         SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pRefit_Coefs, m_pRefit_Ra, m_pRefit_Rd, m_pRefit_Rh2 );
+        SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pRefit_Coefs, m_pRefit_Ra, m_pRefit_Rd, m_pRefit_Rh2 );
 
-         m_pRefit_QBest = new (refNew) CFmMatrix(nSnp, 8);
-         SortoutQBest( pFileMat, m_pRefit_QBest, nSnp, nCov);
-         m_pRefit_QBest->SetRowNames(m_pRefit_SnpName);
+        double m1 = fabs(m_pRefit_Ra->GetCol(1).GetMax());
+        double m2 = fabs(m_pRefit_Rd->GetCol(1).GetMax());
+        m_refit_max = m1>m2?m1:m2;
+
+        for( long int i=0; i< nSnp; i++)
+        {
+           if ( m_pRefit_Ra->Get(i,0)>0 && fabs(m_pRefit_Ra->Get(i,1)) >= m_refit_max/100 )
+                m_pRefit_Ra->Set(i,0, 1);
+           else
+                m_pRefit_Ra->Set(i,0, 0);
+           if ( m_pRefit_Rd->Get(i,0)>0 && fabs(m_pRefit_Rd->Get(i,1)) >= m_refit_max/100 )
+                m_pRefit_Rd->Set(i,0, 1);
+           else
+                m_pRefit_Rd->Set(i,0, 0);
+        }
+
+        m_pRefit_QBest = new (refNew) CFmMatrix(nSnp, 8);
+        SortoutQBest( pFileMat, m_pRefit_QBest, nSnp, nCov);
+        m_pRefit_QBest->SetRowNames(m_pRefit_SnpName);
 
     }
     else
@@ -245,9 +264,26 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
 
         SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pVarsel_Coefs, m_pVarsel_Ra, m_pVarsel_Rd, m_pVarsel_Rh2 );
 
-         m_pVarsel_QBest = new (refNew) CFmMatrix(nSnp, 8);
-         SortoutQBest( pFileMat, m_pVarsel_QBest, nSnp, nCov);
-         m_pVarsel_QBest->SetRowNames(m_pVarsel_SnpName);
+        double m1 = fabs(m_pVarsel_Ra->GetCol(1).GetMax());
+        double m2 = fabs(m_pVarsel_Rd->GetCol(1).GetMax());
+        m_varsel_max = m1>m2?m1:m2;
+
+        for( long int i=0; i< nSnp; i++)
+        {
+            if ( m_pVarsel_Ra->Get(i,0)>0 && fabs(m_pVarsel_Ra->Get(i,1)) >= m_varsel_max/100 )
+                  m_pVarsel_Ra->Set(i,0, 1);
+            else
+                  m_pVarsel_Ra->Set(i,0, 0);
+
+            if ( m_pVarsel_Rd->Get(i,0)>0 && fabs(m_pVarsel_Rd->Get(i,1)) >= m_varsel_max/100 )
+                  m_pVarsel_Rd->Set(i,0, 1);
+            else
+                  m_pVarsel_Rd->Set(i,0, 0);
+	    }
+
+        m_pVarsel_QBest = new (refNew) CFmMatrix(nSnp, 8);
+        SortoutQBest( pFileMat, m_pVarsel_QBest, nSnp, nCov);
+        m_pVarsel_QBest->SetRowNames(m_pVarsel_SnpName);
     }
 
     return(0);
@@ -267,7 +303,8 @@ int BLS_res::InitRefit(int nMcmcIter, CFmVectorStr* pCovNames)
 
     for (long int i=0; i< m_nSnpP; i++)
     {
-        if ( m_pVarsel_Ra->Get(i,0) >0 || m_pVarsel_Rd->Get(i,0)>0 )
+        if ( m_pVarsel_Ra->Get(i,0)>0 || m_pVarsel_Rd->Get(i,0)>0 )
+
             m_pRefitSnps->Put(i);
     }
 
@@ -568,6 +605,9 @@ SEXP BLS_res::GetRObj()
         SETCAR( t, expVS1 );
         SET_TAG(t, install("refit") );
         t = CDR(t);
+
+matVs1.Show("matVs1");
+
      }
 
     if(m_pVarsel_Coefs)
@@ -714,7 +754,7 @@ int BLS_res::GetQBestInfo(CFmFileMatrix* pMatRet, int idx, CFmVector& fmQBest)
             break;
         }
 
-    if(isnan(fmQBest[0]))
+    if(R_isnancpp(fmQBest[0]))
     {
         fmQBest[0] = 0.5;
         fmQBest[1] = fmVct[nMcmc/2];

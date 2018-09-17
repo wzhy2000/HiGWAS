@@ -23,6 +23,7 @@ typedef struct cmd_param{
     bool bVersion;
     bool bZNormalized;
     bool bRefit;
+    bool bGpuUsed;
     bool bAddUsed;
     bool bDomUsed;
     int  nDebug;
@@ -82,42 +83,45 @@ SEXP blasso_plink_tped(  const char* pszPhefile,
                  const char*  pzYname,
                  const char*  pzXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-               double fRhoTuning,
-               double fQval_add,
-               double fQval_dom,
-               int    nDebug);
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int    nDebug);
 
 SEXP blasso_simple( const char* pszPhefile,
                  const char*  pzSnpfile,
                  const char*  pzYname,
                  const char*  pzXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-               double fRhoTuning,
-               double fQval_add,
-               double fQval_dom,
-               int    nDebug);
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int    nDebug);
 
 SEXP blasso_snpmat( SEXP pmatPhe,
                  SEXP pmatSNP,
                  const char*  pzYname,
                  const char*  pzXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-               double fRhoTuning,
-               double fQval_add,
-               double fQval_dom,
-               int    nDebug);
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int    nDebug);
 
 
 #ifdef __cplusplus

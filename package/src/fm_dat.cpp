@@ -583,7 +583,7 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
     {
         vct_ord.Resize(0, true);
         for(int j=0; j<m_pPhenoZ->GetNumCols(); j++)
-            if ( !isnan( m_pPhenoZ->Get(i,j) ) && !isnan( m_pPhenoY->Get(i,j) ) )
+            if ( !R_isnancpp( m_pPhenoZ->Get(i,j) ) && !R_isnancpp( m_pPhenoY->Get(i,j) ) )
                 vct_ord.Put(j);
 
          vct.Resize(0, true);
@@ -654,7 +654,7 @@ int CFmDat_Pheno::LoadLongdt( CFmPackedSNP* pPackedSNP , CFmVectorStr* pFamSubjs
         for (int j=0; j<m_pPhenoZ->GetNumCols(); j++)
         {
             double tmp_z = m_pPhenoZ->Get(i,j);
-            if (isnan(tmp_z))
+            if (R_isnancpp(tmp_z))
                 continue;
 
             double tp = (tmp_z - Z_min)*2/(Z_max-Z_min)-1;
@@ -789,7 +789,7 @@ int CFmDat_Pheno::RemoveMissing( CFmPackedSNP* pPackedSNP )
         {
             vctY = m_pPhenoY->GetCol(i );
             for(int i=0;i<vctY.GetLength(); i++)
-                if ( isnan( vctY.Get(i) ) )
+                if ( R_isnancpp( vctY.Get(i) ) )
                     phe_null.UniquePut(i);
         }
     }
@@ -803,8 +803,8 @@ int CFmDat_Pheno::RemoveMissing( CFmPackedSNP* pPackedSNP )
             for(int j=0; j<m_pPhenoZ->GetNumCols(); j++)
                 //if ( m_pPhenoZ->Get(i,j) != 0.0 &&
                 //     m_pPhenoY->Get(i,j) != 0.0 )
-                if ( !isnan( m_pPhenoZ->Get(i,j)) &&
-                     !isnan( m_pPhenoY->Get(i,j)) )
+                if ( !R_isnancpp( m_pPhenoZ->Get(i,j)) &&
+                     !R_isnancpp( m_pPhenoY->Get(i,j)) )
                 vct_ord.Put(j);
 
             if (vct_ord.GetLength()==0)
@@ -817,7 +817,7 @@ int CFmDat_Pheno::RemoveMissing( CFmPackedSNP* pPackedSNP )
     {
         vctY = m_pCovars->GetCol(i );
         for(int j=0;j<vctY.GetLength(); j++)
-            if ( isnan( vctY.Get(j) ) )
+            if ( R_isnancpp( vctY.Get(j) ) )
                 phe_null.UniquePut(j);
     }
 

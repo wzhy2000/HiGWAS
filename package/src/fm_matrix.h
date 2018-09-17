@@ -66,7 +66,7 @@ public:
         {
             Rprintf("Error in matrix.set");
             throw("Error in matrix.set");
-            return false;
+            //return false;
         }
     };
 
@@ -182,6 +182,8 @@ public:
     // export functions/import
     int             WriteAsCSVFile(const char* filename, bool bAppend=true, const char* szTag=NULL, const char* szFloatFmt=NULL) const ;
     int             ReadFromCSVFile(const char* filename, bool bColName, bool bRowName);
+
+	bool            Compare( CFmMatrix &other, double delt=1e-8 );
 
     static void     GlobalDump();
 public:

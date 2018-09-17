@@ -37,5 +37,7 @@
 #define ERR_PAR_MISMATCH    -74
 #define ERR_PAR_VALUE       -73
 #define ERR_DATA_MISPATH    -72
+#define ERR_ON_GPU          -71
+
 
 #endif // _FM_ERR_H_

@@ -97,20 +97,20 @@ public:
 
 private:
     // internal variables
-    int                m_nNumSubjs;
-    int                m_nNumSnps;
+    int             m_nNumSubjs;
+    int             m_nNumSnps;
     int             m_nMaxSnps;
     int             m_nMaxSubjs;
     int             m_nBaseSnps;
-    char*            m_pData ;
+    char*           m_pData ;
     CFmVectorStr*   m_pSnpInfos;
     CFmVectorStr*   m_pSubjInfos;
 
     bool            m_bSD;
-    CFmVector*         m_pSD;
+    CFmVector*      m_pSD;
 private:
     // private internal functions
-    char*            AllocateChar(int nSnps, int nSubjs) ;
+    char*           AllocateChar(int nSnps, int nSubjs) ;
     void            FreeMemory();
 };
 

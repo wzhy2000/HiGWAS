@@ -1,16 +1,16 @@
-bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, simu_p=1000, 
-		simu_snp_rho = 0.1, 
-		simu_snp_missing = 0.002, 
-		simu_rho     = 0.4, 
-		simu_sigma2  = 3, 
-		simu_mu      = 26, 
+bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, simu_p=1000,
+		simu_snp_rho = 0.1,
+		simu_snp_missing = 0.002,
+		simu_rho     = 0.4,
+		simu_sigma2  = 3,
+		simu_mu      = 26,
 		simu_cov_range = c( 0, 1),
-		simu_cov_effect= c( 0, 2 ), 
-		simu_add_pos   = c( 100, 200, 300), 
-		simu_add_effect= c( 2.2, -2.5, 2.0 ),  
-		simu_dom_pos   = c( 300, 500, 700), 
+		simu_cov_effect= c( 0, 2 ),
+		simu_add_pos   = c( 100, 200, 300),
+		simu_add_effect= c( 2.2, -2.5, 2.0 ),
+		simu_dom_pos   = c( 300, 500, 700),
 		simu_dom_effect= c( 2.8, 2.0, -2.5 ),
-		simu_t_range = c(-1, 1), 
+		simu_t_range = c(-1, 1),
 		plink.format = FALSE,
 		debug=FALSE )
 {
@@ -22,7 +22,7 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 
 	if( !missing(simu_p) && length(simu_p) > 1)
 		stop("! The parameter of simu_p is not a single valid value.");
-	
+
 	if( !missing(simu_snp_rho) && length(simu_snp_rho) > 1)
 		stop("! The parameter of simu_snp_rho is not a single valid value.");
 
@@ -31,7 +31,7 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 
 	if( !missing(simu_rho) && length(simu_rho) > 1)
 		stop("! The parameter of simu_rho is not a single valid value.");
-	
+
 	if( !missing(simu_sigma2) && length(simu_sigma2) > 1)
 		stop("! The parameter of simu_sigma2 is not a single valid value.");
 
@@ -64,7 +64,7 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 
 	if ( length(simu_t_range)>0 && length(which(is.na(simu_t_range)))>0  )
 		stop("! The parameter of simu_t_range has NA values.");
-	
+
 	if ( length(simu_t_range)!=2)
 		stop("! The parameter of simu_t_range should be a valid range.");
 
@@ -73,10 +73,10 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 
 	if (simu_cov_range[1]>simu_cov_range[2])
 		simu_cov_range<-c(simu_cov_range[2], simu_cov_range[1]);
-		
+
 	if (simu_t_range[1]>simu_t_range[2])
 		simu_t_range<-c(simu_t_range[2], simu_t_range[1]);
-	
+
 	sigp<-unique(c(simu_add_pos, simu_dom_pos))
 	simu_sigp <- length(sigp);
 	simu_add_len <- length(simu_add_pos);
@@ -84,7 +84,7 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 	simu_cov_count <- length(simu_cov_effect);
 
 	err <- 0;
-	out <- .C("bls_simulate", 
+	out <- .C("bls_simulate",
 		   as.character(file.phe.out),		     # char* szPhe_out
 		   as.character(file.snp.out), 		     # char* szSnp_out
 		   as.integer(simu_grp), 		         # int nSimu_grp
@@ -108,22 +108,22 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 		   as.double(as.vector(simu_t_range)),	 # double* pfSimu_t_range
 		   as.integer(debug),
 		   as.integer(err) );
-	
+
 	if( plink.format )
 	{
 		tb.snp <- read.csv(file.snp.out, header=T);
 		r <- convert_simpe_to_plink( tb.snp, file.snp.out );
-		
+
 		unlink(file.snp.out);
-		return(list(err=err,  
+		return(list(err=err,
 			file.simple.phe = file.phe.out,
 			file.plink.bed = r$file.plink.bed,
 			file.plink.bim = r$file.plink.bim,
 			file.plink.fam = r$file.plink.fam));
 
 	}
-	
-	return(list(err=err,  
+
+	return(list(err=err,
 		file.simple.phe = file.phe.out,
 		file.simple.snp = file.snp.out));
 }
@@ -148,46 +148,54 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 		stop("! The parameter of dom.used should be a logical value(TRUE or FALSE).");
 	if ( !(is.logical(fgwas.filter) && length(fgwas.filter)==1 ) )
 		stop("! The parameter of fgwas.filter should be a logical value(TRUE or FALSE).");
+		
+	## Currently, we dont have good method to use GPU in BLS model
+    gpu.used=FALSE;		
+	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
+		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
 
 	cat("* Phenotypic Data File = ",  file.phe, "\n");
 	cat("* Simpe SNP File = ",  file.snp, "\n");
 
-	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter ) ;
+	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used ) ;
 
-	if (missing(options)) 
+	if (missing(options))
 		options <- get_default_options()
-	else	
+	else
 	{
 		options0 <- get_default_options();
 		options0[names(options)] <- options;
 		options <- options0;
 	}
-	
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
-	
-	options$params <- list( file.phe     = file.phe, 
-				file.snp     = file.snp, 
-				Y.name       = Y.name, 
-				covar.names  = covar.names, 
-				refit        = refit, 
-				add.used     = add.used, 
-				dom.used     = dom.used, 
+
+	options$params <- list( file.phe     = file.phe,
+				file.snp     = file.snp,
+				Y.name       = Y.name,
+				covar.names  = covar.names,
+				refit        = refit,
+				gpu.used     = gpu.used,
+				add.used     = add.used,
+				dom.used     = dom.used,
 				fgwas.filter = fgwas.filter);
 
-	
+
 	r.bls <- list();
 	r.filter <- list();
-	
+    ptm <- proc.time();
+
 	if( options$nPiecewise.ratio==0 && !fgwas.filter )
 	{
 		cat( "Genetic Effect Analysis by BLASSO method......\n");
-		r.bls <- .Call("bls_simple", 
+		r.bls <- .Call("bls_simple",
 			file.phe,
-			file.snp, 
-			Y.name, 
-			paste(covar.names, collapse=","), 
+			file.snp,
+			Y.name,
+			paste(covar.names, collapse=","),
 			refit,
+			gpu.used,
 			add.used,
 			dom.used,
 			options$nMcmcIter,
@@ -205,23 +213,24 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 		{
 			return( snpmat[sub.idx,,drop=F] );
 		}
-		
+
 		if(fgwas.filter)
 		{
 			r.filter <- snpmat_fgwas_filter( simple$phe.mat, simple$snp.mat, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS");
-			
+
 			if( r.filter$error ) stop(r.filter$err.info);
-			if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) ); 
-		
+			if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) );
+
 			r.bls <- snpmat_parallel(
 				NROW( r.filter$snp.mat ),
 				subset_op,
 				r.filter$snp.mat,
 				simple$phe.mat,
-				Y.name, 
+				Y.name,
 				NULL,
 				covar.names,
 				refit,
+				gpu.used,
 				add.used,
 				dom.used,
 				options$nPiecewise.ratio,
@@ -241,10 +250,11 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 				subset_op,
 				simple$snp.mat,
 				simple$phe.mat,
-				Y.name, 
+				Y.name,
 				NULL,
 				covar.names,
 				refit,
+				gpu.used,
 				add.used,
 				dom.used,
 				options$nPiecewise.ratio,
@@ -258,25 +268,26 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 				"BLS");
 		}
 	}
-	
+
 	if(!is.null(r.bls) && !is.na(r.bls))
 	{
 		r <- wrap_BLS_ret( r.bls, r.filter, options );
-		return(r);		   
+        r$elapsed <- proc.time() - ptm;
+		return(r);
 	}
 	else
 	{
 		cat("! No results\n");
-		return(NULL);		   
+		return(NULL);
 	}
 }
 
-bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y.name, covar.names, refit=TRUE, add.used=TRUE, dom.used=TRUE, fgwas.filter=FALSE, options=NULL, force.split=FALSE, plink.command=NULL )      
+bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y.name, covar.names, refit=TRUE, add.used=TRUE, dom.used=TRUE, fgwas.filter=FALSE, options=NULL, force.split=FALSE, plink.command=NULL )
 {
 	cat( "[ BLASSO PLINK ] Procedure.\n");
 	cat( "Checking the parameters ......\n");
 
-	if ( missing(file.phe) || missing(file.plink.bed) || missing(file.plink.bim) || missing(file.plink.fam) || 
+	if ( missing(file.phe) || missing(file.plink.bed) || missing(file.plink.bim) || missing(file.plink.fam) ||
 		missing(Y.name) || missing(covar.names) )
 		stop("! file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y.name and covar.names must be assigned with the valid values.");
 
@@ -295,6 +306,11 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 	if ( !(is.logical(force.split) && length(force.split)==1 ) )
 		stop("! The parameter of force.split should be a logical value(TRUE or FALSE).");
 
+	## Currently, we dont have good method to use GPU in BLS model
+    gpu.used=FALSE;		
+	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
+		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+
 	cat("* Phenotypic Data File = ",  file.phe, "\n");
 	cat("* PLINK BED File = ",  file.plink.bed, "\n");
 	cat("* PLINK BIM File = ",  file.plink.bim, "\n");
@@ -302,47 +318,49 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 	cat("* PLINK Command = ",   plink.command, "\n")
 	cat("* Force Split by PLINK Command = ", force.split, "\n")
 
-	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter ) ;
+	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used ) ;
 
-	if (missing(options)) 
+	if (missing(options))
 		options <- get_default_options()
-	else	
+	else
 	{
 		options0 <- get_default_options();
 		options0[names(options)] <- options;
 		options <- options0;
 	}
-	
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
-	options$params <- list( file.phe     = file.phe, 
-				file.plink.bed = file.plink.bed, 
-				file.plink.bim = file.plink.bim, 
+	options$params <- list( file.phe     = file.phe,
+				file.plink.bed = file.plink.bed,
+				file.plink.bim = file.plink.bim,
 				file.plink.fam = file.plink.fam,
-				Y.name       = Y.name, 
-				covar.names  = covar.names, 
-				refit        = refit, 
-				add.used     = add.used, 
-				dom.used     = dom.used, 
+				Y.name       = Y.name,
+				covar.names  = covar.names,
+				refit        = refit,
+				gpu.used     = gpu.used,
+				add.used     = add.used,
+				dom.used     = dom.used,
 				fgwas.filter = fgwas.filter);
-	
+
 	pd <- list();
 	r.filter <- list();
-	
+    ptm <- proc.time();
+
 	if( force.split || !try_load_plink( file.plink.bed,  file.plink.bim, file.plink.fam ) )
 	{
 		# It is bigdata which need to split it into chromosome unit
 		# The following will split the data and force to do fGWAS filter.
 
-		r.filter <- plink_fgwas_bigdata ( file.plink.bed,  file.plink.bim, file.plink.fam, file.phe, plink.command, 
+		r.filter <- plink_fgwas_bigdata ( file.plink.bed,  file.plink.bim, file.plink.fam, file.phe, plink.command,
 										Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS");
 		if( r.filter$error ) stop(r.filter$err.info);
 
 		fgwas.filter <- TRUE;
 
 		pd <- list(phe.mat=r.filter$phe.mat, snp.mat=r.filter$snp.mat);
-	}	
+	}
 	else
 	{
 		pd <- load_plink_binary( file.plink.bed,  file.plink.bim, file.plink.fam, file.phe );
@@ -355,15 +373,15 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			r.filter <- plink_fgwas_filter( pd, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS")
 
 			if( r.filter$error ) stop(r.filter$err.info);
-		}				
+		}
 	}
-	
+
 	r.bls <- list();
 
 	if( fgwas.filter )
 	{
-		if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) ); 
-	
+		if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) );
+
 		subset_op <- function(snpmat, sub.idx)
 		{
 			return( snpmat[sub.idx,,drop=F] );
@@ -374,10 +392,11 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			subset_op,
 			r.filter$snp.mat,
 			pd$phe.mat,
-			Y.name, 
+			Y.name,
 			NULL,
 			covar.names,
 			refit,
+			gpu.used,
 			add.used,
 			dom.used,
 			options$nPiecewise.ratio,
@@ -399,16 +418,17 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			snp.mat <- cbind( snp.sub$info[,c(2,3)], snp.sub$snp )
 			return( snp.mat );
 		}
-		
+
 		r.bls <- snpmat_parallel(
 			NCOL( pd$snp.mat$genotypes ),
 			subset_op,
 			pd$snp.mat,
 			pd$phe.mat,
-			Y.name, 
+			Y.name,
 			NULL,
 			covar.names,
 			refit,
+			gpu.used,
 			add.used,
 			dom.used,
 			options$nPiecewise.ratio,
@@ -421,16 +441,17 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			options$nParallel.cpu,
 			"BLS");
 	}
-	
+
 	if(!is.null(r.bls) && !is.na(r.bls))
 	{
 		r <- wrap_BLS_ret( r.bls, r.filter, options );
-		return(r);		   
+        r$elapsed <- proc.time() - ptm;
+		return(r);
 	}
 	else
 	{
 		cat("! No results\n");
-		return(NULL);		   
+		return(NULL);
 	}
 }
 
@@ -454,33 +475,41 @@ bls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.name, co
 	if ( !(is.logical(dom.used) && length(dom.used)==1 ) )
 		stop("! The parameter of dom.used should be a logical value(TRUE or FALSE).");
 
+	## Currently, we dont have good method to use GPU in BLS model
+    gpu.used=FALSE;		
+	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
+		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+
 	cat("* Phenotypic Data File = ",  file.phe, "\n");
 	cat("* PLINK TPED File = ",  file.plink.tped, "\n");
 	cat("* PLINK TFAM File = ",  file.plink.tfam, "\n");
 
-	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter=FALSE ) ;
+	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter=FALSE, gpu.used ) ;
 
-	if (missing(options)) 
+	if (missing(options))
 		options <- get_default_options()
-	else	
+	else
 	{
 		options0 <- get_default_options();
 		options0[names(options)] <- options;
 		options <- options0;
 	}
-	
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
-	
+
 	cat( "Genetic Effect Analysis by BLASSO method......\n");
+ 
+    ptm <- proc.time();
 	r.filter <- list();
-	r.bls <- .Call("bls_plink_tped", 
+	r.bls <- .Call("bls_plink_tped",
 			file.phe,
-			file.plink.tped, 
-			file.plink.tfam, 
-			Y.name, 
-			paste(covar.names, collapse=","), 
+			file.plink.tped,
+			file.plink.tfam,
+			Y.name,
+			paste(covar.names, collapse=","),
 			refit,
+			gpu.used,
 			add.used,
 			dom.used,
 			options$nMcmcIter,
@@ -491,25 +520,27 @@ bls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.name, co
 			ifelse( options$debug, 3, 1) );
 
 
-	options$params <- list( file.phe     = file.phe, 
-				file.plink.tped = file.plink.tped, 
-				file.plink.tfam = file.plink.tfam, 
-				Y.name       = Y.name, 
-				covar.names  = covar.names, 
-				refit        = refit, 
-				add.used     = add.used, 
-				dom.used     = dom.used, 
+	options$params <- list( file.phe     = file.phe,
+				file.plink.tped = file.plink.tped,
+				file.plink.tfam = file.plink.tfam,
+				Y.name       = Y.name,
+				covar.names  = covar.names,
+				refit        = refit,
+				gpu.used     = gpu.used,
+				add.used     = add.used,
+				dom.used     = dom.used,
 				fgwas.filter = FALSE);
 
 	if(!is.null(r.bls) && !is.na(r.bls))
 	{
 		r <- wrap_BLS_ret( r.bls, r.filter, options );
-		return(r);		   
+        r$elapsed <- proc.time() - ptm;
+		return(r);
 	}
 	else
 	{
 		cat("! No results\n");
-		return(NULL);		   
+		return(NULL);
 	}
 }
 
@@ -534,53 +565,61 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 	if ( !(is.logical(fgwas.filter) && length(fgwas.filter)==1 ) )
 		stop("! The parameter of fgwas.filter should be a logical value(TRUE or FALSE).");
 
+	## Currently, we dont have good method to use GPU in BLS model
+    gpu.used=FALSE;		
+	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
+		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+
 	cat("* Phenotypic Matrix = ",  dim(phe.mat), "\n");
 	cat("* SNP Matrix = ",  dim(snp.mat), "\n");
 
-	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter ) ;
+	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used ) ;
 
-	if (missing(options)) 
+	if (missing(options))
 		options <- get_default_options()
-	else	
+	else
 	{
 		options0 <- get_default_options();
 		options0[names(options)] <- options;
 		options <- options0;
 	}
-	
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
-	options$params <- list( Y.name       = Y.name, 
-				covar.names  = covar.names, 
-				refit        = refit, 
-				add.used     = add.used, 
-				dom.used     = dom.used, 
+	options$params <- list( Y.name       = Y.name,
+				covar.names  = covar.names,
+				refit        = refit,
+				gpu.used     = gpu.used,
+				add.used     = add.used,
+				dom.used     = dom.used,
 				fgwas.filter = fgwas.filter);
 
 	if( class(phe.mat)=="data.frame" )
 	{
-		cat("Phenotypic data frame is converted to the matrix class.\n");  
-		phe.colnames <- colnames(phe.mat); 
-		phe.rownames <- rownames(phe.mat); 
+		cat("Phenotypic data frame is converted to the matrix class.\n");
+		phe.colnames <- colnames(phe.mat);
+		phe.rownames <- rownames(phe.mat);
 		phe.mat <- matrix(as.numeric(as.matrix(phe.mat, rownames.force=NA)), ncol=NCOL(phe.mat))
 		colnames(phe.mat) <- phe.colnames;
 	 	rownames(phe.mat) <- phe.rownames;
 	}
-	
+
 	r.bls <- list();
 	r.filter <- list();
+    ptm <- proc.time();
 
 	if( options$nPiecewise.ratio==0 && !fgwas.filter )
 	{
 		cat( "Genetic Effect Analysis by BLASSO method......\n");
 
-		r.bls <- .Call("bls_snpmat", 
+		r.bls <- .Call("bls_snpmat",
 			as.matrix( phe.mat ),
 			as.matrix( snp.mat*1.0 ),
-			Y.name, 
-			paste(covar.names, collapse=","), 
+			Y.name,
+			paste(covar.names, collapse=","),
 			refit,
+			gpu.used,
 			add.used,
 			dom.used,
 			options$nMcmcIter,
@@ -602,17 +641,18 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 			r.filter <- snpmat_fgwas_filter( phe.mat, snp.mat, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS")
 
 			if( r.filter$error ) stop(r.filter$err.info);
-			if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) ); 
-		
+			if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) );
+
 			r.bls <- snpmat_parallel(
 				NROW(r.filter$snp.mat),
 				subset_op,
 				r.filter$snp.mat,
 				phe.mat,
-				Y.name, 
+				Y.name,
 				NULL,
 				covar.names,
 				refit,
+				gpu.used,
 				add.used,
 				dom.used,
 				options$nPiecewise.ratio,
@@ -632,10 +672,11 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 				subset_op,
 				snp.mat,
 				phe.mat,
-				Y.name, 
+				Y.name,
 				NULL,
 				covar.names,
 				refit,
+				gpu.used,
 				add.used,
 				dom.used,
 				options$nPiecewise.ratio,
@@ -649,17 +690,28 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 				"BLS");
 		}
 	}
-	
+
 	if(!is.null(r.bls) && !is.na(r.bls))
 	{
 		r <- wrap_BLS_ret( r.bls, r.filter, options );
-		return(r);		   
+        r$elapsed <- proc.time() - ptm;
+		return(r);
 	}
 	else
 	{
 		cat("! No results\n");
-		return(NULL);		   
+		return(NULL);
 	}
+}
+
+print.BLS.ret<-function( object )
+{
+	print(summary.BLS.ret(object));
+}
+
+show.BLS.ret<-function( object )
+{
+	print(summary.BLS.ret(object));
 }
 
 summary.BLS.ret<-function(object, ...)
@@ -670,9 +722,9 @@ summary.BLS.ret<-function(object, ...)
 	if(!is.null( r.bls$refit_cov ) && NROW( r.bls$refit_cov )>0 )
 	{
 		re1 <- r.bls$refit_cov;
-		r.sum.ret$refit_cov <- data.frame(  Sig=ifelse(re1[,1], "Yes", "---"), 
-					Median  = round(re1[,2], digits=3), 
-					CI.025  = round(re1[,3], digits=3), 
+		r.sum.ret$refit_cov <- data.frame(  Sig=ifelse(re1[,1], "Yes", "---"),
+					Median  = round(re1[,2], digits=3),
+					CI.025  = round(re1[,3], digits=3),
 					CI.975  = round(re1[,4], digits=3) );
 		rownames(r.sum.ret$refit_cov) <- rownames( re1 );
 	}
@@ -680,30 +732,30 @@ summary.BLS.ret<-function(object, ...)
 	if(!is.null( r.bls$refit ) && NROW( r.bls$refit )>0 )
 	{
 		re2 <- r.bls$refit;
-		r.sum.ret$refit <- data.frame( Chr = re2[,1], 
-					Pos        = re2[,2], 
+		r.sum.ret$refit <- data.frame( Chr = re2[,1],
+					Pos        = re2[,2],
 					Add.Sig    = ifelse(re2[,3], "Yes", "---") ,
-					Add.Median = round(re2[,4], digits=3), 
-					Add.CI.025 = round(re2[,5], digits=3), 
-					Add.CI.975 = round(re2[,6], digits=3),
+					Add.Median = round(re2[,4], digits=3),
+					#Add.CI.025 = round(re2[,5], digits=3),
+					#Add.CI.975 = round(re2[,6], digits=3),
 					Dom.Sig    = ifelse(re2[,7], "Yes", "---") ,
-					Dom.Median = round(re2[,8], digits=3), 
-					Dom.CI.025 = round(re2[,9], digits=3), 
-					Dom.CI.975 = round(re2[,10], digits=3),
+					Dom.Median = round(re2[,8], digits=3),
+					#Dom.CI.025 = round(re2[,9], digits=3),
+					#Dom.CI.975 = round(re2[,10], digits=3),
 					H2         = round(re2[,11], digits=3) );
 		rownames(r.sum.ret$refit)<- rownames(re2);
 	}
-	
+
 	if(!is.null( r.bls$varsel_cov ) && NROW( r.bls$varsel_cov )>0 )
 	{
 		re3 <- r.bls$varsel_cov;
-		r.sum.ret$varsel_cov <- data.frame(  Sig=ifelse(re3[,1], "Yes", "---"), 
-					Median  = round(re3[,2], digits=3), 
-					CI.025  = round(re3[,3], digits=3), 
+		r.sum.ret$varsel_cov <- data.frame(  Sig=ifelse(re3[,1], "Yes", "---"),
+					Median  = round(re3[,2], digits=3),
+					CI.025  = round(re3[,3], digits=3),
 					CI.975  = round(re3[,4], digits=3) );
 		rownames(r.sum.ret$varsel_cov) <- rownames( re3 );
 	}
-	
+
 	if(!is.null(r.bls$varsel))
 	{
 		re4 <- r.bls$varsel;
@@ -711,17 +763,17 @@ summary.BLS.ret<-function(object, ...)
 		if(length(var.sig)>0)
 		{
 			re4 <- re4[var.sig,,drop=F];
-			
-			r.sum.ret$varsel <- data.frame( Chr= re4[ , 1], 
-						Pos        = re4[ , 2], 
+
+			r.sum.ret$varsel <- data.frame( Chr= re4[ , 1],
+						Pos        = re4[ , 2],
 						Add.Sig    = ifelse(re4[ ,3 ], "Yes", "---") ,
-						Add.Median = round( re4[ ,4 ], digits=3 ), 
-						Add.CI.025 = round( re4[ ,5 ], digits=3 ), 
-						Add.CI.975 = round( re4[ ,6 ], digits=3 ),
+						Add.Median = round( re4[ ,4 ], digits=3 ),
+						#Add.CI.025 = round( re4[ ,5 ], digits=3 ),
+						#Add.CI.975 = round( re4[ ,6 ], digits=3 ),
 						Dom.Sig    = ifelse(re4[ ,7 ], "Yes", "---") ,
-						Dom.Median = round( re4[ ,8 ], digits=3 ), 
-						Dom.CI.025 = round( re4[ ,9 ], digits=3 ), 
-						Dom.CI.975 = round( re4[ ,10], digits=3 ),
+						Dom.Median = round( re4[ ,8 ], digits=3 ),
+						#Dom.CI.025 = round( re4[ ,9 ], digits=3 ),
+						#Dom.CI.975 = round( re4[ ,10], digits=3 ),
 						H2         = round( re4[ ,11], digits=3 ) );
 			rownames(r.sum.ret$varsel)<- rownames(re4);
 		}
@@ -737,7 +789,7 @@ summary.BLS.ret<-function(object, ...)
 			fgwas.sig.inc <- order(fgwas_sigs[,7]);
 			r.sum.ret$fgwas_sig <- fgwas_sigs[fgwas.sig.inc,];
 		}
-		
+
 		if(!is.null(r.sum.ret$varsel))
 			r.sum.ret$varsel <- cbind(r.sum.ret$varsel, fgwas.pvalue=find_fgwas_pvalue( r.bls$fgwas, rownames(r.sum.ret$varsel) ) ) ;
 
@@ -746,7 +798,7 @@ summary.BLS.ret<-function(object, ...)
 	}
 
 	class(r.sum.ret) <- "sum.BLS.ret";
-	
+
 	r.sum.ret
 }
 
@@ -761,7 +813,7 @@ print.sum.BLS.ret<-function(x, ...)
 			cat("Top 25 SNPs:\n");
 			show(r.sum.ret$fgwas_sig[1:25,,drop=F]);
 		}
-		else	
+		else
 			show(r.sum.ret$fgwas_sig);
 	}
 
@@ -770,7 +822,7 @@ print.sum.BLS.ret<-function(x, ...)
 		cat("--- Covariate Estimate in Varsel Procedure:\n");
 		show(r.sum.ret$varsel_cov);
 	}
-	
+
 	if(!is.null(r.sum.ret$varsel))
 	{
 		cat("--- Variable Selection Result:", NROW(r.sum.ret$varsel), "SNPs\n" );
@@ -788,17 +840,17 @@ print.sum.BLS.ret<-function(x, ...)
 		cat("--- Covariate Estimate in Refit Procedure:\n");
 		show(r.sum.ret$refit_cov);
 	}
-	
+
 	if(!is.null(r.sum.ret$refit))
 	{
 		cat("--- Refit Result:", NROW(r.sum.ret$refit), "SNPs\n" );
 		show(r.sum.ret$refit);
 	}
 }
-	
+
 #--------------------------------------------------------------
 # plot_adh2
-# 
+#
 # Input:pvs[,1]  snp_name
 #       pvs[,2]  chromoseom no
 #       pvs[,3]  position
@@ -812,24 +864,24 @@ print.sum.BLS.ret<-function(x, ...)
 plot.BLS.ret<-function( x, y=NULL, ..., fig.prefix=NULL )
 {
 	r.bls <- x;
-	
+
 	if( missing(fig.prefix)) fig.prefix <- "bls.plot";
-	
+
 	if(!is.null(r.bls$fgwas))
 	{
 		filter.man <- r.bls$fgwas[, c(1,2,5), drop=F]
 		draw_man_fgwas( filter.man, fig.prefix, "fgwas" );
 	}
 	else
-		cat("! No fGWAS filter results.\n");		
-		
+		cat("! No fGWAS filter results.\n");
+
 	if(!is.null(r.bls$varsel))
 	{
 		varsel.man <- r.bls$varsel[, c(1,2,4,8,11), drop=F];
 		draw_man_adh2( varsel.man, fig.prefix, "varsel" );
 	}
 	else
-		cat("! No varible selection results.\n");		
+		cat("! No varible selection results.\n");
 
 	if(!is.null(r.bls$refit))
 	{
@@ -837,7 +889,7 @@ plot.BLS.ret<-function( x, y=NULL, ..., fig.prefix=NULL )
 		draw_man_adh2( refit.man, fig.prefix, "refit" );
 	}
 	else
-		cat("! No refit results.\n");		
+		cat("! No refit results.\n");
 }
 
 wrap_BLS_ret<-function(r.bls, r.filter, options)
@@ -855,37 +907,37 @@ wrap_BLS_ret<-function(r.bls, r.filter, options)
 			colnames(r.bls$varsel_cov) <- c("cov.sig", "cov.mu", "cov.min", "cov.max");
 			rownames(r.bls$varsel_cov) <- c("intercept", options$params$covar.names);
 		}
-		
+
 		if (!is.null(r.bls$refit_cov))
 		{
 			colnames(r.bls$refit_cov) <- c("cov.sig", "cov.mu", "cov.min", "cov.max");
 			rownames(r.bls$refit_cov) <- c("intercept",  options$params$covar.names);
 		}
-		
+
 		if(!is.null(r.filter)) r.bls$fgwas <- r.filter$r;
-		
+
 		r.bls$options <- options;
 
 		class(r.bls) <- "BLS.ret";
 	}
-		
+
 	return(r.bls);
 }
 
 get_default_options<-function()
 {
 	options=list(
-				nParallel.cpu = 0,    
-				nPiecewise.ratio = 2,    
-				nMcmcIter = 2000,    
-				fBurnInRound = 0.3,   
-				fRhoTuning = 0.095,  
-				fQval.add  = 0.05,   
-				fQval.dom  = 0.09,  
+				nParallel.cpu = 0,
+				nPiecewise.ratio = 2,
+				nMcmcIter = 2000,
+				fBurnInRound = 0.3,
+				fRhoTuning = 0.095,
+				fQval.add  = 0.05,
+				fQval.dom  = 0.09,
 				fgwas.cutoff = 0.05,
-				debug      = F ) 
+				debug      = F )
 
-	return(options);	
+	return(options);
 }
 
 show_options<-function(options)
@@ -899,11 +951,11 @@ show_options<-function(options)
 	cat( "* fRhoTuning: ",  options$fRhoTuning, "\n");
 	cat( "* fQval.add: ",  options$fQval.add, "\n");
 	cat( "* fQval.dom: ",  options$fQval.dom , "\n");
-	
+
 	cat( "* Debug Output: ", ifelse( options$debug, "Yes", "No"),"\n");
 }
 
-show_bls_parameters<-function( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter ) 
+show_bls_parameters<-function( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used )
 {
 	cat( "* Response Variable =",   Y.name, "\n");
 	cat( "* Covariate Columns =",  covar.names, "\n");
@@ -911,6 +963,7 @@ show_bls_parameters<-function( Y.name, covar.names, refit, add.used, dom.used, f
 	cat( "* Additive Effects Used =",  ifelse( add.used, "Yes", "No"), "\n");
 	cat( "* Dominant Effects Used =",  ifelse( dom.used, "Yes", "No"), "\n");
 	cat( "* Refit Procedure =",   ifelse( refit, "Yes", "No"), "\n");
+	cat( "* GPU used =",   ifelse( gpu.used, "Yes", "No"), "\n");
 }
 
 
@@ -920,7 +973,7 @@ get_sig_bls_snp <- function( r.bls )
 
 	idx.sig <- which( r.bls$varsel[,3]!=0 | r.bls$varsel[,7]!=0 )
 	if (length(idx.sig)==0) return(NULL);
-	
+
 	return( idx.sig );
 }
 
@@ -929,13 +982,13 @@ read_simple_bls_data <- function( file.phe, file.snp, bImputed=T )
 	tb.phe <- read.csv(file.phe, header=T);
 	rownames(tb.phe) <- tb.phe[,1];
 	tb.phe <- tb.phe[,-1, drop=F];
-	
+
 	tb.snp <- read.csv(file.snp, header=T);
 
 	cat("Checking data files......\n");
 	cat("* Individuals:", NCOL(tb.snp)-2, "\n");
 	cat("* SNPs:", NROW(tb.snp), "\n");
-	
+
 	if(bImputed) tb.snp <- impute_simple_snp(tb.snp);
 
 	return(list(phe.mat=tb.phe, snp.mat=tb.snp));
@@ -943,7 +996,7 @@ read_simple_bls_data <- function( file.phe, file.snp, bImputed=T )
 
 bls.best.qval<-function( r.bls, snp.names )
 {
-	if( class(r.bls) != "BLS.ret" )	
+	if( class(r.bls) != "BLS.ret" )
 	{
 		cat("! r.bls is NOT a BLS.ret object.\n");
 		return(NULL);
@@ -952,17 +1005,17 @@ bls.best.qval<-function( r.bls, snp.names )
 	find_Qtable<-function( Q.table, snp.names)
 	{
 		pv <- rep(NA, length(snp.names));
-	
+
 		idx <- match( snp.names, rownames(Q.table));
 		if( length(which(!is.na(idx)) ) > 0)
 			pv[ !is.na(idx) ] <-  Q.table[ idx[!is.na(idx)], 1 ];
-	
+
 		return(pv);
 	}
-	
+
 	vs.Qval.add <- rep(NA, length(snp.names));
 	vs.Qval.dom <- rep(NA, length(snp.names));
-	
+
 	if( is.null(r.bls$varsel_Qbest ) )
 	{
 		cat("! No Qbest matrix for variable selection.\n");
@@ -973,9 +1026,9 @@ bls.best.qval<-function( r.bls, snp.names )
 			vs.Qval.add <- find_Qtable( r.bls$varsel_Qbest[,1,drop=F], snp.names );
 		if(any(r.bls$varsel_Qbest[,5]!=0))
 			vs.Qval.dom <- find_Qtable( r.bls$varsel_Qbest[,5,drop=F], snp.names );
-		
+
 	}
-	
+
 	refit.Qval.add <- rep(NA, length(snp.names));
 	refit.Qval.dom <- rep(NA, length(snp.names));
 	if( is.null(r.bls$refit_Qbest ) )
@@ -988,7 +1041,7 @@ bls.best.qval<-function( r.bls, snp.names )
 			refit.Qval.add <- find_Qtable( r.bls$refit_Qbest[,1,drop=F], snp.names );
 		if(any(r.bls$refit_Qbest[,5]!=0))
 			refit.Qval.dom <- find_Qtable( r.bls$refit_Qbest[,5,drop=F], snp.names );
-	
+
 	}
 
 	fgwas.pv <- find_fgwas_pvalue( r.bls$fgwas, snp.names)
@@ -1002,7 +1055,7 @@ bls.best.qval<-function( r.bls, snp.names )
 
 bls.qval.cutoff<-function( r.bls, qval.add, qval.dom, refit.select = FALSE )
 {
-	if( class(r.bls) != "BLS.ret" )	
+	if( class(r.bls) != "BLS.ret" )
 	{
 		cat("! r.bls is NOT a BLS.ret object.\n");
 		return(NULL);
@@ -1018,17 +1071,17 @@ bls.qval.cutoff<-function( r.bls, qval.add, qval.dom, refit.select = FALSE )
 		idx.vs.dom <- c();
 
 		if(any(r.bls$varsel_Qbest[,1]!=0))
-			idx.vs.add <- which( r.bls$varsel_Qbest[, 1] <= qval.add); 
+			idx.vs.add <- which( r.bls$varsel_Qbest[, 1] <= qval.add);
 		if(any(r.bls$varsel_Qbest[,5]!=0))
-			idx.vs.dom <- which( r.bls$varsel_Qbest[, 5] <= qval.dom); 
-		
+			idx.vs.dom <- which( r.bls$varsel_Qbest[, 5] <= qval.dom);
+
 		idx.vs <- sort( unique(c(idx.vs.add, idx.vs.dom)) )
 		if(length(idx.vs)>0)
 			return( rownames(r.bls$varsel_Qbest)[idx.vs])
 		else
-			return(NULL);			
+			return(NULL);
 	}
-	
+
 	if( is.null(r.bls$refit_Qbest )  && refit.select )
 	{
 		cat("! No Qbest matrix for refit procedure.\n");
@@ -1039,15 +1092,15 @@ bls.qval.cutoff<-function( r.bls, qval.add, qval.dom, refit.select = FALSE )
 		idx.refit.dom <- c();
 
 		if(any(r.bls$refit_Qbest[,1]!=0))
-			idx.refit.add <- which( r.bls$refit_Qbest[, 1] <= qval.add); 
+			idx.refit.add <- which( r.bls$refit_Qbest[, 1] <= qval.add);
 		if(any(r.bls$refit_Qbest[,5]!=0))
-			idx.refit.dom <- which( r.bls$refit_Qbest[, 5] <= qval.dom); 
-		
+			idx.refit.dom <- which( r.bls$refit_Qbest[, 5] <= qval.dom);
+
 		idx.vs <- sort( unique(c(idx.refit.add, idx.refit.dom)) )
 		if(length(idx.vs)>0)
 			return( rownames(r.bls$refit_Qbest)[idx.vs])
 		else
-			return(NULL);			
+			return(NULL);
 	}
 
 	return(NULL);

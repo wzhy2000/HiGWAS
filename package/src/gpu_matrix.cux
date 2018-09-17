@@ -1,0 +1,487 @@
+
+/*
+
+# Array structure for Matrix 
+# * * * 
+# 1 2 3 4 5 6 7 ...................................L
+# L-3 : memory block length
+#   N : Row count of Matrix
+#     M : Column count of Matrix
+#       data start............
+#
+
+# Array structure for Vector
+# * * * 
+# 1 2 3 4 5 6 7 ...................................L
+# L-3 : memory block length
+#   N : Row count of Matrix
+#     M : alway 1
+#       data start............
+#
+*/
+
+//#define _KERNEL_DEBUG
+
+
+__device__ int Matrix_Resize(double *inMat, int nRow, int nCol, bool reset)
+{
+#ifdef _KERNEL_DEBUG
+    if( (double)(nRow*nCol) > inMat[0])
+    {
+        printf("New size exceed the space of inMat in Matrix_Resize.\n");
+        return(-1);
+    }
+#endif
+    
+    inMat[1] = nRow;
+    inMat[2] = nCol;
+    
+    if(reset)
+       for( int i=0; i<nRow*nCol; i++)
+          inMat[i+3] = 0.0;
+       
+    return(0);
+}
+
+__device__ double Matrix_RowProd(double* inMat, int nRow1, int nRow2 )
+{
+#ifdef _KERNEL_DEBUG
+    if( nRow1 >= (int)inMat[1] || nRow2 >= (int)inMat[1] )
+    {
+        printf("Row index is out of matrix in Matrix_RowProd.\n");
+        return (-1);
+    }
+#endif
+
+    if( nRow1 < (int)inMat[1] && nRow2 < (int)inMat[1] )
+    {
+    	double sum=0.0;
+        
+        for(int i=0; i <inMat[2]; i++)
+        {
+           sum += _M( inMat, nRow1,i) * _M( inMat, nRow2, i );
+        }
+        return (sum);
+    }
+    else
+        return (-1);
+}
+
+__device__ int Matrix_add_Matrix( double* inMat1, double* inMat2, double* outMat )
+{
+#ifdef _KERNEL_DEBUG
+    if( inMat1[1] != inMat2[1] || inMat1[2] != inMat2[2] || inMat1[1] * inMat1[2] > outMat[0] )
+    {
+        if(inMat1[1] != inMat2[1] || inMat1[2] != inMat2[2])
+           printf("inMat1 (%.1f, %.1f) and inMat2 (%.1f, %.1f) have different dimension in Matrix_add_Matrix.\n", inMat1[1], inMat1[2], inMat2[1], inMat2[2]);
+        if (inMat1[1] * inMat1[2] > outMat[0]) 
+           printf("Space in inMat > outMat in Matrix_add_Matrix.\n");
+        return (-1);
+    }    
+#endif
+    if( inMat1[1] == inMat2[1] && inMat1[2] == inMat2[2] && inMat1[1] * inMat1[2] <= outMat[0])
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat1[2];
+        
+        for(int i = 0; i < inMat1[1] * inMat1[2] ; i++)
+           outMat[i+3] = inMat1[i+3] + inMat2[i+3];
+
+        return (0);
+    }
+    else{
+        return (-1);
+    }
+}
+
+__device__ int Matrix_add_Double_Col( int nCol, double* inMat, double dVal, double* outMat)
+{
+#ifdef _KERNEL_DEBUG
+    if(inMat[1] * inMat[2] > outMat[0])
+    {
+        printf("Space in inMat > outMat in Matrix_add_Double_Col.\n"); // or nCol is greater than number of columns
+        return (-1);
+    }
+#endif
+
+    if(nCol == 0)
+    {
+        outMat[1] = inMat[1];
+        outMat[2] = inMat[2];
+    }
+    
+    if(nCol < inMat[2])
+    {
+        int nR = inMat[1];
+        for(int i = 0; i < inMat[1]; i++)
+        {
+            outMat[ nCol*nR +i +3 ] = _M(inMat, i, nCol) + dVal;
+        }
+
+        return (0);
+    }
+    else
+        return(-1);
+}
+    
+__device__ int Matrix_mult_Double_Col( int nCol, double* inMat, double dVal, double* outMat )
+{
+#ifdef _KERNEL_DEBUG
+    if(inMat[1] * inMat[2] > outMat[0])
+    {
+        printf("Space in inMat > outMat in Matrix_mult_Double_Col.\n"); // or nCol is greater than number of columns
+        return (-1);
+    }
+#endif
+
+    if(nCol == 0)
+    {
+        outMat[1] = inMat[1];
+        outMat[2] = inMat[2];
+    }
+    
+    if(nCol < inMat[2])
+    {
+        int nR = inMat[1];
+        for(int i = 0; i < inMat[1]; i++)
+        {
+            outMat[ nCol*nR +i +3 ] = _M(inMat, i, nCol) * dVal;
+        }
+        
+        return (0);
+    }
+    else
+        return (-1);
+}
+
+__device__ int Matrix_add_Matrix_Col( int nCol, double* inMat1, double* inMat2, double* outMat )
+{
+#ifdef _KERNEL_DEBUG
+    if(inMat1[1] != inMat2[1] || inMat1[2] != inMat2[2])
+    {
+        printf("inMat1 (%.1f, %.1f) and inMat2 (%.1f, %.1f) have different dimension in Matrix_add_Matrix_Col.\n", inMat1[1], inMat1[2], inMat2[1], inMat2[2]);
+  	    return (-1);
+    }
+
+    if (inMat1[1] * inMat1[2] > outMat[0]) 
+    {
+        printf("Space in inMat > outMat in Matrix_add_Matrix_Col.\n");
+        return (-1);
+    }
+    
+#endif
+
+    if(nCol == 0)
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat1[2];
+    }
+
+    if(nCol < inMat1[2])
+    {
+        int nR= inMat1[1];
+        for(int i = 0; i < inMat1[1]; i++)
+        {
+             outMat[ nCol*nR +i +3 ] = _M(inMat1, i, nCol) + _M(inMat2, i, nCol);
+        }
+        return (0); 
+    }
+    else
+    {
+        return (-1);
+    }    
+}
+
+__device__ int Matrix_sub_Matrix_Col( int nCol, double* inMat1, double* inMat2, double* outMat)
+{
+#ifdef _KERNEL_DEBUG
+    if(nCol == 0)
+    {
+        if(inMat1[1] != inMat2[1] || inMat1[2] != inMat2[2])
+        {
+            printf("inMat1 (%.1f, %.1f) and inMat2 (%.1f, %.1f) have different dimension in Matrix_sub_Matrix_Col.\n", inMat1[1], inMat1[2], inMat2[1], inMat2[2]);
+	        return (-1);
+        }
+
+        if (inMat1[1] * inMat1[2] > outMat[0]) 
+        {
+            printf("Space in inMat > outMat in Matrix_sub_Matrix_Col.\n");
+	        return (-1);
+        }
+    	
+	}
+#endif
+	
+    if(nCol == 0)
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat1[2];
+    }
+    
+    
+    if(nCol < inMat1[2])
+    {
+        int nR = inMat1[1];
+        for(int i = 0; i < inMat1[1]; i++)
+        {
+            outMat[ nCol*nR +i +3 ] = _M(inMat1, i, nCol) - _M(inMat2, i, nCol);
+        }
+        return (0); 
+    }
+    else
+    {
+        return (-1);
+    }
+}
+
+__device__ int Matrix_mult_Matrix_Col( int nCol, double* inMat1, double* inMat2, double* outMat )
+{
+#ifdef _KERNEL_DEBUG
+    //check the outmat has a different space with input matrics
+    if( inMat1==outMat || inMat2==outMat )
+    {
+        printf("Address of outMat is same as inMat1 or inMat2 in Matrix_mult_Matrix_Col.\n");
+        return(-2);
+    }
+
+    if(inMat1[2] != inMat2[1] && (inMat1[1] * inMat2[2] > outMat[0]) )
+    {
+        printf("inMat1[2](%.1f) != inMat2[1](%.1f) in Matrix_mult_Matrix_Col.\n", inMat1[2], inMat2[1] );
+        return (-1);
+    }
+#endif
+
+    if(nCol == 0)
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat2[2];
+    }
+    
+    if(nCol < inMat2[2])
+    {
+        int nR = inMat1[1];
+        for(int i = 0; i < inMat1[1]; i++)
+        {
+            outMat[ nCol*nR +i +3 ] = 0.0;
+        
+            for(int k = 0; k < inMat1[2]; k++)
+               outMat[ nCol*nR +i +3 ] += _M(inMat1, i, k) * _M(inMat2, k, nCol);
+        }
+
+        return (0); 
+    }
+    else
+    {
+        return (-1);
+    }
+}
+
+__device__ int Matrix_GetRow_Col( int nCol, double* inMat, int nRow , double* outVec )
+{    
+#ifdef _KERNEL_DEBUG
+    if(nCol == 0)
+    {
+        if( inMat==outVec)
+        {
+            printf("Address of outVec is same as inMat in Matrix_GetRow_Col.\n");
+            return(-2);
+        }
+        
+        if(inMat[2] > outVec[0])
+        {
+            printf("Space of outVec is smaller in Matrix_GetRow_Col.\n");
+            return (-1);
+        }
+        
+    }
+#endif
+    if(nCol == 0)
+    {
+        outVec[1] = 1;
+        outVec[2] = inMat[2];
+    }
+
+    if(nCol < inMat[2])
+    {
+        outVec[ nCol + 3 ]= _M(inMat, nRow, nCol);
+        return (0);
+    }    
+    else
+    {
+        return (-1);
+    }
+}
+
+__device__ int Matrix_GetCol_Col( int nRow, double* inMat, int nCol, double* outVec )
+{
+#ifdef _KERNEL_DEBUG
+    if(nRow == 0)
+    {
+        if( inMat==outVec)
+        {
+            printf("Address of outVec is same as inMat in Matrix_GetCol_Col.\n");
+            return(-2);
+        }
+        
+        if(inMat[1] > outVec[0])
+        {
+            printf("Space of outVec is smaller in Matrix_GetCol_Col.\n");
+            return (-1);
+        }
+    }
+#endif
+
+    if(nRow == 0)
+    {
+        outVec[1] = inMat[1];
+        outVec[2] = 1;
+    }
+    
+    if(nRow < inMat[1])
+    {
+        outVec[nRow + 3]= _M(inMat, nRow, nCol);
+        return(0);
+    }
+    else
+        return (-1);
+}
+
+__device__ int Matrix_Transpose_Col( int nCol,  double* inMat, double* outMat )
+{
+#ifdef _KERNEL_DEBUG
+    if(nCol == 0)
+    {
+        if( inMat==outMat)
+        {
+            printf("Address of outMat is same as inMat in Matrix_Transpose_Col.\n");
+            return(-2);
+        }
+
+        if(inMat[1] * inMat[2] > outMat[0])
+        {
+            printf("Space of inMat is smaller in Matrix_Transpose_Col.\n");
+            return (-1);
+        }
+    }
+#endif
+    if(nCol == 0)
+    {
+        outMat[1] = inMat[2];
+        outMat[2] = inMat[1];
+    }
+    
+    if(nCol < inMat[1])
+    {
+        int nR = inMat[2];
+        for(int i = 0; i < inMat[2]; i++)
+            outMat[ nCol*nR +i +3 ] = _M(inMat, nCol, i);
+        return (0);
+    }
+    else
+        return (-1);
+}
+
+__device__ int Matrix_Copy_Col( int nCol, double* dest, double* source )
+{
+#ifdef _KERNEL_DEBUG
+    if(nCol == 0)
+    {
+        if( dest == source )
+        {
+            printf("Address of dest is same as source in Matrix_Copy_Col.\n");
+            return(-2);
+        }
+
+        if( source[1] * source[2] > dest[0])
+        {
+            printf("Space of outVec is smaller in Matrix_Copy_Col(%f, %f>%f).\n", source[1], source[2], dest[0]);
+            return (-1);
+        }
+    }
+#endif
+
+    if(nCol == 0)
+    {
+        dest[1] = source[1];
+        dest[2] = source[2];
+    }
+    
+    if(nCol < source[2])
+    {
+        int nR = source[1];
+        for(int i = 0; i < source[1]; i++)
+            dest[ nCol*nR +i +3 ] = _M(source, i, nCol);
+
+        return (0);
+    }    
+    else
+        return (-1);
+}
+
+__device__ int Matrix_Resize_Col( int nIdxCol, double *inMat, int nRow, int nCol, bool reset)
+{
+#ifdef _KERNEL_DEBUG
+    if( (double)(nRow*nCol) > inMat[0])
+    {
+        printf("New size exceed the space of inMat in Matrix_Resize.\n");
+        return(-1);
+    }
+#endif
+
+    if(nIdxCol == 0)
+    {
+       inMat[1] = nRow;
+       inMat[2] = nCol;
+    }    
+
+    if(reset)
+    {
+        if( nIdxCol < nCol )
+        {
+            for(int i = 0; i < nRow; i++)
+                _M(inMat, i, nIdxCol) = 0.0;
+
+            return (0);
+        }    
+        else
+            return (-1);
+    }
+    
+    return(0);
+}
+
+__device__ int Vector_GetLength(double* inVec)
+{
+    return( (int)(inVec[1]) );
+}
+
+bool Compare_Matrix( double* inMat, CFmMatrix* pMat, double delt=1e-6 )
+{
+    if( inMat[1] == pMat->GetNumRows() &&
+        inMat[2] == pMat->GetNumCols() )
+    {
+        for(int i = 0; i < inMat[1]; i++)
+        for(int j = 0; j < inMat[2]; j++)
+        {
+             if( fabs(_M( inMat, i, j) - pMat->Get(i,j)) > delt )                   
+                 return(false);
+        }
+        return (true);
+    }
+    else{
+        return(false);
+    }
+}
+
+__host__ __device__ void Print_Matrix( double* inMat)
+{
+    printf("%p=>(%.1f, %.1f, %.1f)\n", inMat, inMat[0], inMat[1],inMat[2]);
+
+    for(int i = 0; i < inMat[1]; i++)
+    {
+        printf("[ ");
+        for(int j = 0; j < inMat[2]; j++)
+            printf("%.5f, ", _M(inMat, i, j) );
+        printf(" ]\n");
+    }
+}

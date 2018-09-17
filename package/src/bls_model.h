@@ -29,7 +29,7 @@
 class BLS
 {
 public:
-    BLS();
+    BLS( bool bGpuUsed );
     virtual ~BLS();
 public:
     int LoadSimulate( CMDOPTIONS *pCmd, BLS_par * pPar);
@@ -53,6 +53,8 @@ private:
 
     int m_nDataType;
     bool m_bRefit;
+    bool m_bUseGPU;
+    bool m_bCompared;
 
     BLS_dat* m_pDat;
     BLS_res* m_pRes;

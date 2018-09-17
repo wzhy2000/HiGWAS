@@ -292,6 +292,15 @@ int GLS_res::InitRefit(int nMcmcIter)
 
     CFmNewTemp refNew;
     m_pRefitSnps = new (refNew) CFmVector( 0, 0.0 );
+
+    CFmVector fmAdd(0,0.0);
+    fmAdd = m_pVarsel_Ra->GetCol(LG);
+    CFmVector fmDom(0,0.0);
+    fmDom = m_pVarsel_Rd->GetCol(LG);
+
+    double thAdd = fmAdd.GetMax()/100;
+    double thDom = fmDom.GetMax()/100;
+
     for(int i=0;i<m_nSnpP; i++)
     {
         int nSumA=0;
@@ -302,7 +311,8 @@ int GLS_res::InitRefit(int nMcmcIter)
         for(int j=0;j<LG;j++)
             nSumD = nSumD + (int)m_pVarsel_Rd->Get(i, j);
 
-        if(nSumA+nSumD>0)
+        if((nSumA>0 && m_pVarsel_Ra->Get(i, LG)>thAdd) ||
+           (nSumD>0 && m_pVarsel_Rd->Get(i, LG)>thDom) )
             m_pRefitSnps->Put(i);
     }
 
@@ -815,7 +825,7 @@ int GLS_res::GetBestQInfo(CFmFileMatrix* pMatRet, int idx, CFmVector& fmQBest, C
                 break;
             }
 
-        if(isnan(fmQBest[k]))
+        if(R_isnancpp(fmQBest[k]))
         {
             fmQBest[k]    = 0.5;
             fmQPosMean[k] = fmVct[nMcmc/2];

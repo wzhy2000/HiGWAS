@@ -1504,7 +1504,7 @@ CFmVector& CFmMatrix::GetRowNonNan( int nRow )
 
         int jj=0;
         for (int j=0; j<m_nNumCols; j++)
-                if (!isnan( Get(nRow,j)) )
+                if (!R_isnancpp( Get(nRow,j)) )
                 {
                         pVct->Set(jj, Get(nRow,j) );
                         jj++;
@@ -1529,7 +1529,7 @@ int CFmMatrix::GetNanCount()
 {
     int k=0;
     for (int i=0; i<m_nNumCols*m_nNumRows; i++)
-        if (isnan(m_pData[i]))
+        if (R_isnancpp(m_pData[i]))
             k++;
 
     if (IsReusable() ) Release();
@@ -2185,3 +2185,27 @@ void destroy(CFmMatrix* p)
     p->~CFmMatrix();
     operator delete(p, fmRef);
 }
+
+bool CFmMatrix::Compare( CFmMatrix &other, double delt )
+{
+    if (&other == this)
+        return true ;
+
+    if (m_pData == other.m_pData)
+        return true ;
+
+    // different dimensions
+    if (m_nNumCols != other.m_nNumCols || m_nNumRows != other.m_nNumRows)
+        return false ;
+
+    // buffers are the same
+    for(int i=0; i<m_nNumCols * m_nNumRows; i++)
+    {
+		if( fabs( m_pData[i]-other.m_pData[i] )>=delt )
+			return false;
+        return true ;
+	}
+
+    return false ;
+}
+

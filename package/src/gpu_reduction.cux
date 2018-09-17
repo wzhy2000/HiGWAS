@@ -1,0 +1,316 @@
+#include <stdio.h>
+#include "gls_gpu.h"
+
+#define BLOCKSIZE 128
+
+__global__ void g_cuda_show(double** gMat, int N )
+{
+   for(int i=0; i<N ;i++)
+   { 
+      double* p=gMat[i];
+      printf("%d, %p, (%.1f, %.1f, %.1f) \n", i, p, p[0], p[1], p[2] );
+   }   
+}
+
+__global__ void reduce_double ( double *g_idata, double *g_wdata, unsigned int n, unsigned int blocks )
+{
+    //extern __shared__ double sdata[];
+    unsigned int thi = threadIdx.x;
+    unsigned int tid = threadIdx.x + blockIdx.x * BLOCKSIZE;
+    unsigned int i = threadIdx.x + blockIdx.x * (BLOCKSIZE * 2) ;
+    unsigned int gridSize = BLOCKSIZE * 2 * gridDim.x;
+
+    if( i >= n ) return;
+
+    double* sdata = g_wdata;
+    sdata[tid] = 0.0;
+    
+    while (i < n) 
+    { 
+        sdata[tid] += g_idata[i];
+    	if (i + BLOCKSIZE < n) 
+    	    sdata[tid] += g_idata[i + BLOCKSIZE];
+        i += gridSize; 
+    }
+    __syncthreads();
+
+    if (BLOCKSIZE >= 512) 
+    { 
+        if (thi < 256 & (tid + 256) < n ) 
+        { 
+        	sdata[tid] += sdata[tid + 256]; 
+        } 
+        __syncthreads();
+    }
+    	
+    if (BLOCKSIZE >= 256) 
+    { 
+    	if (thi < 128 & (tid + 128) < n) 
+    	{ 
+    	    sdata[tid] += sdata[tid + 128];
+    	} 
+    	__syncthreads(); 
+    }
+    
+    if (BLOCKSIZE >= 128) 
+    { 
+        if (thi < 64  & (tid + 64) < n)  
+        { 
+            sdata[tid] += sdata[tid + 64]; 
+        } 
+        __syncthreads(); 
+    }
+
+    if (BLOCKSIZE >= 64)
+    { 
+        if (thi < 32 && (tid + 32) < n) 
+           sdata[tid] += sdata[tid + 32]; 
+
+        __syncthreads();
+    }
+
+    if (BLOCKSIZE >= 32)
+    { 
+        if( thi < 16 && (tid + 16) < n ) 
+            sdata[tid] += sdata[tid + 16]; 
+            
+        __syncthreads();
+    }
+
+    if (BLOCKSIZE >= 16)
+    { 
+        if( thi < 8 && (tid + 8) < n ) 
+            sdata[tid] += sdata[tid + 8]; 
+            
+        __syncthreads();
+    }
+
+    if ( threadIdx.x == 0 ) 
+    { 
+        for( int ii = 1; ii < 8; ii ++) 
+           sdata[tid] += sdata[tid + ii];
+    }
+}
+
+__global__ void reduce_double_block ( double *g_wdata, unsigned int blocks )
+{
+   for(int k=1; k<blocks; k++)
+       g_wdata[0] += g_wdata[ k * BLOCKSIZE  ];
+}
+
+//idata is cudaVec
+int g_reduce_double(double *idata, double* wdata, int N, double* ret)
+{
+    unsigned int threads = BLOCKSIZE;
+    unsigned int blocks = (N + (threads * 2 - 1)) / (threads * 2);
+    unsigned int smemSize = (threads <= 32) ? 2 * threads * sizeof(double) : threads * sizeof(double);
+    
+    dim3 dimBlock(threads, 1, 1);
+    dim3 dimGrid(blocks, 1, 1);
+    
+    reduce_double<<<  dimGrid, dimBlock, smemSize >>>( idata+3, wdata+3, N, blocks );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+    if(blocks>1)
+    {
+        reduce_double_block<<<  1, 1  >>>( wdata+3, blocks );
+        cudaDeviceSynchronize();
+        ERRCHECK;
+    }
+
+    double dRet= 0.0;
+    PERR(cudaMemcpy( &dRet, wdata+3, sizeof(double), cudaMemcpyDeviceToHost ));
+
+    printf("sum=%f\n",  dRet);
+    *ret = dRet;
+    
+    return(0);
+}
+
+__global__ void g_test_reduce_double(double* idata, double *pOut, int N )
+{
+   double ret= 0.0;
+   for(int i=0; i<N ;i++)
+   { 
+      ret += idata[i];
+   }
+   
+   *pOut = ret;
+}
+
+double g_reduce_double_test( double *idata, int N )
+{
+    double* d_pOut;
+    PERR( cudaMalloc(&d_pOut, sizeof(double) ) )
+    g_test_reduce_double<<< 1, 1>>>( idata+3, d_pOut, N );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    double dRet=0.0;
+    PERR( cudaMemcpy( &dRet, d_pOut, sizeof(double), cudaMemcpyDeviceToHost ) );
+    
+    PERR( cudaFree(d_pOut) ); 
+    return(dRet);
+}
+
+__global__ void reduce_matrix(double **g_imatlist, double **g_wmatlist, unsigned int n, unsigned int blocks)
+{
+    //extern __shared__ double** sdata[];
+    unsigned int thi = threadIdx.x;
+    unsigned int tid = threadIdx.x + blockIdx.x * BLOCKSIZE;
+    unsigned int i = blockIdx.x * (BLOCKSIZE * 2) + threadIdx.x;
+    unsigned int gridSize = BLOCKSIZE * 2 * gridDim.x;
+
+    if( i>=n ) return;
+
+    double** idata = g_imatlist;
+    double** sdata = g_wmatlist;
+
+    Matrix_Resize (sdata[tid], idata[i][1], idata[i][2], TRUE );
+    while (i<n) 
+    { 
+        Matrix_add_Matrix( sdata[tid], idata[i], sdata[tid] );
+    	if (i + BLOCKSIZE < n) 
+            Matrix_add_Matrix( sdata[tid], idata[i + BLOCKSIZE], sdata[tid]);
+        i += gridSize; 
+    }
+
+    __syncthreads();
+
+    if (BLOCKSIZE >= 512) 
+    { 
+        if (thi < 256 & (tid + 256) < n) 
+        { 
+            Matrix_add_Matrix( sdata[tid], sdata[tid + 256], sdata[tid]);
+        } 
+        __syncthreads();
+    }
+
+    	
+    if (BLOCKSIZE >= 256) 
+    { 
+    	if (thi < 128 && (tid + 128) < n) 
+    	{ 
+            Matrix_add_Matrix( sdata[tid], sdata[tid + 128], sdata[tid]);
+    	} 
+    	__syncthreads(); 
+    }
+    
+    if (BLOCKSIZE >= 128) 
+    { 
+        if (thi < 64 && (tid + 64) < n)  
+        { 
+            Matrix_add_Matrix( sdata[tid], sdata[tid + 64], sdata[tid]);
+        } 
+        __syncthreads(); 
+    }
+
+    if (BLOCKSIZE >= 64) 
+    {
+        if ( thi < 32 && (tid + 32) < n) 
+            Matrix_add_Matrix( sdata[tid], sdata[tid + 32], sdata[tid]);
+
+        __syncthreads();
+    }
+
+    if (BLOCKSIZE >= 32) 
+    {
+        if ( thi < 16 && (tid + 16) < n) 
+            Matrix_add_Matrix( sdata[tid], sdata[tid + 16], sdata[tid]);
+
+        __syncthreads();
+    }
+
+    if (BLOCKSIZE >= 16) 
+    {
+        if ( thi < 8 && (tid + 8) < n) 
+            Matrix_add_Matrix( sdata[tid], sdata[tid + 8], sdata[tid]);
+
+        __syncthreads();
+    }
+    
+    if ( threadIdx.x == 0 ) 
+    { 
+        //printf("blockIdx.x=%d, tid=%d sdata=%p\n", blockIdx.x, tid, sdata[ tid  ] ); 
+        for( int ii = 1; ii < 8; ii ++) 
+          Matrix_add_Matrix( sdata[tid], sdata[tid + ii], sdata[tid] );
+    }
+
+    __syncthreads();
+}
+
+__global__ void reduce_matrix_block( double **g_wmatlist, unsigned int blocks)
+{
+    double** sdata = g_wmatlist;
+
+    //Print_Matrix( sdata[0] );
+    for(int k=1; k<blocks; k++)
+       Matrix_add_Matrix( sdata[0], sdata[ k * BLOCKSIZE  ], sdata[0] );
+}
+
+//imatlist, wmatlist are in GPU memory.
+int g_reduce_matrix(double **imatlist, double **wmatlist, int N )
+{
+    if(0)
+    {
+        g_cuda_show<<< 1, 1>>>(imatlist, N);
+        cudaDeviceSynchronize();
+        ERRCHECK;
+
+        g_cuda_show<<< 1, 1>>>(wmatlist, N);
+        cudaDeviceSynchronize();
+        ERRCHECK;
+    }
+    
+    unsigned int threads = BLOCKSIZE;
+    unsigned int blocks = (N + (threads * 2 - 1)) / (threads * 2);
+    unsigned int smemSize = (threads <= 32) ? 2 * threads * sizeof(double) : threads * sizeof(double);
+    
+    dim3 dimBlock(threads, 1, 1);
+    dim3 dimGrid(blocks, 1, 1);
+
+    reduce_matrix<<<  dimGrid, dimBlock, smemSize >>>( imatlist, wmatlist, N, blocks );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    if(blocks>1)
+    {
+        reduce_matrix_block<<<  1, 1  >>>( wmatlist, blocks );
+        cudaDeviceSynchronize();
+        ERRCHECK;
+    }
+    
+    return(0);
+}  
+
+__global__ void g_test_reduce_matrix(double** gMat, double *pOut, int N )
+{
+   pOut[0] = 10000*8; 
+   pOut[1] = gMat[0][1];
+   pOut[2] = gMat[0][2];
+  
+   memset( pOut+3, 0.0, 10000*8 );
+  
+   for( int i=0; i<N ;i++)
+       Matrix_add_Matrix( gMat[i], pOut, pOut);
+}
+
+int g_reduce_matrix_test( double **imatlist, int N, CFmMatrix& fmRet )
+{
+    double* d_pOut;
+    int nSize = sizeof(double)* 100*100+3;
+    PERR( cudaMalloc(&d_pOut, nSize ));
+
+    g_test_reduce_matrix<<< 1, 1>>>( imatlist, d_pOut, N );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    _copyback_fmMatrix_Host( fmRet, d_pOut );
+
+    PERR( cudaFree( d_pOut ) );
+    return(0);
+}
+
+
+

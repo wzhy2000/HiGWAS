@@ -636,7 +636,7 @@ void CFmVector::RemoveNan()
         int f_cnt=0;
         for(int i=0, nLast = 0; i<m_nActLen; i++)
         {
-                if ( isnan( m_pData[i]) )
+                if ( R_isnancpp( m_pData[i]) )
                 {
                         //skip
                         f_cnt++;
@@ -657,7 +657,7 @@ int CFmVector::GetLengthNonNan()
 {
     int cnt = 0;
     for(int i=0; i<m_nActLen; i++)
-        if ( !isnan(m_pData[i]) )
+        if ( !R_isnancpp(m_pData[i]) )
             cnt++;
 
     if (IsReusable()) Release();
@@ -964,7 +964,7 @@ double CFmVector::GetMedian()
 
 bool CFmVector::IsNan(int nIdx)
 {
-    return(isnan(m_pData[nIdx])!=0);
+    return(R_isnancpp(m_pData[nIdx])!=0);
 }
 
 char* CFmVector::GetCommaString(const char* szFormat)
@@ -1115,4 +1115,28 @@ void destroy(CFmVector* p)
     CFmNewTemp fmRef;
     p->~CFmVector();
     operator delete(p, fmRef);
+}
+
+
+bool CFmVector::Compare( CFmVector &other, double delt )
+{
+    if (&other == this)
+        return true ;
+
+    if (m_pData == other.m_pData)
+        return true ;
+
+    // different dimensions
+    if (m_nActLen != other.m_nActLen)
+        return false ;
+
+    // buffers are the same
+    for(int i=0; i<m_nActLen; i++)
+    {
+		if( fabs( m_pData[i]-other.m_pData[i] )>=delt )
+			return false;
+        return true ;
+	}
+
+    return false ;
 }

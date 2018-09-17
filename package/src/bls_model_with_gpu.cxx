@@ -26,14 +26,27 @@
 #include "bls_model.h"
 #include "bls_dat.h"
 #include "bls_cfg.h"
+#include "bls_gpu.h"
+#include "gpu_share.h"
+
 
 #define _t(x) ((x).GetTransposed())
 
-BLS::BLS(bool bGpuUsed)
+#define USECUDA
+//#define MONTIME
+
+
+BLS::BLS( bool bUseGPU)
 {
     m_nDataType = RUNMODE_UNK;
     m_bRefit = false;
-    m_bCompared = bGpuUsed;
+    m_bUseGPU = bUseGPU;
+
+#ifdef MONTIME
+    m_bCompared = true;
+#else
+    m_bCompared = false;
+#endif
 
     m_pDat = NULL;
     m_pRes = NULL;
@@ -471,8 +484,8 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
     CFmVector sigma_Coefs( Covs.GetNumCols(), 1 );
     CFmVector Coefs( Covs.GetNumCols(), 0 );
 
-     double mu = Y.GetMean();
-     double sigma2 = (Y - mu).GetVar();
+    double mu = Y.GetMean();
+    double sigma2 = (Y - mu).GetVar();
     static CFmVector Y_eps(0, 0.0);
     Y_eps = Y;
 
@@ -513,6 +526,33 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
 
     //**SEQTEST
     //_log_debug( _HI_, "PART X.....McmcIter: %d", m_pCfg->m_nMaxIter);
+
+    struct blsGPUobj *gCuda  = NULL;
+    struct blsGPUobj *gCpuObj= NULL;
+
+    if(m_bUseGPU)
+    {
+
+#ifndef USECUDA
+        Rprintf("The package is not compiled with CUDA library");
+        return(-1);
+#else
+
+        if( Init_blsGPU( &gCpuObj, &gCuda, N, P ) ==0 )
+        {
+            _copy_fmMatrix_Device( gCpuObj->gen_pA,   *gen_pA);
+            _copy_fmMatrix_Device( gCpuObj->gen_pD,   *gen_pD);
+        }
+        else
+        {
+            Rprintf("Failed to allocate memory on GPU\n");
+            return( ERR_ON_GPU );
+        }
+#endif
+
+    }
+
+    clock_t st0 = startTimer();
 
     GetRNGstate();
     for (int round=0; round<m_pCfg->m_nMcmcIter; round++)
@@ -610,13 +650,18 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
         spdY_by_a = ((*gen_pA)*a).GetCol(0);
 
         if (m_pCmd->bAddUsed)
+        {
+          if( !m_bUseGPU || m_bCompared)
+          {
+            st0 = startTimer();
             for (int j=0; j<P; j++)
             {
                 spd_pA_col = gen_pA->GetCol(j);
 
                 double aMu_j = spd_pA_col.Prod( tmp3 - spdY_by_a + spd_pA_col*a[j] )/tmp[j];
                 double old_aj = a[j];
-                double new_a = rnorm( aMu_j, sqrt( aVar[j] ) );
+                //double new_a = rnorm( aMu_j, sqrt( aVar[j] ) );
+                double new_a = rnorm(1,0)  * sqrt( aVar[j] ) + aMu_j;
 
                 //isnana(new_a) <==> new_a!=new_a
                 if ( new_a != new_a )
@@ -654,6 +699,24 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
                 spdY_by_a = spdY_by_a + spd_pA_col*(a[j]-old_aj);
             }
 
+#ifdef MONTIME
+       printf("CPU part1: %.4f seconds\n", stopTimer(st0) );
+#endif
+          }
+
+          if(m_bUseGPU)
+          {
+             st0 = startTimer();
+#ifdef USECUDA
+             _cuda_bpart1( gCuda, gCpuObj, N, P, spdY_by_a, aVar, tmp, tmp3, a );
+#endif
+
+#ifdef MONTIME
+             printf("GPU part1: %.4f seconds\n", stopTimer(st0) );
+#endif
+          }
+        }
+
 //---------------------------------------------------
 // part D in the R code
 //  #--Updating tau2 underlying a in non-refit status
@@ -675,23 +738,42 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
 
         if (!m_bRefit)
         {
-            for (int j=0; j<P; j++)
+            if( !m_bUseGPU || m_bCompared)
             {
-                if (a[j] == 0.0 )
+                st0 = startTimer();
+                for (int j=0; j<P; j++)
                 {
-                    tau2[j] = 0.0;
-                    continue;
-                }
+                    if (a[j] == 0.0 )
+                    {
+                        tau2[j] = 0.0;
+                        continue;
+                    }
 
-                double InvTau2_1 = sqrt( lambda2 * sigma2)/fabs(a[j]);
-                double _tau2 = 1/func_invGau(InvTau2_1, lambda2);
-                if ( _tau2 <= 0 || _tau2 != _tau2 )
-                {
-                    _log_debug( _HI_, "PART D_test.....j=%d, tau2=%f, lambda2=%f, sigma2=%f, a[j]=%f, mu=%f",
-                                     j, tau2[j], lambda2, sigma2, a[j], InvTau2_1);
+                    double InvTau2_1 = sqrt( lambda2 * sigma2)/fabs(a[j]);
+                    double _tau2 = 1/func_invGau(InvTau2_1, lambda2);
+                    if ( _tau2 <= 0 || _tau2 != _tau2 )
+                    {
+                        _log_debug( _HI_, "PART D_test.....j=%d, tau2=%f, lambda2=%f, sigma2=%f, a[j]=%f, mu=%f",
+                                         j, tau2[j], lambda2, sigma2, a[j], InvTau2_1);
+                    }
+                    else
+                        tau2[j] = _tau2;
                 }
-                else
-                    tau2[j] = _tau2;
+ #ifdef MONTIME
+        printf("CPU part2: %.4f seconds\n", stopTimer(st0) );
+ #endif
+            }
+
+            if(m_bUseGPU)
+            {
+                st0 = startTimer();
+ #ifdef USECUDA
+                _cuda_bpart2( gCuda, gCpuObj, P, lambda2, sigma2, a, tau2 );
+ #endif
+
+ #ifdef MONTIME
+                printf("GPU part2: %.4f seconds\n", stopTimer(st0) );
+ #endif
             }
 
             lambda2 = rgamma( P+gammaTau, tau2.Sum()/2 + deltaTau );
@@ -740,6 +822,10 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
         spdY_by_d = ((*gen_pD)*d).GetCol(0);
 
         if (m_pCmd->bDomUsed)
+        {
+          if( !m_bUseGPU || m_bCompared)
+          {
+            st0 = startTimer();
             for (int j=0; j<P; j++)
             {
                 spd_pD_col = gen_pD->GetCol(j);
@@ -768,6 +854,23 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
                 d[j]  = new_d;
                 spdY_by_d = spdY_by_d + spd_pD_col*(d[j]-old_dj);
             }
+#ifdef MONTIME
+       printf("CPU part2: %.4f seconds\n", stopTimer(st0) );
+#endif
+          }
+
+          if(m_bUseGPU)
+          {
+               st0 = startTimer();
+#ifdef USECUDA
+               _cuda_bpart3( gCuda, gCpuObj, N, P, spdY_by_d, dVar, tmp, tmp3, d );
+#endif
+
+#ifdef MONTIME
+               printf("GPU part3: %.4f seconds\n", stopTimer(st0) );
+#endif
+          }
+        }
 
 //---------------------------------------------------
 // part F in the R code
@@ -790,18 +893,37 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
 
         if (!m_bRefit)
         {
-            for (int j=0; j<P; j++)
+            if( !m_bUseGPU || m_bCompared)
             {
-                double InvTau2_1 = sqrt(lambda_st2*sigma2)/fabs(d[j]);
-                double _tau_st2 = 1/func_invGau(InvTau2_1, lambda_st2);
-
-                if ( _tau_st2 <= 0 || _tau_st2 != _tau_st2 )
+                st0 = startTimer();
+                for (int j=0; j<P; j++)
                 {
-                    _log_debug( _HI_, "PART F_test.....j=%d, tau2*=%f, lambda2*=%f, sigma2=%f, d[j]=%f, mu=%f",
-                                 j, tau_st2[j], lambda_st2, sigma2, d[j], InvTau2_1);
+                    double InvTau2_1 = sqrt(lambda_st2*sigma2)/fabs(d[j]);
+                    double _tau_st2 = 1/func_invGau(InvTau2_1, lambda_st2);
+
+                    if ( _tau_st2 <= 0 || _tau_st2 != _tau_st2 )
+                    {
+                        _log_debug( _HI_, "PART F_test.....j=%d, tau2*=%f, lambda2*=%f, sigma2=%f, d[j]=%f, mu=%f",
+                                     j, tau_st2[j], lambda_st2, sigma2, d[j], InvTau2_1);
+                    }
+                    else
+                        tau_st2[j] = _tau_st2;
                 }
-                else
-                    tau_st2[j] = _tau_st2;
+ #ifdef MONTIME
+        printf("CPU part2: %.4f seconds\n", stopTimer(st0) );
+ #endif
+            }
+
+            if(m_bUseGPU)
+            {
+                st0 = startTimer();
+ #ifdef USECUDA
+                _cuda_bpart4( gCuda, gCpuObj, P, lambda_st2, sigma2, d, tau_st2 );
+ #endif
+
+ #ifdef MONTIME
+                printf("GPU part4: %.4f seconds\n", stopTimer(st0) );
+ #endif
             }
 
             lambda_st2 = rgamma( P + gammaTau_st, tau_st2.Sum()/2+deltaTau_st );
@@ -871,12 +993,25 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
         //**SEQTEST
         //_log_debug(_HI_, "Round=%d, mu=%.4f, alpha=%.4f, lambda=%.4f, lambda*=%.4f, sigma2=%f\n", round, Coefs[0], Coefs[1], lambda2, lambda_st2, sigma2 );
 
+Rprintf( "Round=%d, mu=%.4f, alpha=%.4f, lambda=%.4f, lambda*=%.4f, sigma2=%f\n", round, Coefs[0], Coefs[1], lambda2, lambda_st2, sigma2 );
+
+
         //-- save the trace tag into the log file.
         if (round % 100 == 0)
             pcf.UpdatePcfFile( PCF_GOING, -1, -1, round+1, R);
     }
 
     PutRNGstate();
+
+#ifdef USECUDA
+    if(m_bUseGPU)
+    {
+        if( Free_blsGPU( gCuda, gCpuObj, N) != 0 )
+            return( ERR_ON_GPU );
+
+        printf("End of GPU");
+    }
+#endif
 
     destroy( gen_pA );
     destroy( gen_pD );

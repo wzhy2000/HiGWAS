@@ -925,7 +925,7 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
         {
             for(int j=0; j<m_pCovarZ->GetNumCols(); j++)
             {
-                if ( !isnan(m_pCovarZ->Get(i,j)))
+                if ( !R_isnancpp(m_pCovarZ->Get(i,j)))
                 {
                     fprintf(fp, ",%.3f", m_pCovarZ->Get(i,j));
                 }
@@ -938,7 +938,7 @@ int CFmSimulate::SavePhenoFile( char* szPheoutFile )
 
         for(int j=0; j<m_pPhenoY->GetNumCols(); j++)
         {
-            if (!isnan(m_pPhenoY->Get(i,j)))
+            if (!R_isnancpp(m_pPhenoY->Get(i,j)))
             {
                 fprintf(fp, ",%.3f", m_pPhenoY->Get(i,j));
             }

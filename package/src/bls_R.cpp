@@ -26,7 +26,7 @@ int _blasso_simulate( CMDOPTIONS *pCmd, BLS_par *pPar)
     int status = 0;
     try
     {
-        BLS sm;
+        BLS sm ( pCmd->bGpuUsed );
         status = sm.LoadSimulate( pCmd, pPar );
         if (status!=0)
             goto _Abort1;
@@ -138,7 +138,7 @@ SEXP _blasso_plink_tped(  CMDOPTIONS* pCmd, BLS_cfg *pCfg  )
     int status = 0;
     try
     {
-        BLS sm;
+        BLS sm ( pCmd->bGpuUsed );
         status = sm.LoadPlink( pCmd );
         if (status!=0)
             goto _Abort2;
@@ -179,14 +179,15 @@ SEXP blasso_plink_tped(  const char* pszPheFile,
                  const char*  pszYname,
                  const char*  pszXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-               double fRhoTuning,
-            double fQval_add,
-            double fQval_dom,
-            int    nDebug)
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int    nDebug)
 {
     CMDOPTIONS cmd;
     memset(&cmd, 0, sizeof(CMDOPTIONS));
@@ -199,6 +200,7 @@ SEXP blasso_plink_tped(  const char* pszPheFile,
 
     cmd.nDebug = nDebug;
     cmd.bRefit = bRefit;
+    cmd.bGpuUsed = bGpuUsed;
     cmd.bAddUsed = bAddUsed;
     cmd.bDomUsed = bDomUsed;
 
@@ -248,7 +250,7 @@ SEXP _blasso_simple(  CMDOPTIONS* pCmd, BLS_cfg *pCfg )
     int status = 0;
     try
     {
-        BLS sm;
+        BLS sm ( pCmd->bGpuUsed );
         status = sm.LoadSimple( pCmd );
         if (status!=0)
             goto _Abort3;
@@ -286,14 +288,15 @@ SEXP blasso_simple( const char* pszPheFile,
                  const char*  pszYname,
                  const char*  pszXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-               double fRhoTuning,
-            double fQval_add,
-            double fQval_dom,
-            int   nDebug)
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int   nDebug)
 {
     CMDOPTIONS cmd;
     memset(&cmd, 0, sizeof(CMDOPTIONS));
@@ -305,6 +308,7 @@ SEXP blasso_simple( const char* pszPheFile,
 
     cmd.nDebug = nDebug;
     cmd.bRefit = bRefit;
+    cmd.bGpuUsed = bGpuUsed;
     cmd.bAddUsed = bAddUsed;
     cmd.bDomUsed = bDomUsed;
 
@@ -349,7 +353,7 @@ SEXP _blasso_snpmat(  CFmMatrix* pFmPhe, CFmMatrix* pFmMat, CMDOPTIONS* pCmd, BL
     int status = 0;
     try
     {
-        BLS sm;
+        BLS sm ( pCmd->bGpuUsed );
         status = sm.LoadSnpmat( pFmPhe, pFmMat, pCmd );
         if (status!=0)
             goto _Abort4;
@@ -390,14 +394,15 @@ SEXP blasso_snpmat( SEXP pmatPhe,
                  const char*  pszYname,
                  const char*  pszXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-               double fRhoTuning,
-            double fQval_add,
-            double fQval_dom,
-            int   nDebug)
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int   nDebug)
 {
     CFmNewTemp refNew;
 
@@ -414,6 +419,7 @@ SEXP blasso_snpmat( SEXP pmatPhe,
 
     cmd.nDebug = nDebug;
     cmd.bRefit = bRefit;
+    cmd.bGpuUsed = bGpuUsed;
     cmd.bAddUsed = bAddUsed;
     cmd.bDomUsed = bDomUsed;
 

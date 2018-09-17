@@ -68,20 +68,22 @@ SEXP bls_simple( SEXP szPhefile,
                  SEXP szYname,
                  SEXP szXname,
                  SEXP sbRefit,
+                 SEXP sbGpuUsed,
                  SEXP sbAddUsed,
                  SEXP sbDomUsed,
                  SEXP snMcmcIter,
-               SEXP sfBurnInRound,
-               SEXP sfRhoTuning,
-            SEXP sfQval_add,
-            SEXP sfQval_dom,
-            SEXP snDebug)
+                 SEXP sfBurnInRound,
+                 SEXP sfRhoTuning,
+                 SEXP sfQval_add,
+                 SEXP sfQval_dom,
+                 SEXP snDebug)
 {
     const char* pszPhefile = CHAR(STRING_ELT(szPhefile,0));
     const char* pszSnpfile = CHAR(STRING_ELT(szSnpfile,0));
     const char* pszYname   = CHAR(STRING_ELT(szYname,0));
     const char* pszXname   = CHAR(STRING_ELT(szXname,0));
     bool bRefit            = BOOLEAN_ELT(sbRefit, 0);
+    bool bGpuUsed          = BOOLEAN_ELT(sbGpuUsed, 0);
     bool bAddUsed          = BOOLEAN_ELT(sbAddUsed, 0);
     bool bDomUsed          = BOOLEAN_ELT(sbDomUsed, 0);
     int  nMcmcIter         = round(NUMERIC_ELT( snMcmcIter, 0) );
@@ -96,14 +98,15 @@ SEXP bls_simple( SEXP szPhefile,
                          pszYname,
                          pszXname,
                          bRefit,
+                         bGpuUsed,
                          bAddUsed,
                          bDomUsed,
                          nMcmcIter,
-                       fBurnInRound,
-                       fRhoTuning,
-                    fQval_add,
-                    fQval_dom,
-                    nDebug);
+                         fBurnInRound,
+                         fRhoTuning,
+                         fQval_add,
+                         fQval_dom,
+                        nDebug);
     return(ret);
 }
 
@@ -113,14 +116,15 @@ SEXP bls_plink_tped( SEXP szPhefile,
                  SEXP szYname,
                  SEXP szXname,
                  SEXP sbRefit,
+                 SEXP sbGpuUsed,
                  SEXP sbAddUsed,
                  SEXP sbDomUsed,
                  SEXP snMcmcIter,
-               SEXP sfBurnInRound,
-               SEXP sfRhoTuning,
-            SEXP sfQval_add,
-            SEXP sfQval_dom,
-            SEXP snDebug )
+                 SEXP sfBurnInRound,
+                 SEXP sfRhoTuning,
+                 SEXP sfQval_add,
+                 SEXP sfQval_dom,
+                 SEXP snDebug )
 {
     const char* pszPhefile = CHAR(STRING_ELT(szPhefile,0));
     const char* pzTpedfile = CHAR(STRING_ELT(szTpedfile,0));
@@ -128,6 +132,7 @@ SEXP bls_plink_tped( SEXP szPhefile,
     const char* pszYname   = CHAR(STRING_ELT(szYname,0));
     const char* pszXname   = CHAR(STRING_ELT(szXname,0));
     bool bRefit            = BOOLEAN_ELT(sbRefit, 0);
+    bool bGpuUsed          = BOOLEAN_ELT(sbGpuUsed, 0);
     bool bAddUsed          = BOOLEAN_ELT(sbAddUsed, 0);
     bool bDomUsed          = BOOLEAN_ELT(sbDomUsed, 0);
     int  nMcmcIter         = round(NUMERIC_ELT( snMcmcIter, 0) );
@@ -143,14 +148,15 @@ SEXP bls_plink_tped( SEXP szPhefile,
                          pszYname,
                          pszXname,
                          bRefit,
+                         bGpuUsed,
                          bAddUsed,
                          bDomUsed,
                          nMcmcIter,
-                       fBurnInRound,
-                       fRhoTuning,
-                    fQval_add,
-                    fQval_dom,
-                    nDebug);
+                         fBurnInRound,
+                         fRhoTuning,
+                         fQval_add,
+                         fQval_dom,
+                         nDebug);
     return(ret);
 }
 
@@ -159,18 +165,20 @@ SEXP bls_snpmat( SEXP szPheMat,
                  SEXP szYname,
                  SEXP szXname,
                  SEXP sbRefit,
+                 SEXP sbGpuUsed,
                  SEXP sbAddUsed,
                  SEXP sbDomUsed,
                  SEXP snMcmcIter,
-               SEXP sfBurnInRound,
-               SEXP sfRhoTuning,
-            SEXP sfQval_add,
-            SEXP sfQval_dom,
-            SEXP snDebug)
+                 SEXP sfBurnInRound,
+                 SEXP sfRhoTuning,
+                 SEXP sfQval_add,
+                 SEXP sfQval_dom,
+                 SEXP snDebug)
 {
     const char* pszYname   = CHAR(STRING_ELT(szYname,0));
     const char* pszXname   = CHAR(STRING_ELT(szXname,0));
     bool bRefit            = BOOLEAN_ELT(sbRefit, 0);
+    bool bGpuUsed          = BOOLEAN_ELT(sbGpuUsed, 0);
     bool bAddUsed          = BOOLEAN_ELT(sbAddUsed, 0);
     bool bDomUsed          = BOOLEAN_ELT(sbDomUsed, 0);
     int  nMcmcIter         = round(NUMERIC_ELT( snMcmcIter, 0) );
@@ -185,13 +193,14 @@ SEXP bls_snpmat( SEXP szPheMat,
                          pszYname,
                          pszXname,
                          bRefit,
+                         bGpuUsed,
                          bAddUsed,
                          bDomUsed,
                          nMcmcIter,
-                       fBurnInRound,
-                       fRhoTuning,
-                    fQval_add,
-                    fQval_dom,
-                    nDebug);
+                         fBurnInRound,
+                         fRhoTuning,
+                         fQval_add,
+                         fQval_dom,
+                         nDebug);
     return(ret);
 }

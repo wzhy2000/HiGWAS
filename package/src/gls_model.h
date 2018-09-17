@@ -29,7 +29,7 @@ class CFmFileMatrix;
 class GLS
 {
 public:
-    GLS();
+    GLS(bool bUseGPU);
     virtual ~GLS();
 public:
     int LoadSimulate( CMDOPTIONS *pCmd, GLS_par *pPar );
@@ -50,6 +50,8 @@ private:
 
     int m_nDataType;
     bool m_bRefit;
+    bool m_bUseGPU;
+    bool m_bCompared;
 
     GLS_dat* m_pDat;
     GLS_res* m_pRes;

@@ -23,7 +23,7 @@ int _glasso_simulate( CMDOPTIONS *pCmd, GLS_par *pPar)
     int status = 0;
     try
     {
-        GLS sm;
+        GLS sm( pCmd->bGpuUsed );
         status = sm.LoadSimulate( pCmd, pPar );
         if (status!=0)
             goto _Abort1;
@@ -57,7 +57,7 @@ SEXP _glasso_plink_tped( CMDOPTIONS* pCmd, GLS_cfg* pCfg )
     int status = 0;
     try
     {
-        GLS sm;
+        GLS sm( pCmd->bGpuUsed );
         status = sm.LoadPlink( pCmd );
         if (status!=0)
             goto _Abort2;
@@ -103,7 +103,7 @@ SEXP _glasso_simple(  CMDOPTIONS* pCmd, GLS_cfg* pCfg )
     int status = 0;
     try
     {
-        GLS sm;
+        GLS sm( pCmd->bGpuUsed );
         status = sm.LoadSimple( pCmd );
         if (status!=0)
             goto _Abort3;
@@ -151,7 +151,7 @@ SEXP _glasso_snpmat( CFmMatrix* pfmPhe, CFmMatrix* pfmSnp, CMDOPTIONS* pCmd, GLS
     int status = 0;
     try
     {
-        GLS sm;
+        GLS sm( pCmd->bGpuUsed );
         status = sm.LoadSnpmat( pfmPhe, pfmSnp, pCmd );
         if (status!=0)
             goto _Abort4;
@@ -202,10 +202,10 @@ int glasso_simulate( const char* szPhe_out,
                      int nSimu_sig_p,
                      int nSimu_a_len,
                      double* pfSimu_a_effect,
-                      int nSimu_d_len,
-                      double* pfSimu_d_effect,
-                      double* pfSimu_z_range,
-                      int* pnSimu_z_count,
+                     int nSimu_d_len,
+                     double* pfSimu_d_effect,
+                     double* pfSimu_z_range,
+                     int* pnSimu_z_count,
                      int nDebug)
 {
     CMDOPTIONS cmd;
@@ -282,14 +282,15 @@ SEXP glasso_simple( const char* pszPhefile,
                  const char*  pzZname,
                  const char*  pzXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-            double fRhoTuning,
-            double fQval_add,
-            double fQval_dom,
-            int   nDebug)
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int   nDebug)
 {
     CMDOPTIONS cmd;
     memset(&cmd, 0, sizeof(CMDOPTIONS));
@@ -305,15 +306,16 @@ SEXP glasso_simple( const char* pszPhefile,
     cmd.bAddUsed = bAddUsed;
     cmd.bDomUsed = bDomUsed;
     cmd.bRefit   = bRefit;
+    cmd.bGpuUsed = bGpuUsed;
 
     start_log( cmd.nDebug );
 
     CFmNewTemp refNew;
     GLS_cfg *pCfg = new (refNew) GLS_cfg();
-    pCfg->m_nMcmcIter        = nMcmcIter,
+    pCfg->m_nMcmcIter     = nMcmcIter,
     pCfg->m_fBurnInRound  = fBurnInRound;
-    pCfg->m_fQval_add      = fQval_add;
-    pCfg->m_fQval_dom      = fQval_dom;
+    pCfg->m_fQval_add     = fQval_add;
+    pCfg->m_fQval_dom     = fQval_dom;
     pCfg->m_fRhoTuning    = fRhoTuning;
 
     if ( strlen(cmd.szSnpFile)==0 ||
@@ -340,14 +342,15 @@ SEXP glasso_plink_tped( const char* pszPhefile,
                  const char*  pzZname,
                  const char*  pzXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-            double fRhoTuning,
-            double fQval_add,
-            double fQval_dom,
-            int   nDebug)
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int   nDebug)
 {
     CMDOPTIONS cmd;
     memset(&cmd, 0, sizeof(CMDOPTIONS));
@@ -364,6 +367,7 @@ SEXP glasso_plink_tped( const char* pszPhefile,
     cmd.bAddUsed = bAddUsed;
     cmd.bDomUsed = bDomUsed;
     cmd.bRefit   = bRefit;
+    cmd.bGpuUsed = bGpuUsed;
 
     start_log( cmd.nDebug );
 
@@ -399,14 +403,15 @@ SEXP glasso_snpmat( SEXP smatPhe,
                  const char*  pzZname,
                  const char*  pzXname,
                  bool bRefit,
+                 bool bGpuUsed,
                  bool bAddUsed,
                  bool bDomUsed,
                  int nMcmcIter,
-               double fBurnInRound,
-            double fRhoTuning,
-            double fQval_add,
-            double fQval_dom,
-            int    nDebug)
+                 double fBurnInRound,
+                 double fRhoTuning,
+                 double fQval_add,
+                 double fQval_dom,
+                 int nDebug)
 {
     CFmNewTemp refNew;
     CFmMatrix* pFmPhe   = new (refNew) CFmMatrix(0,0);
@@ -426,6 +431,7 @@ SEXP glasso_snpmat( SEXP smatPhe,
     cmd.bAddUsed = bAddUsed;
     cmd.bDomUsed = bDomUsed;
     cmd.bRefit   = bRefit;
+    cmd.bGpuUsed = bGpuUsed;
 
     if (strlen(cmd.szMatadFile)==0)
         CFmSys::GetTempFile(cmd.szMatadFile, "gls.fmat", MAX_PATH);
@@ -433,7 +439,7 @@ SEXP glasso_snpmat( SEXP smatPhe,
     start_log( cmd.nDebug );
 
     GLS_cfg *pCfg = new  (refNew)  GLS_cfg();
-    pCfg->m_nMcmcIter        = nMcmcIter,
+    pCfg->m_nMcmcIter     = nMcmcIter,
     pCfg->m_fBurnInRound  = fBurnInRound;
     pCfg->m_fQval_add     = fQval_add;
     pCfg->m_fQval_dom     = fQval_dom;

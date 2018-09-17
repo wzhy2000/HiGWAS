@@ -126,6 +126,8 @@ public:
     CFmVectorStr*   GetNames();
     char*           GetName(int idx );
 
+	bool            Compare( CFmVector &other, double delt=1e-8 );
+
 public:
     static          int _DV;
     static          int g_nObjCount;

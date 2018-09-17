@@ -61,6 +61,9 @@ private:
     int m_nMcmcIter;
     int m_nRefitSnp;
 
+    double m_varsel_max;
+    double m_refit_max;
+
     BLS_cfg* m_pCfg;
     CMDOPTIONS *m_pCmd;
 

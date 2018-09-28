@@ -74,13 +74,13 @@
 
 
 /*=========================================================================
-   strupr -de-
+   _strupr -de-
   -------------------------------------------------------------------------
    Job : String to Uppercase 22.03.2001 Dieter Engelbrecht dieter@wintop.net
 ========================================================================*/
 #ifdef DONT_HAVE_STRUPR
 /* DONT_HAVE_STRUPR is set when INI_REMOVE_CR is defined */
-void strupr( char *str )
+void _strupr( char *str )
 {
     // We dont check the ptr because the original also dont do it.
     while (*str != 0)
@@ -417,14 +417,14 @@ struct ENTRY *CFmIniFile::FindSection (CCHR *pSection)
     char iSec [130];
     struct ENTRY *pEntry;
     sprintf (Sec, "[%s]", pSection);
-    strupr  (Sec);
+    _strupr  (Sec);
     pEntry = m_pEntry; /* Get a pointer to the first Entry */
     while (pEntry != NULL)
     {
         if (pEntry->Type == tpSECTION)
         {
             strcpy  (iSec, pEntry->pText);
-            strupr  (iSec);
+            _strupr  (iSec);
             if (strcmp (Sec, iSec) == 0)
             {
                 return pEntry;
@@ -453,7 +453,7 @@ bool CFmIniFile::FindKey  (CCHR *pSection, CCHR *pKey, EFIND *pList)
     pEntry = pEntry->pNext;
     if (pEntry == NULL) { return FALSE; }
     sprintf (Search, "%s",pKey);
-    strupr  (Search);
+    _strupr  (Search);
     while (pEntry != NULL)
     {
         if ((pEntry->Type == tpSECTION) || /* Stop after next section or EOF */
@@ -477,7 +477,7 @@ bool CFmIniFile::FindKey  (CCHR *pSection, CCHR *pKey, EFIND *pList)
                 strcpy (pList->KeyText, Text);
                 strcpy (Found, Text);
                 *pText = '=';
-                strupr (Found);
+                _strupr (Found);
                 /*            printf ("%s,%s\n", Search, Found); */
                 if (strcmp (Found,Search) == 0)
                 {

@@ -14,6 +14,9 @@ AC_INIT([gwas.lasso], 0.0.1)
 
 AC_PROG_CC(gcc)
 
+COMPILE_CUDA=""
+LINKER=`"${R_HOME}/bin/R" CMD config CC`
+CUDA_LIBS=""
 
 #################### CUDA Toolkit ####################
 
@@ -24,28 +27,36 @@ AC_ARG_WITH([cuda-home],
 AC_MSG_RESULT([setting CUDA home directory to ${CUDA_HOME}])
 
 NVCC=${CUDA_HOME}/bin/nvcc
-AC_CHECK_FILE([${NVCC}],,
-	[AC_MSG_ERROR([nvcc not found!])])
+AC_CHECK_FILE([${NVCC}],, [AC_MSG_WARN([nvcc not found!])])
+AC_CHECK_FILE([${NVCC}], [use_cuda=YES])
 
 NCFLAGS="-arch=sm_50 -O2"
 CUDA_INC=${CUDA_HOME}/include
 AC_MSG_CHECKING([for CUDA headers])
 AC_CHECK_FILE([${CUDA_INC}/cublas.h],
-	[NCFLAGS="${NCFLAGS} -I${CUDA_INC}"],
-	[AC_MSG_ERROR([CUDA headers not found!])]
+	[NCFLAGS="${NCFLAGS} -I${CUDA_INC} -DUSECUDA"],
+	[AC_MSG_WARN([CUDA headers not found!])]
 )
+
+if test "${use_cuda}" == "YES"; then
 
 AC_MSG_CHECKING([whether this is a 64-bit version of CUDA])
 AC_CHECK_FILE([${CUDA_HOME}/lib64/libcublas.so], [check_bit=64-bit])
 if test "${check_bit}" == "64-bit"; then
 	BITS="64"
-	LDFLAGS="-L${CUDA_HOME}/lib64"
+	LDFLAGS="-I${CUDA_INC} -L${CUDA_HOME}/lib64 -DUSECUDA"
 else
 	BITS="32"
-	LDFLAGS="-L${CUDA_HOME}/lib"
+	LDFLAGS="-I${CUDA_INC} -L${CUDA_HOME}/lib -DUSECUDA"
 fi
 
-LIBS="-lcuda -lcublas -lcublas_device -lcudadevrt -arch=sm_50"
+COMPILE_CUDA="-I${CUDA_INC} -DUSECUDA -m${BITS}"
+LINKER="${NVCC} $(CUDA_INC)"
+CUDA_LIBS="-lcuda -lcublas -lcublas_device -lcudadevrt -arch=sm_50"
+
+fi
+
+
 
 #################### R HOME LIBRARY ####################
 : ${R_HOME=`R RHOME`}
@@ -68,7 +79,7 @@ NCFLAGS="${NCFLAGS} -Xcompiler \"-O2 ${R_CPICFLAGS} -I${R_INCLUDE_DIR}\" -dlink 
 
 #################### SET FLAGS ####################
 
-COMPILER_FLAGS="-I${CUDA_INC} -I${R_INCLUDE_DIR} -Wall -fPIC -D_GNU_SOURCE -m${BITS}"
+COMPILER_FLAGS="${COMPILE_CUDA} -I${R_INCLUDE_DIR} -Wall -fPIC -D_GNU_SOURCE "
 
 COMPILER_OPTIMIZE_FLAGS="-funroll-loops -fomit-frame-pointer -ffast-math"
 COMPILER_FLAGS="-O2 ${COMPILER_OPTIMIZE_FLAGS} ${COMPILER_FLAGS}"
@@ -77,12 +88,13 @@ CFLAGS="-std=gnu99 ${COMPILER_FLAGS}"
 CXXFLAGS="${COMPILER_FLAGS}"
 
 AC_SUBST([NVCC])
+AC_SUBST([LINKER])
 AC_SUBST([CFLAGS])
 AC_SUBST([CXXFLAGS])
 AC_SUBST([NCFLAGS])
 AC_SUBST([LDFLAGS])
-AC_SUBST([LIBS])
-AC_SUBST([CUDA_INC])
+AC_SUBST([CUDA_LIBS])
+AC_SUBST([COMPILE_CUDA])
 
 AC_CONFIG_FILES([src/Makefile])
 AC_OUTPUT

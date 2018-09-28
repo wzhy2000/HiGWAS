@@ -9,14 +9,14 @@ draw_man_adh2<-function( adh2, fig.prefix=NULL, fig.name=NULL )
 		pdf( pdf.file, width=6, height= 2 * n.subfig );
 	}
 
-	draw_snplist<-function( values, yLabel, cex=1.0)
+	draw_snplist<-function( values, yLabel, cex=1.0, col="black")
 	{
 		xlim <- c(0, length(values));
 		ylim <- range(values);
 		nB <- length(values);
 		snps <- c(0:nB);
 		plot(1:10,1:10, xlim=xlim, ylim=ylim, type="n", xlab="SNP", ylab=yLabel, cex.axis=cex );
-		rect(snps[-(nB+1)], 0, snps[-1L], values,  col = "blue", border = "black");
+		rect(snps[-(nB+1)], 0, snps[-1L], values,  col = col, border = col);
 	}
 
 	draw_call<-function()
@@ -33,12 +33,12 @@ draw_man_adh2<-function( adh2, fig.prefix=NULL, fig.name=NULL )
 		par(mfrow=c( NCOL(adh2)-2 , 1 ) );
 
 		par(mfg=c(1, 1));
-		draw_snplist( adh2[, 3, drop=F ], "Additive effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6) );
+		draw_snplist( adh2[, 3, drop=F ], "Additive effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6), col="orange" );
 
 		if( n.subfig >= 2)
 		{
 			par(mfg=c(2, 1));
-			draw_snplist( adh2[, 4, drop=F ], "Dominant effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6) );
+			draw_snplist( adh2[, 4, drop=F ], "Dominant effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6), col="purple" );
 		}
 	
 		if( n.subfig >= 3)
@@ -213,7 +213,7 @@ draw_single_curve<-function( snp_name, add=NULL, dom=NULL )
 
 	y.num <- length(tp);
 
-	plot( c(0,0), c(0,0), type="n", xaxt="s", yaxt="s", yaxs="i", main=snp_name, 
+	plot( c(0,0), c(0,0), type="n", xaxt="s", yaxt="s", yaxs="i", main=snp_name, cex.main=0.8, 
 		  xlab="Time", ylab="Y", xlim=c(-1, 1.2), ylim=c( ylim.min, ylim.max ) );
 
 	cur.lab <- c();

@@ -5,8 +5,6 @@
 #if !defined(_GLS_GPU_H_)
 #define _GLS_GPU_H_
 
-#include <curand_kernel.h>
-
 #include "fm_matrix.h"
 #include "fm_vector.h"
 
@@ -14,8 +12,12 @@
 extern "C" {
 #endif
 
+#ifdef USECUDA
 
-__device__ struct GPUobj{
+//#include <curand_kernel.h>
+
+struct GPUobj{
+//__device__ struct GPUobj{
 	int nSize;
 
     //# array of cudaMatrix; ( size:N, Q*Q)
@@ -85,7 +87,8 @@ __device__ struct GPUobj{
 };
 
 
-__device__ struct GPUShare{
+struct GPUShare{
+//__device__ struct GPUShare{
     //# array of cudaMatrix for temporary use! (size: Q*Q)
     double* tempMat0;
     //# array of cudaMatrix for temporary use! (size: Q*Q)
@@ -126,6 +129,9 @@ int _cuda_gpart12( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* 
 
 int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj** pGpuMap, int N, int P, int Q, int NC);
 int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, struct GPUobj* pGpuMap, int N);
+int _CheckCuda();
+
+#endif
 
 #ifdef __cplusplus
 }

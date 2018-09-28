@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "fm_linux.h"
 #include "fm_rlogger.h"
@@ -22,6 +23,20 @@
 
 int CFmSys::g_nSysPid = 0;
 int CFmSys::g_nTaskId = 1;
+
+
+clock_t startTimer()
+{
+    return(clock());
+}
+
+double stopTimer(clock_t begin)
+{
+   clock_t end = clock();
+   double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+
+   return( elapsed_secs );
+}
 
 int R_sys_getpid()
 {

@@ -61,5 +61,7 @@ private:
     char m_szTraceTag[128];
 };
 
+extern "C" int GLS_CheckCuda();
+
 #endif
 

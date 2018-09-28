@@ -5,14 +5,17 @@
 #if !defined(_FM_GPU_H_)
 #define _FM_GPU_H_
 
-#include <curand_kernel.h>
-
 #include "fm_matrix.h"
 #include "fm_vector.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+#ifdef USECUDA
+
+//#include <curand_kernel.h>
 
 #define LG 4
 
@@ -36,9 +39,6 @@ extern "C" {
     exit(1);\
   }
 
-clock_t startTimer();
-double stopTimer(clock_t begin);
-
 int _copy_fmMatrix_list( double** cudaList, int size, CFmMatrix** matList);
 int _copy_fmVector_list( double** cudaList, int size, CFmVector** matList);
 int _copy_fmVector_Device( double* gCudaDstVec, CFmVector& fmSrcVec );
@@ -49,6 +49,8 @@ int _copyback_fmMatrix_Host( CFmMatrix& fmDstMat, double* gCudaSrcMat );
 double** make_vector_list( double** pList, unsigned int N, unsigned int nLen, bool verbose=FALSE  );
 double** make_matrix_list( double** pList, unsigned int N, unsigned int nRow, unsigned int nCol, bool verbose=FALSE );
 double* make_matrix_ongpu( unsigned int nRow, unsigned int nCol );
+
+#endif
 
 #ifdef __cplusplus
 }

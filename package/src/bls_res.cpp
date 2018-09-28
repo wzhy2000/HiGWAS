@@ -231,17 +231,20 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
 
         SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pRefit_Coefs, m_pRefit_Ra, m_pRefit_Rd, m_pRefit_Rh2 );
 
-        double m1 = fabs(m_pRefit_Ra->GetCol(1).GetMax());
-        double m2 = fabs(m_pRefit_Rd->GetCol(1).GetMax());
-        m_refit_max = m1>m2?m1:m2;
+        CFmVector fmTmp(0,0.0);
+        fmTmp.Put( fabs(m_pRefit_Ra->GetCol(1).GetMax()) );
+        fmTmp.Put( fabs(m_pRefit_Rd->GetCol(1).GetMax()) );
+        fmTmp.Put( fabs(m_pRefit_Ra->GetCol(1).GetMin()) );
+        fmTmp.Put( fabs(m_pRefit_Rd->GetCol(1).GetMin()) );
+        m_refit_max = fmTmp.GetMax();
 
         for( long int i=0; i< nSnp; i++)
         {
-           if ( m_pRefit_Ra->Get(i,0)>0 && fabs(m_pRefit_Ra->Get(i,1)) >= m_refit_max/100 )
+           if ( m_pRefit_Ra->Get(i,0)>0 && fabs(m_pRefit_Ra->Get(i,1)) >= m_refit_max*5/100 )
                 m_pRefit_Ra->Set(i,0, 1);
            else
                 m_pRefit_Ra->Set(i,0, 0);
-           if ( m_pRefit_Rd->Get(i,0)>0 && fabs(m_pRefit_Rd->Get(i,1)) >= m_refit_max/100 )
+           if ( m_pRefit_Rd->Get(i,0)>0 && fabs(m_pRefit_Rd->Get(i,1)) >= m_refit_max*5/100 )
                 m_pRefit_Rd->Set(i,0, 1);
            else
                 m_pRefit_Rd->Set(i,0, 0);
@@ -264,9 +267,12 @@ int BLS_res::SetResult(bool bRefit, CFmMatrix* gen_pA, double y_var, int nCov,
 
         SortoutResult( pFileMat, gen_pA, y_var, nSnp, nCov, m_pVarsel_Coefs, m_pVarsel_Ra, m_pVarsel_Rd, m_pVarsel_Rh2 );
 
-        double m1 = fabs(m_pVarsel_Ra->GetCol(1).GetMax());
-        double m2 = fabs(m_pVarsel_Rd->GetCol(1).GetMax());
-        m_varsel_max = m1>m2?m1:m2;
+        CFmVector fmTmp(0,0.0);
+        fmTmp.Put( fabs(m_pVarsel_Ra->GetCol(1).GetMax()) );
+        fmTmp.Put( fabs(m_pVarsel_Rd->GetCol(1).GetMax()) );
+        fmTmp.Put( fabs(m_pVarsel_Ra->GetCol(1).GetMin()) );
+        fmTmp.Put( fabs(m_pVarsel_Rd->GetCol(1).GetMin()) );
+        m_varsel_max = fmTmp.GetMax();
 
         for( long int i=0; i< nSnp; i++)
         {
@@ -605,9 +611,6 @@ SEXP BLS_res::GetRObj()
         SETCAR( t, expVS1 );
         SET_TAG(t, install("refit") );
         t = CDR(t);
-
-matVs1.Show("matVs1");
-
      }
 
     if(m_pVarsel_Coefs)

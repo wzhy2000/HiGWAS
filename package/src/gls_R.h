@@ -129,6 +129,10 @@ SEXP glasso_snpmat( SEXP smatPhe,
                  double fQval_add,
                  double fQval_dom,
                int nDebug);
+
+SEXP CheckCuda();
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -220,4 +220,14 @@ SEXP gls_snpmat( SEXP smatPhe,
     return(ret);
 }
 
+SEXP CheckCuda()
+{
+   int ret = GLS_CheckCuda();
 
+   SEXP sRet = PROTECT(allocVector(INTSXP, 1));
+   int* val = INTEGER(sRet);
+   val[0] = ret;
+   UNPROTECT(1);
+
+   return sRet;
+}

@@ -130,7 +130,7 @@ bls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n= 500, sim
 
 bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.used=TRUE, dom.used=TRUE, fgwas.filter=FALSE, options=NULL)
 {
-	cat( "[ BLASSO SIMPLE ] Procedure.\n");
+	cat( "[ BLS SIMPLE ] Procedure.\n");
 	cat( "Checking the parameters ......\n");
 
 	if ( missing(file.phe) || missing(file.snp) || missing(Y.name) || missing(covar.names) )
@@ -141,21 +141,26 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 	if ( !missing("covar.names") && length(covar.names)>0 && !is.character(covar.names) )
 		stop("! The parameter of covar.names should be assigned with covariate names in the phenotypic data.");
 	if ( !(is.logical(refit) && length(refit)==1 ) )
-		stop("! The parameter of refit should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of refit should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(add.used) && length(add.used)==1 ) )
-		stop("! The parameter of add.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of add.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(dom.used) && length(dom.used)==1 ) )
-		stop("! The parameter of dom.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of dom.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(fgwas.filter) && length(fgwas.filter)==1 ) )
-		stop("! The parameter of fgwas.filter should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of fgwas.filter should be a logical value (TRUE or FALSE).");
 		
 	## Currently, we dont have good method to use GPU in BLS model
     gpu.used=FALSE;		
 	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
-		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of gpu.used should be a logical value (TRUE or FALSE).");
 
 	cat("* Phenotypic Data File = ",  file.phe, "\n");
 	cat("* Simpe SNP File = ",  file.snp, "\n");
+
+	tb.snp <- read.csv(file.snp, header=T);
+	cat("* Individuals: ", NCOL(tb.snp)-2, "\n");
+	cat("* SNPs: ", NROW(tb.snp), "\n");
+	rm(tb.snp);
 
 	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used ) ;
 
@@ -188,7 +193,7 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 
 	if( options$nPiecewise.ratio==0 && !fgwas.filter )
 	{
-		cat( "Genetic Effect Analysis by BLASSO method......\n");
+		cat( "Genetic effect analysis by BLS model......\n");
 		r.bls <- .Call("bls_simple",
 			file.phe,
 			file.snp,
@@ -284,7 +289,7 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 
 bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y.name, covar.names, refit=TRUE, add.used=TRUE, dom.used=TRUE, fgwas.filter=FALSE, options=NULL, force.split=FALSE, plink.command=NULL )
 {
-	cat( "[ BLASSO PLINK ] Procedure.\n");
+	cat( "[ BLS PLINK ] Procedure.\n");
 	cat( "Checking the parameters ......\n");
 
 	if ( missing(file.phe) || missing(file.plink.bed) || missing(file.plink.bim) || missing(file.plink.fam) ||
@@ -296,20 +301,20 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 	if ( !missing("covar.names") && length(covar.names)>0 && !is.character(covar.names) )
 		stop("! The parameter of covar.names should be assigned with covariate names in the phenotypic data.");
 	if ( !(is.logical(refit) && length(refit)==1 ) )
-		stop("! The parameter of refit should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of refit should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(add.used) && length(add.used)==1 ) )
-		stop("! The parameter of add.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of add.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(dom.used) && length(dom.used)==1 ) )
-		stop("! The parameter of dom.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of dom.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(fgwas.filter) && length(fgwas.filter)==1 ) )
-		stop("! The parameter of fgwas.filter should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of fgwas.filter should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(force.split) && length(force.split)==1 ) )
-		stop("! The parameter of force.split should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of force.split should be a logical value (TRUE or FALSE).");
 
 	## Currently, we dont have good method to use GPU in BLS model
     gpu.used=FALSE;		
 	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
-		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of gpu.used should be a logical value (TRUE or FALSE).");
 
 	cat("* Phenotypic Data File = ",  file.phe, "\n");
 	cat("* PLINK BED File = ",  file.plink.bed, "\n");
@@ -457,7 +462,7 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 
 bls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.name, covar.names, refit=TRUE, add.used=TRUE, dom.used=TRUE, options=NULL)
 {
-	cat( "[ BLASSO PLINK.tped ] Procedure.\n");
+	cat( "[ BLS PLINK.tped ] Procedure.\n");
 	cat( "Checking the parameters ......\n");
 
 	if ( missing(file.phe) || missing(file.plink.tped) || missing(file.plink.tfam) ||
@@ -469,16 +474,16 @@ bls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.name, co
 	if ( !missing("covar.names") && length(covar.names)>0 && !is.character(covar.names) )
 		stop("! The parameter of covar.names should be assigned with covariate names in the phenotypic data.");
 	if ( !(is.logical(refit) && length(refit)==1 ) )
-		stop("! The parameter of refit should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of refit should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(add.used) && length(add.used)==1 ) )
-		stop("! The parameter of add.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of add.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(dom.used) && length(dom.used)==1 ) )
-		stop("! The parameter of dom.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of dom.used should be a logical value (TRUE or FALSE).");
 
 	## Currently, we dont have good method to use GPU in BLS model
     gpu.used=FALSE;		
 	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
-		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of gpu.used should be a logical value (TRUE or FALSE).");
 
 	cat("* Phenotypic Data File = ",  file.phe, "\n");
 	cat("* PLINK TPED File = ",  file.plink.tped, "\n");
@@ -498,7 +503,7 @@ bls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.name, co
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
-	cat( "Genetic Effect Analysis by BLASSO method......\n");
+	cat( "Genetic effect analysis by BLS model......\n");
  
     ptm <- proc.time();
 	r.filter <- list();
@@ -546,7 +551,7 @@ bls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.name, co
 
 bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used=TRUE, dom.used=TRUE, fgwas.filter=FALSE, options=NULL)
 {
-	cat( "[ BLASSO SNPMAT ] Procedure.\n");
+	cat( "[ BLS SNPMAT ] Procedure.\n");
 	cat( "Checking the parameters ......\n");
 
 	if ( missing(phe.mat) || missing(snp.mat) || missing(Y.name) || missing(covar.names) )
@@ -557,21 +562,23 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 	if ( !missing("covar.names") && length(covar.names)>0 && !is.character(covar.names) )
 		stop("! The parameter of covar.names should be assigned with covariate names in the phenotypic data.");
 	if ( !(is.logical(refit) && length(refit)==1 ) )
-		stop("! The parameter of refit should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of refit should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(add.used) && length(add.used)==1 ) )
-		stop("! The parameter of add.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of add.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(dom.used) && length(dom.used)==1 ) )
-		stop("! The parameter of dom.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of dom.used should be a logical value (TRUE or FALSE).");
 	if ( !(is.logical(fgwas.filter) && length(fgwas.filter)==1 ) )
-		stop("! The parameter of fgwas.filter should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of fgwas.filter should be a logical value (TRUE or FALSE).");
 
 	## Currently, we dont have good method to use GPU in BLS model
     gpu.used=FALSE;		
 	if ( !(is.logical(gpu.used) && length(gpu.used)==1 ) )
-		stop("! The parameter of gpu.used should be a logical value(TRUE or FALSE).");
+		stop("! The parameter of gpu.used should be a logical value (TRUE or FALSE).");
 
-	cat("* Phenotypic Matrix = ",  dim(phe.mat), "\n");
-	cat("* SNP Matrix = ",  dim(snp.mat), "\n");
+	cat("* Phenotypic Matrix: ",  dim(phe.mat), "\n");
+	cat("* SNP Matrix:  ",  dim(snp.mat), "\n");
+	cat("* Individuals: ", NCOL(snp.mat)-2, "\n");
+	cat("* SNPs: ", NROW(snp.mat), "\n");
 
 	show_bls_parameters( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used ) ;
 
@@ -611,7 +618,7 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 
 	if( options$nPiecewise.ratio==0 && !fgwas.filter )
 	{
-		cat( "Genetic Effect Analysis by BLASSO method......\n");
+		cat( "Genetic effect analysis by BLS model......\n");
 
 		r.bls <- .Call("bls_snpmat",
 			as.matrix( phe.mat ),
@@ -759,7 +766,10 @@ summary.BLS.ret<-function(object, ...)
 	if(!is.null(r.bls$varsel))
 	{
 		re4 <- r.bls$varsel;
-		var.sig <- which( re4[,3]>0 | re4[,7]>0);
+		
+		max.effect <- max( abs(re4[,c(4,8)]) );
+		var.sig <- which( (re4[,3]>0 & abs(re4[,4])>max.effect/100)| 
+		                  (re4[,7]>0 & abs(re4[,8])>max.effect/100) );
 		if(length(var.sig)>0)
 		{
 			re4 <- re4[var.sig,,drop=F];
@@ -807,7 +817,7 @@ print.sum.BLS.ret<-function(x, ...)
 	r.sum.ret <- x;
 	if(!is.null(r.sum.ret$fgwas_sig))
 	{
-		cat("--- Significant SNPs Estimate by fGWAS method:", NROW(r.sum.ret$fgwas_sig), "SNPs\n");
+		cat("--- Significant SNPs estimated by fGWAS method:", NROW(r.sum.ret$fgwas_sig), "SNPs\n");
 		if( NROW(r.sum.ret$fgwas_sig)>25 )
 		{
 			cat("Top 25 SNPs:\n");
@@ -819,13 +829,13 @@ print.sum.BLS.ret<-function(x, ...)
 
 	if(!is.null(r.sum.ret$varsel_cov))
 	{
-		cat("--- Covariate Estimate in Varsel Procedure:\n");
+		cat("--- Covariate estimated in variable selection procedure:\n");
 		show(r.sum.ret$varsel_cov);
 	}
 
 	if(!is.null(r.sum.ret$varsel))
 	{
-		cat("--- Variable Selection Result:", NROW(r.sum.ret$varsel), "SNPs\n" );
+		cat("--- Variable selection result:", NROW(r.sum.ret$varsel), "SNPs\n" );
 		if( NROW(r.sum.ret$varsel)>25 )
 		{
 			cat("Top 25 SNPs:\n");
@@ -837,13 +847,13 @@ print.sum.BLS.ret<-function(x, ...)
 
 	if(!is.null(r.sum.ret$refit_cov))
 	{
-		cat("--- Covariate Estimate in Refit Procedure:\n");
+		cat("--- Covariate estimated in refit procedure:\n");
 		show(r.sum.ret$refit_cov);
 	}
 
 	if(!is.null(r.sum.ret$refit))
 	{
-		cat("--- Refit Result:", NROW(r.sum.ret$refit), "SNPs\n" );
+		cat("--- Refit result:", NROW(r.sum.ret$refit), "SNPs\n" );
 		show(r.sum.ret$refit);
 	}
 }
@@ -928,7 +938,7 @@ get_default_options<-function()
 {
 	options=list(
 				nParallel.cpu = 0,
-				nPiecewise.ratio = 2,
+				nPiecewise.ratio = 0,
 				nMcmcIter = 2000,
 				fBurnInRound = 0.3,
 				fRhoTuning = 0.095,
@@ -957,13 +967,13 @@ show_options<-function(options)
 
 show_bls_parameters<-function( Y.name, covar.names, refit, add.used, dom.used, fgwas.filter, gpu.used )
 {
-	cat( "* Response Variable =",   Y.name, "\n");
-	cat( "* Covariate Columns =",  covar.names, "\n");
-	cat( "* fGWAS Filter Used =",  ifelse( fgwas.filter, "Yes", "No"), "\n");
-	cat( "* Additive Effects Used =",  ifelse( add.used, "Yes", "No"), "\n");
-	cat( "* Dominant Effects Used =",  ifelse( dom.used, "Yes", "No"), "\n");
-	cat( "* Refit Procedure =",   ifelse( refit, "Yes", "No"), "\n");
-	cat( "* GPU used =",   ifelse( gpu.used, "Yes", "No"), "\n");
+	cat( "* Response Variable: ",   Y.name, "\n");
+	cat( "* Covariate Columns: ",  covar.names, "\n");
+	cat( "* fGWAS Filter Used: ",  ifelse( fgwas.filter, "Yes", "No"), "\n");
+	cat( "* Additive Effects Used: ",  ifelse( add.used, "Yes", "No"), "\n");
+	cat( "* Dominant Effects Used: ",  ifelse( dom.used, "Yes", "No"), "\n");
+	cat( "* Refit Procedure: ",   ifelse( refit, "Yes", "No"), "\n");
+	cat( "* GPU Used: ",   ifelse( gpu.used, "Yes", "No"), "\n");
 }
 
 
@@ -984,10 +994,6 @@ read_simple_bls_data <- function( file.phe, file.snp, bImputed=T )
 	tb.phe <- tb.phe[,-1, drop=F];
 
 	tb.snp <- read.csv(file.snp, header=T);
-
-	cat("Checking data files......\n");
-	cat("* Individuals:", NCOL(tb.snp)-2, "\n");
-	cat("* SNPs:", NROW(tb.snp), "\n");
 
 	if(bImputed) tb.snp <- impute_simple_snp(tb.snp);
 

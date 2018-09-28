@@ -1,3 +1,5 @@
+#ifdef USECUDA
+
 #include <R.h>
 #include <Rinternals.h>
 #include <Rembedded.h>
@@ -7,25 +9,7 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
-#include <stdio.h>
-#include <time.h>
-
 #include "gpu_share.h"
-
-using namespace std;
-
-clock_t startTimer()
-{
-    return(clock());
-}
-
-double stopTimer(clock_t begin)
-{
-   clock_t end = clock();
-   double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
-
-   return( elapsed_secs );
-}
 
 /*
 __global__ void g_cuda_show(double* gMat )
@@ -228,4 +212,6 @@ double* make_matrix_ongpu( unsigned int nRow, unsigned int nCol )
 
     return(p);
 }
+
+#endif
 

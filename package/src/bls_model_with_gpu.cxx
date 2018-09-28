@@ -534,7 +534,7 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
     {
 
 #ifndef USECUDA
-        Rprintf("The package is not compiled with CUDA library");
+        Rprintf("The package is not compiled with CUDA library\n");
         return(-1);
 #else
 

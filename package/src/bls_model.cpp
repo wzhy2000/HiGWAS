@@ -695,7 +695,7 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
             }
 
             lambda2 = rgamma( P+gammaTau, tau2.Sum()/2 + deltaTau );
-            if ( lambda2 <= 0 || isnan(lambda2) )
+            if ( lambda2 <= 0 || std::isnan(lambda2) )
             {
                 _log_debug( _HI_, "PART D_test.....tau2*=%f, P=%f, gammaTau_st=%f, deltaTau_st=%f",
                              tau2.Sum(), P, gammaTau_st, deltaTau_st);
@@ -805,7 +805,7 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
             }
 
             lambda_st2 = rgamma( P + gammaTau_st, tau_st2.Sum()/2+deltaTau_st );
-            if ( lambda_st2 <= 0 || isnan(lambda_st2) )
+            if ( lambda_st2 <= 0 || std::isnan(lambda_st2) )
             {
                 _log_debug( _HI_, "PART F_test.....tau2*=%f, P=%f, gammaTau_st=%f, deltaTau_st=%f",
                              tau_st2.Sum(), P, gammaTau_st, deltaTau_st);

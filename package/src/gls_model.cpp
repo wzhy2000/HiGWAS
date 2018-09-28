@@ -34,7 +34,8 @@
 
 #define _t(x) ((x).GetTransposed())
 
-#define USECUDA
+// This compiler macro is defined in the Makfile
+//#define USECUDA
 //#define MONTIME
 
 
@@ -559,15 +560,17 @@ strcpy(m_szTraceTag, "A");
 
     CFmVector vctP(P, 0.0);
 
+#ifdef USECUDA
     struct GPUobj *gCuda  = NULL;
     struct GPUobj *gCpuObj= NULL;
     struct GPUobj *gGpuMap= NULL;
+#endif
 
     if(m_bUseGPU)
     {
 
 #ifndef USECUDA
-        Rprintf("The package is not compiled with CUDA library");
+        Rprintf("The package is not compiled with CUDA library\n");
         return(-1);
 #else
         if( Init_GPUobj( &gCpuObj, &gCuda, &gGpuMap, N, P, Q, nC) ==0 )
@@ -1560,3 +1563,14 @@ SEXP GLS::GetRObj()
     else
         return(R_NilValue);
 }
+
+extern "C" int GLS_CheckCuda()
+{
+#ifndef USECUDA
+    Rprintf("The package is not compiled with CUDA library.\n");
+    return(-1);
+#else
+    return( _CheckCuda());
+#endif
+}
+

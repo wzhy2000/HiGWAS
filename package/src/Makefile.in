@@ -18,13 +18,13 @@ EXT := cu
 
 CXX := g++
 NVCC := @NVCC@
+LINKER := @LINKER@
+CFLAGS := @CFLAGS@
 CXXFLAGS := @CXXFLAGS@
 NVCCFLAGS := @NCFLAGS@
-CFLAGS := @CFLAGS@
-NCFLAGS := @NCFLAGS@
 LDFLAGS := @LDFLAGS@
-LIBS := @LIBS@
-CUDA_INC := -I@CUDA_INC@
+CUDA_LIBS := @CUDA_LIBS@
+COMPILE_CUDA := @COMPILE_CUDA@
 
 # Program-specifics
 TARGET := gwas.lasso.so
@@ -41,11 +41,16 @@ SOURCES := \
 
 #====  derived variables  =====================================================
 
+ifneq ($(COMPILE_CUDA), )
 OBJECTS := \
 	${patsubst %.cpp,%.o,${filter %.cpp,$(SOURCES)}} \
 	${patsubst %.c,%.o,${filter %.c,$(SOURCES)}} \
 	${patsubst %.cu,%.o,${filter %.cu,$(SOURCES)}}
-
+else
+OBJECTS := \
+	${patsubst %.cpp,%.o,${filter %.cpp,$(SOURCES)}} \
+	${patsubst %.c,%.o,${filter %.c,$(SOURCES)}} 
+endif
 
 # Build rules
 .SUFFIXES: .cu .o
@@ -53,7 +58,7 @@ OBJECTS := \
 all: $(TARGET)
 
 $(TARGET) : $(OBJECTS)
-	$(NVCC) -shared $(CUDA_INC) $(LDFLAGS) $(LIBS) $(OBJECTS) -o $@ 
+	$(LINKER) -shared $(LDFLAGS) $(CUDA_LIBS) $(OBJECTS) -o $@ 
 
 %.o : %.c $(PRECOMPILED_HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -61,8 +66,10 @@ $(TARGET) : $(OBJECTS)
 %.o : %.cpp $(PRECOMPILED_HEADER)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+ifneq ($(COMPILE_CUDA), )
 %.o : %.cu
 	$(NVCC) $(NVCCFLAGS) -c $< -o $@
+endif
 
 clean:
 	rm -rf $(OBJECTS) $(TARGET)

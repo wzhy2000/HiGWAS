@@ -8,7 +8,7 @@
 } 
 
 \usage{gls.plink.tped(file.phe,file.plink.tped,file.plink.tfam,
-Y.prefix,Z.prefix,covar.names,refit=TRUE,add.used=TRUE,dom.used=TRUE,
+Y.prefix,Z.prefix,covar.names,refit=TRUE, gpu.used=FALSE, add.used=TRUE,dom.used=TRUE,
 options=NULL )}
 
 \arguments{
@@ -19,6 +19,7 @@ options=NULL )}
 \item{Z.prefix}{String, the prefix of measurement names.}
 \item{covar.names}{String or vector with strings indicating the names of covariates.}
 \item{refit}{ Logical, if TRUE, refit should be processed. Default: TURE.}
+\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
 \item{add.used}{Logical, if TRUE, the program will estimate additive effects of SNPs. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, the program will estimate dominant effects of SNPs. \cr Default: TRUE.}
 \item{options}{List, containing nParallel.cpu, nPiecewise.ratio, nMcmcIter, fBurnInRound, fRhoTuning, fQval.add, fQval.dom, fgwas.cutoff, and debug.\cr

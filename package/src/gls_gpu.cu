@@ -14,6 +14,19 @@
 #include "gpu_matrix.cux"
 #include "gpu_reduction.cux"
 
+int _CheckCuda()
+{
+	int nCount = 0;
+	if ( cudaGetDeviceCount ( &nCount ) != cudaSuccess )
+    {
+		Rprintf("Failed to call CUDA library, the GLS model may not run on GPU nodes.\n");
+		return(0);
+    }
+
+    Rprintf("%d GPU card(s) is/are available for the GLS model.\n", nCount);
+	return(nCount);
+}
+
 __device__ double _cuda_invGau(int seed, double theta, double chi)
 {
     curandState s ;
@@ -189,7 +202,6 @@ printf("GPU map =%p\n", *gGpuMap);
 
 void _freeGPUobj(struct GPUobj* pCpuObj, int N )
 {
-printf("cudaFree single\n");
     PERR( cudaFree( pCpuObj->X ) );
     PERR( cudaFree( pCpuObj->Z ) );
     PERR( cudaFree( pCpuObj->Z0 ) );
@@ -209,7 +221,6 @@ printf("cudaFree single\n");
     PERR( cudaFree( pCpuObj->tVN1 ) );
     PERR( cudaFree( pCpuObj->tVN2 ) );
 
-printf("cudaFree list\n");
     for(int i=0;i<N;i++)
     {
         PERR( cudaFree( pCpuObj->all_corTimes[i] ) );
@@ -231,7 +242,6 @@ int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, struct GPUobj* g
 {
     _freeGPUobj( pCpuObj, N );
 
-printf("cudaFree gCuda\n");
     PERR( cudaFree(pGpuObj) );
 
     Free(gGpuMap); 
@@ -1321,3 +1331,4 @@ __global__ void g_showTmp3(struct GPUobj* gCuda, int N )
     }
 }
 //g_showTmp3<<< 1,  1>>> (gCuda, N);
+

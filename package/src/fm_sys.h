@@ -26,4 +26,9 @@ protected:
 
 bool _change_fileext(char* filename, const char* newext, char* newfile);
 
+clock_t startTimer();
+
+double stopTimer(clock_t begin);
+
+
 #endif

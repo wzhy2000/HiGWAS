@@ -473,7 +473,7 @@ get_sigsnp_nomulti_correction<-function( f_get_snpmat, snp.obj, r.fgwas, n.snp, 
 		snp.mat <- f_get_snpmat( snp.obj, 1:n.snp );
 		return(list(error=F, snp.mat=snp.mat ));
 	}	
-	
+
 	pv <- r.fgwas[,7];
 
 	# in order to keep NA element in the vector , replace NA with Inf.

@@ -27,8 +27,8 @@ bls.snpmat(phe.mat,
 \item{add.used}{ Logical, if TRUE, the additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{ Logical, if TRUE, the dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{ Logical, If TRUE, the SNPs will be filtered by fGWAS model before the lasso method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fQval.add},\cr
-\code{fQval.dom}, \code{fgwas.cutoff}, and \code{debug}. See details in \code{\link{bls.plink}}.
+\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr
+and \code{debug}. See details in \code{\link{bls.plink}}.
 }
 }
 

@@ -5,7 +5,7 @@ snp.out <- "bls.test.snpmat.snp"
 
 sigsnp <- c(11, 22, 33, 444, 55);
 
-bls.simulate( phe.out, snp.out, simu_grp=1, simu_n= 400, simu_p=3000, 
+bls.simulate( phe.out, snp.out, simu_grp=1, simu_n= 10000, simu_p=500, 
 		simu_snp_rho = 0.1, 
 		simu_rho     = 0.4, 
 		simu_sigma2  = 9, 
@@ -28,7 +28,7 @@ tb.phe <- tb.phe[,-1];
 
 ret1<-ret2<-ret3<-ret4<-ret5<-ret6<-c();
 
-ret1 <- bls.snpmat(tb.phe, tb.snp, Y.name="Y", covar.names=c("X_1","X_2"), fgwas.filter = T , options=list(nParallel.cpu=7));	
+ret1 <- bls.snpmat(tb.phe, tb.snp, Y.name="Y", covar.names=c("X_1","X_2"), fgwas.filter = F );	
 
 save(ret1, ret2, ret3, ret4, ret5, ret6, file="bls-test-snpmat.rdata");
 summary(ret1)

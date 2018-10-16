@@ -35,8 +35,8 @@ gls.plink(file.phe,
 \item{add.used}{Logical, if TRUE, the additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, the dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{Logical, If TRUE, the SNPs will be filtered by fGWAS model before the lasso method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fQval.add},\cr
-\code{fQval.dom}, \code{fgwas.cutoff}, and \code{debug}. See the details in \code{\link{bls.plink}}.}
+\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr
+   and \code{debug}. See the details in \code{\link{bls.plink}}.}
 \item{force.split}{Logical, if TRUE, the PLINK command will be applied to extract the data for each single chromosome and then the analysis will be performed on these single chromosomes separately. \cr Default: TRUE.}
 \item{plink.command}{String, the full path of PLINK command, if not assigned, data extraction maybe failed due to PLINK command can not be found from defulat path. }
 
@@ -51,17 +51,17 @@ An object of class \code{GLS.ret} including the following elements.
 \item{(4) the sign of \strong{2nd} Legendre polynomial of \strong{additive} effcts}{}
 \item{(5) the sign of \strong{3rd} Legendre polynomial of \strong{additive} effcts}{}
 \item{(6) the sign of \strong{4th} Legendre polynomial of \strong{additive} effcts}{}
-\item{(7) the norm of mean values of \strong{additive} effects, i,e, L=sqrt(add_1^2 + add_2^2 + add_3^2 + add_4^2)}{}
+\item{(7) the L2 norm of mean values of \strong{additive} effects, i,e, L=sqrt(add_1^2 + add_2^2 + add_3^2 + add_4^2)}{}
 \item{(8)  the mean value of \strong{1st} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(9)  the mean value of \strong{2nd} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(10) the mean value of \strong{3rd} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(11) the mean value of \strong{4th} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
-\item{(12) the norm of minimum values of \strong{additive} effects}{}
+\item{(12) the L2 norm of minimum values of \strong{additive} effects}{}
 \item{(13) the minimum value of \strong{1st} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(14) the minimum value of \strong{2nd} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(15) the minimum value of \strong{3rd} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(16) the minimum value of \strong{4th} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
-\item{(17) the norm of maximum values of \strong{additive} effects}{}
+\item{(17) the L2 norm of maximum values of \strong{additive} effects}{}
 \item{(18) the maximum value of \strong{1st} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(19) the maximum value of \strong{2nd} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(20) the maximum value of \strong{3rd} Legendre coefficient of \strong{additive} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
@@ -77,17 +77,17 @@ An object of class \code{GLS.ret} including the following elements.
 \item{(2) the sign of \strong{2nd} Legendre polynomial of \strong{covariate} effcts}{}
 \item{(3) the sign of \strong{3rd} Legendre polynomial of \strong{covariate} effcts}{}
 \item{(4) the sign of \strong{4th} Legendre polynomial of \strong{covariate} effcts}{}
-\item{(5) the norm of mean values of \strong{covariate} effects, i,e, L=sqrt(add_1^2 + add_2^2 + add_3^2 + add_4^2)}{}
-\item{(6)  the mean value of \strong{1st} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
-\item{(7)  the mean value of \strong{2nd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
+\item{(5) the L2 norm of mean values of \strong{covariate} effects, i,e, L2=sqrt(add_1^2 + add_2^2 + add_3^2 + add_4^2)}{}
+\item{(6) the mean value of \strong{1st} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
+\item{(7) the mean value of \strong{2nd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(8) the mean value of \strong{3rd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(9) the mean value of \strong{4th} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
-\item{(10) the norm of minimum values of \strong{covariate} effects}{}
+\item{(10) the L2 norm of minimum values of \strong{covariate} effects}{}
 \item{(11) the minimum value of \strong{1st} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(12) the minimum value of \strong{2nd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(13) the minimum value of \strong{3rd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(14) the minimum value of \strong{4th} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
-\item{(15) the norm of maximum values of \strong{covariate} effects}{}
+\item{(15) the L2 norm of maximum values of \strong{covariate} effects}{}
 \item{(16) the maximum value of \strong{1st} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(17) the maximum value of \strong{2nd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
 \item{(18) the maximum value of \strong{3rd} Legendre coefficient of \strong{covariate} effects in the range of (fQval.add, 1 - fQval.add) of sorted steable iteration.}{}
@@ -98,7 +98,7 @@ An object of class \code{GLS.ret} including the following elements.
 \item{refit_add}{Matrix, \strong{additive} effects estimated by the refit procedure for the SNPs selected by variable selection, 21 columns are same as the matrix of varible selection. See also (\code{varsel_add}).}
 \item{refit_dom}{Matrix, \strong{dominant} effects estimated by the refit procedure for the SNPs selected by variable selection, 21 columns are same as the matrix of varible selection. See also (\code{varsel_dom}).}
 \item{refit_cov}{Matrix, \strong{covariate} effects estimated by the refit procedure for the SNPs selected by variable selection, 19 columns are same as the matrix of varible selection. See also (\code{varsel_cov}).}
-\item{fgwas.filter}{Matrix, the p-values estimated by fGWAS method for each SNP, 5 columns as follows:  
+\item{fgwas}{Matrix, the p-values estimated by fGWAS method for each SNP, 5 columns as follows:  
 \itemize{
 \item{(1) SNP ID}{}
 \item{(2) chromosome group}{}
@@ -144,8 +144,6 @@ The control parameters include the following items.\cr
 \item{\code{nMcmcIter}}        {Default:2000, the number of iteration of the MCMC algorithm execution. }
 \item{\code{fBurnInRound}}     {Default:0.3, a ratio to cut off unstable iteration in order to make the result precise.}
 \item{\code{fRhoTuning}}       {Default:0.095, a ratio used for narrowing the scope of parameter rho to reduce parameter oscillation.}
-\item{\code{fQval.add}}        {Default:0.05, }
-\item{\code{fQval.dom}}        {Default:0.05, the Q-values of additive and dominant genetic effects respectively.}
 \item{\code{fgwas.cutoff}}     {Default:0.05, a p-value cutoff for fGWAS model to select the significant marginal SNPs.}
 \item{\code{debug}}            {Default:FALSE, logical value, indicating whether or not debug information is outputted.}
 }

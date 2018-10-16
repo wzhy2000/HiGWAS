@@ -270,17 +270,17 @@ int GLS_res::GetMcmcInfo(CFmFileMatrix* pMatRet, int idx, CFmVector* pFmInfo, CF
 
     fmTmp = fmMedian * fmModel;
     fmTmp = fmTmp*fmTmp;
-    pFmInfo->Put(fmTmp.Sum());
+    pFmInfo->Put(sqrt(fmTmp.Sum()));
     pFmInfo->Append(fmMedian);
 
     fmTmp = fmMin * fmModel;
     fmTmp = fmTmp*fmTmp;
-    pFmInfo->Put(fmTmp.Sum());
+    pFmInfo->Put(sqrt(fmTmp.Sum()));
     pFmInfo->Append(fmMin);
 
     fmTmp = fmMax * fmModel;
     fmTmp = fmTmp*fmTmp;
-    pFmInfo->Put(fmTmp.Sum());
+    pFmInfo->Put(sqrt(fmTmp.Sum()));
     pFmInfo->Append(fmMax);
 
     return(0);
@@ -298,8 +298,9 @@ int GLS_res::InitRefit(int nMcmcIter)
     CFmVector fmDom(0,0.0);
     fmDom = m_pVarsel_Rd->GetCol(LG);
 
-    double thAdd = fmAdd.GetMax()/100;
-    double thDom = fmDom.GetMax()/100;
+    // L2 norm is square root value
+    double thAdd = fmAdd.GetMax()/10;
+    double thDom = fmDom.GetMax()/10;
 
     for(int i=0;i<m_nSnpP; i++)
     {

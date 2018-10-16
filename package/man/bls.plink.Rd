@@ -31,8 +31,8 @@ bls.plink(file.phe,
 \item{add.used}{Logical, if TRUE, additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{Logical, if TRUE, the SNPs will be filtered by fGWAS model before the LASSO method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fQval.add},\cr
-\code{fQval.dom}, \code{fgwas.cutoff}, and \code{debug}.See blow details. }
+\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr 
+and \code{debug}.See blow details. }
 \item{force.split}{Logical, if TRUE, the PLINK command will be applied to extract the data for each single chromosome and then the analysis will be performed on these single chromosomes separately. \cr Default: TRUE.}
 \item{plink.command}{String, the full path of PLINK command, if not assigned, data extraction maybe failed due to PLINK command can not be found from defulat path. }
 }
@@ -110,8 +110,6 @@ The control parameters include the following items.\cr
 \item{\code{nMcmcIter}}        {Default:2000, the number of iteration of the MCMC algorithm. }
 \item{\code{fBurnInRound}}     {Default:0.3, a ratio to cut off unstable iterations in order to obtain the reasonable results.}
 \item{\code{fRhoTuning}}       {Default:0.095, a ratio used for narrowing the scope of parameter rho to reduce parameter oscillation.}
-\item{\code{fQval.add}}        {Default:0.05, }
-\item{\code{fQval.dom}}        {Default:0.05, the Q-values of additive and dominant genetic effects respectively.}
 \item{\code{fgwas.cutoff}}     {Default:0.05, a p-value cutoff for fGWAS model to select the significant marginal SNPs.}
 \item{\code{debug}}            {Default:FALSE, logical value, indicating whether or not debug information is outputted.}
 }

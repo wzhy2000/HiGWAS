@@ -221,7 +221,7 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 
 		if(fgwas.filter)
 		{
-			r.filter <- snpmat_fgwas_filter( simple$phe.mat, simple$snp.mat, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS");
+			r.filter <- snpmat_fgwas_filter( simple$phe.mat, simple$snp.mat, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS", only.sig.snp=TRUE);
 
 			if( r.filter$error ) stop(r.filter$err.info);
 			if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) );
@@ -375,7 +375,7 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 		if(fgwas.filter)
 		{
 			# call FGWAS.R to do FILTER and the bls_snpmat
-			r.filter <- plink_fgwas_filter( pd, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS")
+			r.filter <- plink_fgwas_filter( pd, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS", only.sig.snp=TRUE)
 
 			if( r.filter$error ) stop(r.filter$err.info);
 		}
@@ -645,7 +645,7 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 
 		if(fgwas.filter)
 		{
-			r.filter <- snpmat_fgwas_filter( phe.mat, snp.mat, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS")
+			r.filter <- snpmat_fgwas_filter( phe.mat, snp.mat, Y.name, NULL, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "BLS", only.sig.snp=TRUE)
 
 			if( r.filter$error ) stop(r.filter$err.info);
 			if( is.null(r.filter$snp.mat)) return( wrap_fgwas_ret( r.filter, options) );
@@ -953,14 +953,16 @@ get_default_options<-function()
 show_options<-function(options)
 {
 	cat( "* Parallel Computing: ", ifelse( options$nParallel.cpu>1, "Yes,", "No,"), options$nParallel.cpu,  "CPU(s)\n");
-	cat( "* Piecewise Ratio: ",  options$nPiecewise.ratio,  "\n");
+	if (options$nPiecewise.ratio != 0) cat( "* Piecewise Ratio: ",  options$nPiecewise.ratio,  "\n");
 
-	cat( "* Threshold of fGWAS filter: ",  options$fgwas.cutoff, "\n");
+	cat( "* p-value of fGWAS filter: ",  options$fgwas.cutoff, "\n");
 	cat( "* Iteration of  Markov chain: ",  options$nMcmcIter, "\n");
 	cat( "* fBurnInRound: ",  options$fBurnInRound, "\n");
 	cat( "* fRhoTuning: ",  options$fRhoTuning, "\n");
-	cat( "* fQval.add: ",  options$fQval.add, "\n");
-	cat( "* fQval.dom: ",  options$fQval.dom , "\n");
+	
+	##We dont use the percentile to determine the genetic effects 
+	##cat( "* fQval.add: ",  options$fQval.add, "\n");
+	##cat( "* fQval.dom: ",  options$fQval.dom , "\n");
 
 	cat( "* Debug Output: ", ifelse( options$debug, "Yes", "No"),"\n");
 }

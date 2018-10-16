@@ -94,7 +94,7 @@ snpmat_parallel<-function( n.snp,
 			op.cpu,
 			lasso.method)
 {
-	cat( "Genetic Effect Analysis by BLASSO/GLASSO method......\n");
+	cat( "Genetic Effect Analysis by BLS/GLS method......\n");
 
 	n.inv <- NROW(phe.mat);
 

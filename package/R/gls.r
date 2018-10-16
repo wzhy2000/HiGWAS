@@ -255,7 +255,7 @@ gls.simple<-function(file.phe, file.snp, Y.prefix, Z.prefix, covar.names, refit=
 
 		if(fgwas.filter)
 		{
-			r.filter <- snpmat_fgwas_filter( simple$phe.mat, simple$snp.mat, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "GLS");
+			r.filter <- snpmat_fgwas_filter( simple$phe.mat, simple$snp.mat, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "GLS", only.sig.snp=TRUE);
 
 			if( r.filter$error ) stop(r.filter$err.info);
 			if( is.null(r.filter$snp.mat) ) return ( wrap_fgwas_ret( r.filter, options) );
@@ -419,7 +419,7 @@ gls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 		if(fgwas.filter)
 		{
 			# call FGWAS.R to do FILTER and the gls__snpmat
-			r.filter <- plink_fgwas_filter( pd, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "GLS");
+			r.filter <- plink_fgwas_filter( pd, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "GLS", only.sig.snp=TRUE);
 
 			if( r.filter$error ) stop(r.filter$err.info);
 			if( !is.null( options$fgwas.rdata ) )
@@ -551,7 +551,7 @@ gls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.prefix, 
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
-	cat( "Genetic Effect Analysis by BLASSO method......\n");
+	cat( "Genetic Effect Analysis by GLS model......\n");
 
     ptm <- proc.time();
 
@@ -700,7 +700,7 @@ gls.snpmat<-function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, refit=T
 
 		if(fgwas.filter)
 		{
-			r.filter <- snpmat_fgwas_filter( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "GLS");
+			r.filter <- snpmat_fgwas_filter( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, options$nParallel.cpu, options$fgwas.cutoff, "GLS", only.sig.snp=TRUE);
 
 			if( r.filter$error ) stop(r.filter$err.info);
 			if( is.null(r.filter$snp.mat) ) return ( wrap_fgwas_ret( r.filter, options) );
@@ -859,8 +859,8 @@ merge_add_dom<-function( re_add, re_dom )
 				sig.dom[,c(7:11),drop=F] );
 
 	colnames(sig.mat) <- c( "chr", "pos",
-				"add.sig", "add.SS", "add.mu1", "add.mu2", "add.mu3", "add.mu4",
-				"dom.sig", "dom.SS", "dom.mu1", "dom.mu2", "dom.mu3", "dom.mu4" );
+				"add.sig", "add.L2", "add.mu0", "add.mu1", "add.mu2", "add.mu3",
+				"dom.sig", "dom.L2", "dom.mu0", "dom.mu1", "dom.mu2", "dom.mu3" );
 
 	if( is.null(sig.dom) )
 		rownames(sig.mat) <- rownames( sig.add)
@@ -889,11 +889,8 @@ summary.GLS.ret<-function(object, ...)
 	{
 		re1 <- r.gls$refit_cov;
 		r.sum.ret$refit_cov <- data.frame(
-					SS    = round(re1[,5], digits=3),
-					L1    = round(re1[,6], digits=3),
-					L2    = round(re1[,7], digits=3),
-					L3    = round(re1[,8], digits=3),
-					L4    = round(re1[,9], digits=3) );
+		            cov.sig = rowSums(re1[,1:4]), 
+					L2      = round(re1[,5], digits=3) );
 		rownames(r.sum.ret$refit_cov) <- rownames( re1 );
 	}
 
@@ -906,11 +903,8 @@ summary.GLS.ret<-function(object, ...)
 	{
 		re3 <- r.gls$varsel_cov;
 		r.sum.ret$varsel_cov <- data.frame(
-					SS    = round(re3[,5], digits=3),
-					L1    = round(re3[,6], digits=3),
-					L2    = round(re3[,7], digits=3),
-					L3    = round(re3[,8], digits=3),
-					L4    = round(re3[,9], digits=3) );
+		            cov.sig = rowSums(re3[,1:4]), 
+					L2      = round(re3[,5], digits=3) );
 		rownames(r.sum.ret$varsel_cov) <- rownames( re3 );
 	}
 
@@ -971,10 +965,10 @@ print.sum.GLS.ret<-function(x, ...)
 		if( NROW(r.sum.ret$varsel)>25 )
 		{
 			cat("Top 25 SNPs:\n");
-			show(r.sum.ret$varsel[1:25, c("chr", "pos", "add.sig", "add.SS", "dom.sig", "dom.SS"),drop=F]);
+			show(r.sum.ret$varsel[1:25, c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"),drop=F]);
 		}
 		else
-			show(r.sum.ret$varsel[,c("chr", "pos", "add.sig", "add.SS", "dom.sig", "dom.SS"), drop=F] );
+			show(r.sum.ret$varsel[,c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"), drop=F] );
 	}
 
 	if(!is.null(r.sum.ret$refit_cov))
@@ -986,7 +980,7 @@ print.sum.GLS.ret<-function(x, ...)
 	if(!is.null(r.sum.ret$refit))
 	{
 		cat("--- Refit result:", NROW(r.sum.ret$refit), "SNPs\n");
-		show(r.sum.ret$refit[, c("chr", "pos", "add.sig", "add.SS", "dom.sig", "dom.SS"), drop=F ]);
+		show(r.sum.ret$refit[, c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"), drop=F ]);
 	}
 }
 
@@ -1006,18 +1000,18 @@ wrap_GLS_ret<-function(r.gls, r.filter, options )
 {
 	cat( "Wrapping the results ......\n");
 
-	add_c19 <- c("grp", "pos", "add.m1", "add.m2", "add.m3", "add.m4",
-		"add_SS.mu", "add.mu1", "add.mu2", "add.mu3", "add.mu4",
-		"add_SS.min", "add.min1", "add.min2", "add.min3", "add.min4",
-		"add_SS.max", "add.max1", "add.max2", "add.max3", "add.max4" );
-	dom_c19 <- c("grp", "pos", "dom.m1", "dom.m2", "dom.m3", "dom.m4",
-		"dom_SS.mu", "dom.mu1", "dom.mu2", "dom.mu3", "dom.mu4",
-		"dom_SS.min", "dom.min1", "dom.min2", "dom.min3", "dom.min4",
-		"dom_SS.max", "dom.max1", "dom.max2", "dom.max3", "dom.max4" );
-	cov_c19 <- c("cov.m1", "cov.m2", "cov.m3", "cov.m4",
-		"co_SS.mu", "cov.mu1", "cov.mu2", "cov.mu3", "cov.mu4",
-		"co_SS.min", "cov.min1", "cov.min2", "cov.min3", "cov.min4",
-		"co_SS.max", "cov.max1", "cov.max2", "cov.max3", "cov.max4" );
+	add_c19 <- c("grp", "pos", "add.r0", "add.r1", "add.r2", "add.r3",
+		"add.mu.L2", "add.mu0", "add.mu1", "add.mu2", "add.mu3",
+		"add.min.L2", "add.min0", "add.min1", "add.min2", "add.min3",
+		"add.max.L2", "add.max0", "add.max1", "add.max2", "add.max3" );
+	dom_c19 <- c("grp", "pos", "dom.r0", "dom.r1", "dom.r2", "dom.r3",
+		"dom.mu.L2", "dom.mu0", "dom.mu1", "dom.mu2", "dom.mu3",
+		"dom.min.L2", "dom.min0", "dom.min1", "dom.min2", "dom.min3",
+		"dom.max.L2", "dom.max0", "dom.max1", "dom.max2", "dom.max3" );
+	cov_c19 <- c("cov.r0", "cov.r1", "cov.r2", "cov.r3",
+		"cov.mu.L2", "cov.mu0", "cov.mu1", "cov.mu2", "cov.mu3",
+		"cov.min.L2", "cov.min0", "cov.min1", "cov.min2", "cov.min3",
+		"cov.max.L2", "cov.max0", "cov.max1", "cov.max2", "cov.max3" );
 
 	if(!is.null(r.gls) && !is.na(r.gls))
 	{

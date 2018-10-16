@@ -122,7 +122,7 @@ int g_reduce_double(double *idata, double* wdata, int N, double* ret)
     double dRet= 0.0;
     PERR(cudaMemcpy( &dRet, wdata+3, sizeof(double), cudaMemcpyDeviceToHost ));
 
-    printf("sum=%f\n",  dRet);
+    //printf("sum=%f\n",  dRet);
     *ret = dRet;
     
     return(0);

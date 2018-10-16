@@ -31,9 +31,7 @@ gls.snpmat(phe.mat,
 \item{add.used}{Logical, if TRUE, additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{Logical, If TRUE, the SNPs will be filtered by the fGWAS model before the lasso method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fQval.add},\cr
-\code{fQval.dom}, \code{fgwas.cutoff}, and \code{debug}.\cr
-see details.}
+\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr and \code{debug}. see details.}
 }
 
 \value{
@@ -63,8 +61,6 @@ The control parameters include the following items.\cr
 \item{\code{nMcmcIter}}        {Default:2000, the number of iteration of the MCMC algorithm execution. }
 \item{\code{fBurnInRound}}     {Default:0.3, a ratio to cut off unstable iteration in order to make the result precise.}
 \item{\code{fRhoTuning}}       {Default:0.095, a ratio used for narrowing the scope of parameter rho to reduce parameter oscillation.}
-\item{\code{fQval.add}}        {Default:0.05, }
-\item{\code{fQval.dom}}        {Default:0.05, the Q-values of additive and dominant genetic effects respectively.}
 \item{\code{fgwas.cutoff}}     {Default:0.05, a p-value cutoff for fGWAS model to select the significant marginal SNPs.}
 \item{\code{debug}}            {Default:FALSE, logical value, indicating whether or not debug information is outputted.}
 }

@@ -146,8 +146,8 @@ draw_man_fgwas<-function( r.fgwas, fig.prefix=NULL, fig.name=NULL )
 # draw_refit_curve
 # 
 #  colnames(refit) <=c( [1] "chr", [2]"pos", 
-#			[3] "add.sig", [4] "add.mode", [5]"add.mu1", "add.mu2", "add.mu3", "add.mu4",
-#			[9] "dom.sig", [10]"dom.mode", [11]"dom.mu1", "dom.mu2", "dom.mu3", "dom.mu4" );
+#			[3] "add.sig", [4] "add.mode", [5]"add.mu0", "add.mu1", "add.mu2", "add.mu3",
+#			[9] "dom.sig", [10]"dom.mode", [11]"dom.mu0", "dom.mu1", "dom.mu2", "dom.mu3" );
 #
 #--------------------------------------------------------------
 

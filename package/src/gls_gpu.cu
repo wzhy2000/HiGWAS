@@ -103,7 +103,7 @@ __device__ GPUShare* ConvetSharePoint( double* smb, int Q )
         
 void _initGPUobj(struct GPUobj* gCpu, struct GPUobj* gGpuObj, struct GPUobj* gGpuMap, unsigned int nsize, unsigned int N, unsigned int P, unsigned int Q, unsigned int NC )
 {
-printf("%p, %d, %d, %d, %d \n", nsize, N, P, Q, NC );
+printf("nsize=%p, N=%d, P=%d, Q=%d, NC=%d \n", nsize, N, P, Q, NC );
 
     memset(gCpu, 0, nsize);
     gCpu->nSize = nsize;
@@ -128,10 +128,10 @@ printf("%p, %d, %d, %d, %d \n", nsize, N, P, Q, NC );
     gCpu->tVN1  = make_matrix_ongpu( N, 1 );
     gCpu->tVN2  = make_matrix_ongpu( N, 1 );
 
-printf("gCpu->X=%p\n", gCpu->X );
-printf("gCpu->gen_a=%p \n", gCpu->gen_a );
-printf("gCpu->gen_d=%p \n", gCpu->gen_d );
-printf("Test %p +1 %p +2=%p\n", &(gCpu->pNext), &(gCpu->pNext) + 1, &(gCpu->pNext) + N  );
+//printf("gCpu->X=%p\n", gCpu->X );
+//printf("gCpu->gen_a=%p \n", gCpu->gen_a );
+//printf("gCpu->gen_d=%p \n", gCpu->gen_d );
+//printf("Test %p +1 %p +2=%p\n", &(gCpu->pNext), &(gCpu->pNext) + 1, &(gCpu->pNext) + N  );
 
     gCpu->all_corTimes = make_matrix_list( (double**)(&(gCpu->pNext)), N, Q, Q );
     gCpu->all_corMat = make_matrix_list( (double**)( gCpu->all_corTimes + N), N, Q, Q );
@@ -139,7 +139,7 @@ printf("Test %p +1 %p +2=%p\n", &(gCpu->pNext), &(gCpu->pNext) + 1, &(gCpu->pNex
     gCpu->all_corMat_Inv = make_matrix_list( (double**)( gCpu->all_corMat_MH + N), N, Q, Q );
     gCpu->all_corMat_MH_Inv = make_matrix_list( (double**)( gCpu->all_corMat_Inv + N), N, Q, Q );
 
-printf("Test p1=%p p2=%p  p3==%p\n", gCpu->all_corTimes, gCpu->all_corMat, gCpu->all_corMat_MH  );
+//printf("Test p1=%p p2=%p  p3==%p\n", gCpu->all_corTimes, gCpu->all_corMat, gCpu->all_corMat_MH  );
 
     gCpu->all_yi  = make_vector_list( (double**)( gCpu->all_corMat_MH_Inv + N), N, Q );
     gCpu->all_rd  = make_vector_list( (double**)( gCpu->all_yi + N), N, Q );
@@ -151,8 +151,8 @@ printf("Test p1=%p p2=%p  p3==%p\n", gCpu->all_corTimes, gCpu->all_corMat, gCpu-
     
     memcpy(gGpuMap, gCpu, nsize); 
 
-printf("gCpu            =%p\n", gCpu);
-printf("gGpuObj         =%p\n", gGpuObj);
+//printf("gCpu            =%p\n", gCpu);
+//printf("gGpuObj         =%p\n", gGpuObj);
 
     #define MAP_ADDR(x)  (double**)((char*)gGpuObj + (unsigned int)((char*)(x) - (char*)gCpu) )
 
@@ -175,10 +175,6 @@ int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj*
 {
     int ngCudaSize = sizeof(struct GPUobj) + 50* N * sizeof(double*);
 
-    //cublasHandle_t h;
-    //cublasCreate(&h);
-    //cublasSetPointerMode(h, CUBLAS_POINTER_MODE_DEVICE);
- 
     struct GPUobj* gGpuObj;
     PERR( cudaMalloc( (void **)&gGpuObj, ngCudaSize ) );
     *pGpuObj = gGpuObj;
@@ -193,9 +189,9 @@ int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj*
 
     PERR( cudaMemcpy( gGpuObj, gGpuMap, ngCudaSize, cudaMemcpyHostToDevice ) );
     
-printf("CPU copy=%p\n", *pCpuObj);
-printf("GPU addr=%p\n", *pGpuObj);
-printf("GPU map =%p\n", *gGpuMap);
+//printf("CPU copy=%p\n", *pCpuObj);
+//printf("GPU addr=%p\n", *pGpuObj);
+//printf("GPU map =%p\n", *gGpuMap);
     
     return(0);
 }
@@ -278,7 +274,6 @@ int _cuda_gpart1( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, double rh
     cudaDeviceSynchronize();
     ERRCHECK;
 
-//printf("End of part1\n");
     // dont need copy all_corMat and all_corMat_MH back to CPU
     return(0);
 }
@@ -381,8 +376,6 @@ int _cuda_gpart2( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* g
     g_reduce_matrix( gGpuMap->tmp3, gGpuMap->tempMat, N );
     _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat[0]);
     
-//printf("End of part2\n");
-
     return(0);
 }
  
@@ -475,7 +468,6 @@ int _cuda_gpart3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, in
     cudaDeviceSynchronize();
     ERRCHECK;
     
-//printf("End of part3\n");
     return (0);
 }
 
@@ -606,8 +598,6 @@ int _cuda_gpart4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* g
     g_reduce_matrix( gGpuMap->tmp3, gGpuMap->tempMat, N );
     _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat[0] );
 
-//printf("End of part4\n");
-
     return(0);
 }
 
@@ -690,8 +680,6 @@ int _cuda_gpart5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, in
     g_part5<<< N, 16, nShareSize >>>(gCuda, N, Q, j );
     cudaDeviceSynchronize();
     ERRCHECK;
-
-//printf("End of part5\n");
 
     return(0);
 } 

@@ -1483,7 +1483,7 @@ Rprintf( "Round=%d sigma2=%f rho=%.4f tmp5=%f lambda2=%f,%f,%f,%f mu=%.4f, %.4f,
         if( Free_GPUobj( gCuda, gCpuObj, gGpuMap, N) != 0 )
             return( ERR_ON_GPU );
 
-        printf("End of GPU");
+        //printf("End of GPU\n");
     }
 #endif
 

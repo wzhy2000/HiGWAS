@@ -75,7 +75,8 @@ fi
 AC_MSG_RESULT([setting R header files to ${R_INCLUDE_DIR}])
 R_CPICFLAGS=`"${R_HOME}/bin/R" CMD config CPICFLAGS`
 NCFLAGS="${NCFLAGS} -Xcompiler \"-O2 ${R_CPICFLAGS} -I${R_INCLUDE_DIR}\" -dlink -lcublas"
-
+R_BLAS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
+R_LAPACK=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 
 #################### SET FLAGS ####################
 
@@ -86,6 +87,7 @@ COMPILER_FLAGS="-O2 ${COMPILER_OPTIMIZE_FLAGS} ${COMPILER_FLAGS}"
 
 CFLAGS="-std=gnu99 ${COMPILER_FLAGS}"
 CXXFLAGS="${COMPILER_FLAGS}"
+R_LIBS="${R_BLAS} ${R_LAPACK}"
 
 AC_SUBST([NVCC])
 AC_SUBST([LINKER])
@@ -95,6 +97,7 @@ AC_SUBST([NCFLAGS])
 AC_SUBST([LDFLAGS])
 AC_SUBST([CUDA_LIBS])
 AC_SUBST([COMPILE_CUDA])
+AC_SUBST([R_LIBS])
 
 AC_CONFIG_FILES([src/Makefile])
 AC_OUTPUT

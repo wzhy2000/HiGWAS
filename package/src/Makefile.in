@@ -24,6 +24,7 @@ CXXFLAGS := @CXXFLAGS@
 NVCCFLAGS := @NCFLAGS@
 LDFLAGS := @LDFLAGS@
 CUDA_LIBS := @CUDA_LIBS@
+R_LIBS := @R_LIBS@
 COMPILE_CUDA := @COMPILE_CUDA@
 
 # Program-specifics
@@ -58,7 +59,7 @@ endif
 all: $(TARGET)
 
 $(TARGET) : $(OBJECTS)
-	$(LINKER) -shared $(LDFLAGS) $(CUDA_LIBS) $(OBJECTS) -o $@ 
+	$(LINKER) -shared $(LDFLAGS) $(R_LIBS) $(CUDA_LIBS) $(OBJECTS) -o $@ 
 
 %.o : %.c $(PRECOMPILED_HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@

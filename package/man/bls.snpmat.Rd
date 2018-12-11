@@ -47,9 +47,6 @@ The phenotypic matrix inludes the following columns:\cr
 
 }
 
-\author{Zhong Wang and Nating Wang }
-
-
 \references{
 (1)Beyasian lasso model\cr
 Li, J., Das, K., Fu, G., Li, R., & Wu, R. (2011). The Bayesian lasso for genome-wide association studies. Bioinformatics, 27(4), 516-523.\cr

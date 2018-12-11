@@ -14,6 +14,9 @@
 #include "gpu_matrix.cux"
 #include "gpu_reduction.cux"
 
+//#define USECUDA
+//#define MONTIME
+
 int _CheckCuda()
 {
 	int nCount = 0;
@@ -32,14 +35,17 @@ __device__ double _cuda_invGau(int seed, double theta, double chi)
     curandState s ;
 
     // seed a random number generator
-    curand_init ( (unsigned int) seed, 0, 0, &s) ;
+    //curand_init ( (unsigned int) seed, 0, 0, &s) ;
+    //replace the default one.
+    curand(&s);
+    
     double _rn = curand_normal_double (&s);   
     double _ru = curand_uniform_double (&s);
 
 #ifdef USECUDA
 #ifdef MONTIME
-    _rn = 0.67;
-    _ru = 0.45;
+    //_rn = 0.67;
+    //_ru = 0.45;
 #endif
 #endif
 
@@ -64,7 +70,7 @@ __global__ void g_part0(int N, double rho, double tmp5 )
     } 
 }
 
-int _cuda_gpart0( int N, double rho, double tmp5)
+int _cuda_gpart0( int LG, int N, double rho, double tmp5)
 {   
     g_part0<<< 1, 5>>>(N, rho, tmp5 );
     cudaDeviceSynchronize();
@@ -101,7 +107,7 @@ __device__ GPUShare* ConvetSharePoint( double* smb, int Q )
     return(p);
 }
         
-void _initGPUobj(struct GPUobj* gCpu, struct GPUobj* gGpuObj, struct GPUobj* gGpuMap, unsigned int nsize, unsigned int N, unsigned int P, unsigned int Q, unsigned int NC )
+void _initGPUobj(struct GPUobj* gCpu, struct GPUobj* gGpuObj, struct GPUobj* gGpuMap, unsigned int nsize, int LG, unsigned int N, unsigned int P, unsigned int Q, unsigned int NC )
 {
 printf("nsize=%p, N=%d, P=%d, Q=%d, NC=%d \n", nsize, N, P, Q, NC );
 
@@ -171,7 +177,7 @@ printf("nsize=%p, N=%d, P=%d, Q=%d, NC=%d \n", nsize, N, P, Q, NC );
 
 }
 
-int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj** pGpuMap, int N, int P, int Q, int NC)
+int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj** pGpuMap, int LG, int N, int P, int Q, int NC)
 {
     int ngCudaSize = sizeof(struct GPUobj) + 50* N * sizeof(double*);
 
@@ -185,7 +191,7 @@ int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj*
     struct GPUobj* gGpuMap = (struct GPUobj*)Calloc( ngCudaSize, char);
     *pGpuMap = gGpuMap;
 
-    _initGPUobj( gCpuCopy, gGpuObj, gGpuMap, ngCudaSize, N, P, Q, NC );
+    _initGPUobj( gCpuCopy, gGpuObj, gGpuMap, ngCudaSize, LG, N, P, Q, NC );
 
     PERR( cudaMemcpy( gGpuObj, gGpuMap, ngCudaSize, cudaMemcpyHostToDevice ) );
     
@@ -234,7 +240,7 @@ void _freeGPUobj(struct GPUobj* pCpuObj, int N )
     
 }
     
-int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, struct GPUobj* gGpuMap, int N)
+int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, struct GPUobj* gGpuMap, int LG, int N)
 {
     _freeGPUobj( pCpuObj, N );
 
@@ -266,7 +272,7 @@ __global__ void g_part1(struct GPUobj* gCuda, int N, double rho, double tmp5 )
     } 
 }
 
-int _cuda_gpart1( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, double rho, double tmp5)
+int _cuda_gpart1( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, double rho, double tmp5)
 {   
 //printf("part1 %p, %d, %f, %f %d, %d \n", gCuda, N, rho, tmp5, (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK);
 
@@ -356,7 +362,7 @@ __global__ void g_part2(struct GPUobj* gCuda, int N, int Q, int nC, double sigma
    }
 }
 
-int _cuda_gpart2( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, double sigma2, 
+int _cuda_gpart2( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, double sigma2, 
                  CFmMatrix& alpha, CFmMatrix& tmp2, CFmMatrix& tmp3 )
 {
 //printf("part2 %p, %d, %f, %f %d, %d \n", gCuda, N, nC, sigma2 );
@@ -457,7 +463,7 @@ __global__ void g_part3(struct GPUobj* gCuda, int N, int Q, int P )
     }
 }
          
-int _cuda_gpart3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, int P, CFmMatrix& a, CFmMatrix& d)
+int _cuda_gpart3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, int Q, int P, CFmMatrix& a, CFmMatrix& d)
 {
 //printf("part3 %p, %d, %d\n", gCuda, N, P );
     _copy_fmMatrix_Device( gCpuObj->a, a );
@@ -472,7 +478,7 @@ int _cuda_gpart3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, in
 }
 
 
-__global__ void g_part4(struct GPUobj* gCuda, int N, int Q, int j, int nC, double sigma2 )
+__global__ void g_part4(struct GPUobj* gCuda, int LG, int N, int Q, int j, int nC, double sigma2 )
 {    
     extern __shared__ double smb[];
 
@@ -575,7 +581,7 @@ __global__ void g_part4(struct GPUobj* gCuda, int N, int Q, int j, int nC, doubl
 }
 
 
-int _cuda_gpart4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int j, int nC, double sigma2, 
+int _cuda_gpart4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int j, int nC, double sigma2, 
                  CFmVector& mu, CFmMatrix& alpha, CFmMatrix& a, CFmMatrix& tmp2, CFmMatrix& tmp3)
 {
 //printf("part4 %p, %d, %d, %d \n", gCuda, N, j, nC );
@@ -587,7 +593,7 @@ int _cuda_gpart4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* g
     }
     
     int nShareSize = ((Q*Q+3)*10 + (Q+3)*10 ) * sizeof(double);    
-    g_part4<<< N, 16, nShareSize >>>(gCuda, N, Q, j, nC,sigma2 );
+    g_part4<<< N, 16, nShareSize >>>(gCuda, LG, N, Q, j, nC,sigma2 );
     cudaDeviceSynchronize();
     ERRCHECK;
 
@@ -665,7 +671,7 @@ __global__ void g_part5(struct GPUobj* gCuda, int N, int Q, int j )
     }
 }
 
-int _cuda_gpart5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, int j, CFmMatrix& a, CFmMatrix& a_old)
+int _cuda_gpart5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, int Q, int j, CFmMatrix& a, CFmMatrix& a_old)
 {
     //only fully update a and a_old at the first time to save up computational times.
     if(j==0)
@@ -686,7 +692,7 @@ int _cuda_gpart5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, in
 
 
 
-__global__ void g_part6(struct GPUobj* gCuda, int P, double sigma2, double lambda2, double lambda2_x)
+__global__ void g_part6(struct GPUobj* gCuda, int LG, int P, double sigma2, double lambda2, double lambda2_x)
 {    
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -719,13 +725,13 @@ __global__ void g_part6(struct GPUobj* gCuda, int P, double sigma2, double lambd
     }
 }
 
-int _cuda_gpart6( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double sigma2, double lambda2, double lambda2_x, 
+int _cuda_gpart6( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int P, double sigma2, double lambda2, double lambda2_x, 
                  CFmVector& vctP, CFmMatrix& a, CFmVector& tau2, CFmVector& tau2_x )
 {
     _copy_fmVector_Device( gCpuObj->vctP, vctP);
     _copy_fmMatrix_Device( gCpuObj->a, a);
     
-    g_part6<<< (P + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, P, sigma2, lambda2, lambda2_x );
+    g_part6<<< (P + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, LG, P, sigma2, lambda2, lambda2_x );
     cudaDeviceSynchronize();
     ERRCHECK;
     
@@ -736,7 +742,7 @@ int _cuda_gpart6( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double si
     return(0);
 }
 
-__global__ void g_part7(struct GPUobj* gCuda, int N, int Q, int j, int nC, double sigma2)
+__global__ void g_part7(struct GPUobj* gCuda, int LG, int N, int Q, int j, int nC, double sigma2)
 {    
     extern __shared__ double smb[];
 
@@ -846,7 +852,7 @@ __global__ void g_part7(struct GPUobj* gCuda, int N, int Q, int j, int nC, doubl
 }
 
 
-int _cuda_gpart7( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int j, int nC, double sigma2, 
+int _cuda_gpart7( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int j, int nC, double sigma2, 
                  CFmMatrix& alpha, CFmVector& mu, CFmMatrix& d, CFmMatrix& tmp2, CFmMatrix& tmp3 )
 {
     if (j==0)
@@ -857,7 +863,7 @@ int _cuda_gpart7( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* g
     }
     
     int nShareSize = ((Q*Q+3)*10 + (Q+3)*10 ) * sizeof(double);
-    g_part7<<< N, 16, nShareSize>>>(gCuda, N, Q, j, nC, sigma2 );
+    g_part7<<< N, 16, nShareSize>>>(gCuda, LG, N, Q, j, nC, sigma2 );
     cudaDeviceSynchronize();
     ERRCHECK;
 
@@ -936,7 +942,7 @@ __global__ void g_part8( struct GPUobj* gCuda, int N, int Q, int j )
     }
 }
 
-int _cuda_gpart8( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, int j, CFmMatrix& d, CFmMatrix& d_old)
+int _cuda_gpart8( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, int Q, int j, CFmMatrix& d, CFmMatrix& d_old)
 {
     if(j==0)
         _copy_fmMatrix_Device( gCpuObj->d_old, d_old );
@@ -957,7 +963,7 @@ int _cuda_gpart8( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, in
 }
 
 
-__global__ void g_part9(struct GPUobj* gCuda, int P, double lambda2_st, double lambda2_st_x, double sigma2 )
+__global__ void g_part9(struct GPUobj* gCuda, int LG, int P, double lambda2_st, double lambda2_st_x, double sigma2 )
 {    
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -990,13 +996,13 @@ __global__ void g_part9(struct GPUobj* gCuda, int P, double lambda2_st, double l
 }
 
 
-int _cuda_gpart9( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double lambda_st2, double lambda_st2_x, double sigma2, 
+int _cuda_gpart9( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int P, double lambda_st2, double lambda_st2_x, double sigma2, 
                  CFmVector& vctP, CFmMatrix& d, CFmVector& tau2_st, CFmVector& tau2_st_x  )
 {
     _copy_fmVector_Device( gCpuObj->vctP, vctP );
     _copy_fmMatrix_Device( gCpuObj->d, d );
 
-    g_part9<<< (P + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, P, lambda_st2, lambda_st2_x, sigma2 );
+    g_part9<<< (P + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, LG, P, lambda_st2, lambda_st2_x, sigma2 );
     cudaDeviceSynchronize();
     ERRCHECK;
     
@@ -1095,7 +1101,7 @@ __global__ void g_part10( struct GPUobj* gCuda, int N, int Q, int nC, int nX, do
      }
 }
 
-int _cuda_gpart10( struct GPUobj* gCuda, struct GPUobj* gCpuObj, GPUobj* gGpuMap, int N, int Q, int nC, int nX, double sigma2, 
+int _cuda_gpart10( struct GPUobj* gCuda, struct GPUobj* gCpuObj, GPUobj* gGpuMap, int LG, int N, int Q, int nC, int nX, double sigma2, 
                   CFmMatrix& alpha, CFmVector& mu, CFmMatrix& tmp2, CFmMatrix& tmp3 )
 {
     _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
@@ -1194,7 +1200,7 @@ __global__ void g_part11( struct GPUobj* gCuda, int N, int Q, int nC )
     }
 }
 
-int _cuda_gpart11( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, 
+int _cuda_gpart11( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, 
                   CFmMatrix& alpha, CFmVector& mu, double* sigma2_scale)
 {
     _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
@@ -1295,7 +1301,7 @@ __global__ void g_part12(struct GPUobj* gCuda, int N, int Q, int nC, double sigm
     }
 }
 
-int _cuda_gpart12( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, double sigma2, 
+int _cuda_gpart12( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, double sigma2, 
                   CFmMatrix& alpha, CFmVector& mu, double* exp_diff)
 {
     _copy_fmMatrix_Device( gCpuObj->alpha, alpha);

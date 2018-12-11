@@ -113,22 +113,22 @@ struct GPUShare{
     double* pNext;
 };
 
-int _cuda_gpart0( int N, double rho, double tmp5 );
-int _cuda_gpart1( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, double rho, double tmp5 );
-int _cuda_gpart2( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, double sigma2, CFmMatrix& alpha, CFmMatrix& tmp2, CFmMatrix& tmp3 );
-int _cuda_gpart3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, int P, CFmMatrix& a, CFmMatrix& d );
-int _cuda_gpart4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int j, int nC, double sigma2, CFmVector& mu, CFmMatrix& alpha, CFmMatrix& a, CFmMatrix& tmp2, CFmMatrix& tmp3);
-int _cuda_gpart5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, int j, CFmMatrix& a, CFmMatrix& a_old );
-int _cuda_gpart6( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double sigma2, double lambda2, double lambda2_x, CFmVector& vctP, CFmMatrix& a, CFmVector& tau2, CFmVector& tau2_x );
-int _cuda_gpart7( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int j, int nC, double sigma2, CFmMatrix& alpha, CFmVector& mu, CFmMatrix& d, CFmMatrix& tmp2, CFmMatrix& tmp3);
-int _cuda_gpart8( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int Q, int j, CFmMatrix& d, CFmMatrix& d_old);
-int _cuda_gpart9( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double lambda_st2, double lambda_st2_x, double sigma2, CFmVector& vctP, CFmMatrix& d, CFmVector& tau_st2, CFmVector& tau_st2_x);
-int _cuda_gpart10( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, int nX, double sigma2, CFmMatrix& alpha, CFmVector& mu, CFmMatrix& tmp2, CFmMatrix& tmp3 );
-int _cuda_gpart11( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, CFmMatrix& alpha, CFmVector& mu, double* sigma2_scale);
-int _cuda_gpart12( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, double sigma2, CFmMatrix& alpha, CFmVector& mu, double* exp_diff);
+int _cuda_gpart0( int LG, int N, double rho, double tmp5 );
+int _cuda_gpart1( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, double rho, double tmp5 );
+int _cuda_gpart2( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, double sigma2, CFmMatrix& alpha, CFmMatrix& tmp2, CFmMatrix& tmp3 );
+int _cuda_gpart3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, int Q, int P, CFmMatrix& a, CFmMatrix& d );
+int _cuda_gpart4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int j, int nC, double sigma2, CFmVector& mu, CFmMatrix& alpha, CFmMatrix& a, CFmMatrix& tmp2, CFmMatrix& tmp3);
+int _cuda_gpart5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, int Q, int j, CFmMatrix& a, CFmMatrix& a_old );
+int _cuda_gpart6( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int P, double sigma2, double lambda2, double lambda2_x, CFmVector& vctP, CFmMatrix& a, CFmVector& tau2, CFmVector& tau2_x );
+int _cuda_gpart7( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int j, int nC, double sigma2, CFmMatrix& alpha, CFmVector& mu, CFmMatrix& d, CFmMatrix& tmp2, CFmMatrix& tmp3);
+int _cuda_gpart8( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int N, int Q, int j, CFmMatrix& d, CFmMatrix& d_old);
+int _cuda_gpart9( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int LG, int P, double lambda_st2, double lambda_st2_x, double sigma2, CFmVector& vctP, CFmMatrix& d, CFmVector& tau_st2, CFmVector& tau_st2_x);
+int _cuda_gpart10(struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, int nX, double sigma2, CFmMatrix& alpha, CFmVector& mu, CFmMatrix& tmp2, CFmMatrix& tmp3 );
+int _cuda_gpart11(struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, CFmMatrix& alpha, CFmVector& mu, double* sigma2_scale);
+int _cuda_gpart12(struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int LG, int N, int Q, int nC, double sigma2, CFmMatrix& alpha, CFmVector& mu, double* exp_diff);
 
-int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj** pGpuMap, int N, int P, int Q, int NC);
-int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, struct GPUobj* pGpuMap, int N);
+int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj** pGpuMap, int LG, int N, int P, int Q, int NC);
+int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, struct GPUobj* pGpuMap, int LG, int N);
 int _CheckCuda();
 
 #endif

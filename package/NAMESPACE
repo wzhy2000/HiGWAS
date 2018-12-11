@@ -1,7 +1,14 @@
 useDynLib(gwas.lasso, .registration = TRUE)
 
+import(utils)
+import(graphics)
+import(grDevices)
+import(stats)
 import(nlme)
 import(snpStats)
+import(scales)
+import(snowfall)
+
 
 # functions
 export(bls.simulate)
@@ -12,7 +19,7 @@ export(bls.snpmat)
 export(print.BLS.ret)
 export(show.BLS.ret)
 export(summary.BLS.ret)
-export(print.sum.BLS.ret)
+export(print.sum.BLS.ret) 
 export(plot.BLS.ret)
 export(bls.best.qval);
 

@@ -94,6 +94,7 @@ SEXP glasso_simple( const char* pzPhefile,
                  double fRhoTuning,
                  double fQval_add,
                  double fQval_dom,
+                 int nLegendre,
                  int nDebug);
 
 SEXP glasso_plink_tped( const char* pzPhefile,
@@ -111,6 +112,7 @@ SEXP glasso_plink_tped( const char* pzPhefile,
                  double fRhoTuning,
                  double fQval_add,
                  double fQval_dom,
+                 int nLegendre,
                  int nDebug);
 
 
@@ -128,7 +130,8 @@ SEXP glasso_snpmat( SEXP smatPhe,
                  double fRhoTuning,
                  double fQval_add,
                  double fQval_dom,
-               int nDebug);
+                 int nLegendre,
+                 int nDebug);
 
 SEXP CheckCuda();
 

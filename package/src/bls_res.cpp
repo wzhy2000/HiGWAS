@@ -41,6 +41,7 @@ BLS_res::BLS_res(CMDOPTIONS *pCmd, BLS_cfg* pCfg)
     m_pVarsel_SnpName = NULL;
     m_pVarsel_SnpChr  = NULL;
     m_pVarsel_SnpPos  = NULL;
+
     m_pVarsel_Coefs   = NULL;
     m_pVarsel_Ra      = NULL;
     m_pVarsel_Rd      = NULL;
@@ -71,6 +72,7 @@ BLS_res::~BLS_res()
     if(m_pVarsel_SnpName) destroy( m_pVarsel_SnpName );
     if(m_pVarsel_SnpChr) destroy( m_pVarsel_SnpChr );
     if(m_pVarsel_SnpPos) destroy( m_pVarsel_SnpPos );
+
     if(m_pVarsel_Coefs) destroy( m_pVarsel_Coefs );
     if(m_pVarsel_Ra)   destroy( m_pVarsel_Ra );
     if(m_pVarsel_Rd)   destroy( m_pVarsel_Rd );

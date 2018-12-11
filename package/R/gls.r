@@ -146,7 +146,7 @@ gls.simulate<-function( file.phe.out, file.snp.out, simu_grp=1, simu_n=500, simu
 		tb.snp <- read.csv(file.snp.out, header=T);
 		r <- convert_simpe_to_plink( tb.snp, file.snp.out );
 
-		unlink(file.snp.out);
+		#unlink(file.snp.out);
 		return(list(err=err,
 			file.simple.phe = file.phe.out,
 			file.plink.bed = r$file.plink.bed,
@@ -204,6 +204,9 @@ gls.simple<-function(file.phe, file.snp, Y.prefix, Z.prefix, covar.names, refit=
 		options <- options0;
 	}
 
+    if(options$nLegendre<2 || options$nLegendre>3)
+		stop("! The parameter of 'options$nLegendre' should be 2 or 3.");
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
@@ -242,6 +245,7 @@ gls.simple<-function(file.phe, file.snp, Y.prefix, Z.prefix, covar.names, refit=
 				options$fRhoTuning,
 				options$fQval.add,
 				options$fQval.dom,
+				options$nLegendre,
 				ifelse( options$debug, 3, 1) );
 	}
 	else
@@ -280,6 +284,7 @@ gls.simple<-function(file.phe, file.snp, Y.prefix, Z.prefix, covar.names, refit=
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				options$nLegendre,
 				"GLS");
 		}
 		else
@@ -304,6 +309,7 @@ gls.simple<-function(file.phe, file.snp, Y.prefix, Z.prefix, covar.names, refit=
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				options$nLegendre,
 				"GLS");
 		}
 	}
@@ -369,6 +375,9 @@ gls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 		options <- options0;
 	}
 
+    if(options$nLegendre<2 || options$nLegendre>3)
+		stop("! The parameter of 'options$nLegendre' should be 2 or 3.");
+    
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
@@ -458,6 +467,7 @@ gls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			options$fQval.dom,
 			options$debug,
 			options$nParallel.cpu,
+			options$nLegendre,
 			"GLS");
 
 	}
@@ -490,6 +500,7 @@ gls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			options$fQval.dom,
 			options$debug,
 			options$nParallel.cpu,
+			options$nLegendre,
 			"GLS");
 	}
 
@@ -548,6 +559,9 @@ gls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.prefix, 
 		options <- options0;
 	}
 
+    if(options$nLegendre<2 || options$nLegendre>3 )
+		stop("! The parameter of 'options$nLegendre' should be 2 or 3.");
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
@@ -572,6 +586,7 @@ gls.plink.tped<-function( file.phe, file.plink.tped, file.plink.tfam, Y.prefix, 
 			options$fRhoTuning,
 			options$fQval.add,
 			options$fQval.dom,
+			options$nLegendre,
 			ifelse( options$debug,3 , 1) );
 
 	options$params <- list( file.phe = file.phe,
@@ -643,6 +658,9 @@ gls.snpmat<-function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, refit=T
 		options <- options0;
 	}
 
+    if(options$nLegendre<2 || options$nLegendre>3 )
+		stop("! The parameter of 'options$nLegendre' should be 2 or 3.");
+
 	cat( "Checking the optional items......\n");
 	show_options( options);
 
@@ -689,6 +707,7 @@ gls.snpmat<-function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, refit=T
 			options$fRhoTuning,
 			options$fQval.add,
 			options$fQval.dom,
+			options$nLegendre,
 			ifelse( options$debug, 3, 1) );
 	}
 	else
@@ -725,6 +744,7 @@ gls.snpmat<-function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, refit=T
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				options$nLegendre,
 				"GLS");
 		}
 		else
@@ -749,6 +769,7 @@ gls.snpmat<-function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names, refit=T
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				options$nLegendre,
 				"GLS");
 		}
 	}
@@ -870,9 +891,10 @@ merge_add_dom<-function( re_add, re_dom )
 	return(sig.mat);
 }
 
-print.GLS.ret<-function( object )
+
+print.GLS.ret<-function( x, ... )
 {
-	print(summary.GLS.ret(object));
+	print(summary.GLS.ret(x));
 }
 
 show.GLS.ret<-function( object )
@@ -897,7 +919,7 @@ summary.GLS.ret<-function(object, ...)
 	r.add <- !is.null( r.gls$refit_add ) && NROW( r.gls$refit_add )>0;
 	r.dom <- !is.null( r.gls$refit_dom ) && NROW( r.gls$refit_dom )>0;
 	if( r.add || r.dom )
-		r.sum.ret$refit <- merge_add_dom( r.gls$refit_add, r.gls$refit_dom);
+		r.sum.ret$refit <- merge_add_dom( r.gls$refit_add, r.gls$refit_dom );
 
 	if(!is.null( r.gls$varsel_cov ) && NROW( r.gls$varsel_cov )>0 )
 	{
@@ -911,7 +933,7 @@ summary.GLS.ret<-function(object, ...)
 	r.add <- !is.null( r.gls$varsel_add ) && NROW( r.gls$varsel_add )>0;
 	r.dom <- !is.null( r.gls$varsel_dom ) && NROW( r.gls$varsel_dom )>0;
 	if( r.add || r.dom )
-		r.sum.ret$varsel <- merge_add_dom( r.gls$varsel_add, r.gls$varsel_dom);
+		r.sum.ret$varsel <- merge_add_dom( r.gls$varsel_add, r.gls$varsel_dom );
 
 	if(!is.null(r.gls$fgwas))
 	{
@@ -924,10 +946,10 @@ summary.GLS.ret<-function(object, ...)
 			r.sum.ret$fgwas_sig <- fgwas_sigs[fgwas.sig.inc,];
 		}
 
-		if(!is.null(r.sum.ret$varsel))
+		if(!is.null(r.sum.ret[["varsel"]]))
 			r.sum.ret$varsel <- cbind(r.sum.ret$varsel, fgwas.pvalue=find_fgwas_pvalue( r.gls$fgwas, rownames(r.sum.ret$varsel) ) ) ;
 
-		if(!is.null(r.sum.ret$refit))
+		if(!is.null(r.sum.ret[["refit"]]))
 			r.sum.ret$refit <- cbind(r.sum.ret$refit, fgwas.pvalue=find_fgwas_pvalue( r.gls$fgwas, rownames(r.sum.ret$refit) ) ) ;
 
 	}
@@ -959,16 +981,16 @@ print.sum.GLS.ret<-function(x, ...)
 		show(r.sum.ret$varsel_cov);
 	}
 
-	if(!is.null(r.sum.ret$varsel))
-	{
+	if(!is.null(r.sum.ret[["varsel"]]))
+	{ 
 		cat("--- Variable selection result:", NROW(r.sum.ret$varsel), "SNPs\n");
 		if( NROW(r.sum.ret$varsel)>25 )
 		{
 			cat("Top 25 SNPs:\n");
-			show(r.sum.ret$varsel[1:25, c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"),drop=F]);
+			show(r.sum.ret[["varsel"]][1:25, c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"),drop=F]);
 		}
 		else
-			show(r.sum.ret$varsel[,c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"), drop=F] );
+			show(r.sum.ret[["varsel"]][,c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"), drop=F] );
 	}
 
 	if(!is.null(r.sum.ret$refit_cov))
@@ -977,7 +999,7 @@ print.sum.GLS.ret<-function(x, ...)
 		show(r.sum.ret$refit_cov);
 	}
 
-	if(!is.null(r.sum.ret$refit))
+	if(!is.null(r.sum.ret[["refit"]]))
 	{
 		cat("--- Refit result:", NROW(r.sum.ret$refit), "SNPs\n");
 		show(r.sum.ret$refit[, c("chr", "pos", "add.sig", "add.L2", "dom.sig", "dom.L2"), drop=F ]);
@@ -998,13 +1020,38 @@ wrap_fgwas_ret<-function( r.filter, options )
 
 wrap_GLS_ret<-function(r.gls, r.filter, options )
 {
+	append0 <- function(df.leg2)
+	{
+		if (NCOL(df.leg2) >= 17)
+			df.leg2 <- data.frame(df.leg2[, 1:5, drop=F], VA=0, 
+				   df.leg2[, 6:9, drop=F],  VB=0,
+                   df.leg2[, 10:13, drop=F], VC=0,
+                   df.leg2[, 14:17, drop=F], VD=0 )
+		else
+			df.leg2 <- data.frame(df.leg2[, 1:3, drop=F], VA=0, 
+				   df.leg2[, 4:7, drop=F],  VB=0,
+                   df.leg2[, 8:11, drop=F], VC=0,
+                   df.leg2[, 12:15, drop=F], VD=0 )
+		return(df.leg2);
+	}
+
 	cat( "Wrapping the results ......\n");
 
-	add_c19 <- c("grp", "pos", "add.r0", "add.r1", "add.r2", "add.r3",
+    if( options$nLegendre==2 && !is.null(r.gls) && !is.na(r.gls) ) 
+	{
+		if (!is.null(r.gls$varsel_add)) r.gls$varsel_add <- append0( r.gls$varsel_add );
+		if (!is.null(r.gls$varsel_dom)) r.gls$varsel_dom <- append0( r.gls$varsel_dom );
+		if (!is.null(r.gls$varsel_cov)) r.gls$varsel_cov <- append0( r.gls$varsel_cov );
+		if (!is.null(r.gls$refit_add))  r.gls$refit_add  <- append0( r.gls$refit_add );
+		if (!is.null(r.gls$refit_dom))  r.gls$refit_dom  <- append0( r.gls$refit_dom );
+		if (!is.null(r.gls$refit_cov))  r.gls$refit_cov  <- append0( r.gls$refit_cov );
+	}
+
+	add_c21 <- c("grp", "pos", "add.r0", "add.r1", "add.r2", "add.r3",
 		"add.mu.L2", "add.mu0", "add.mu1", "add.mu2", "add.mu3",
 		"add.min.L2", "add.min0", "add.min1", "add.min2", "add.min3",
 		"add.max.L2", "add.max0", "add.max1", "add.max2", "add.max3" );
-	dom_c19 <- c("grp", "pos", "dom.r0", "dom.r1", "dom.r2", "dom.r3",
+	dom_c21 <- c("grp", "pos", "dom.r0", "dom.r1", "dom.r2", "dom.r3",
 		"dom.mu.L2", "dom.mu0", "dom.mu1", "dom.mu2", "dom.mu3",
 		"dom.min.L2", "dom.min0", "dom.min1", "dom.min2", "dom.min3",
 		"dom.max.L2", "dom.max0", "dom.max1", "dom.max2", "dom.max3" );
@@ -1015,11 +1062,11 @@ wrap_GLS_ret<-function(r.gls, r.filter, options )
 
 	if(!is.null(r.gls) && !is.na(r.gls))
 	{
-		if (!is.null(r.gls$varsel_add)) colnames(r.gls$varsel_add) <- add_c19;
-		if (!is.null(r.gls$varsel_dom)) colnames(r.gls$varsel_dom) <- dom_c19;
+		if (!is.null(r.gls$varsel_add)) colnames(r.gls$varsel_add) <- add_c21;
+		if (!is.null(r.gls$varsel_dom)) colnames(r.gls$varsel_dom) <- dom_c21;
 		if (!is.null(r.gls$varsel_cov)) colnames(r.gls$varsel_cov) <- cov_c19;
-		if (!is.null(r.gls$refit_add))  colnames(r.gls$refit_add) <- add_c19;
-		if (!is.null(r.gls$refit_dom))  colnames(r.gls$refit_dom) <- dom_c19;
+		if (!is.null(r.gls$refit_add))  colnames(r.gls$refit_add) <- add_c21;
+		if (!is.null(r.gls$refit_dom))  colnames(r.gls$refit_dom) <- dom_c21;
 		if (!is.null(r.gls$refit_cov))  colnames(r.gls$refit_cov) <- cov_c19;
 
 		row.cov <- c("Intercept", options$params$covar.names);
@@ -1032,17 +1079,21 @@ wrap_GLS_ret<-function(r.gls, r.filter, options )
 		if(!is.null(r.gls$varsel_PSRF))
 		{
 			colnames(r.gls$varsel_PSRF) <- r.gls$varsel_PSRF[1,];
-			r.gls$varsel_PSRF <- r.gls$varsel_PSRF[-1,]
+			r.gls$varsel_PSRF <- r.gls$varsel_PSRF[-1,,drop=F]
 		}
 
 		if(!is.null(r.gls$refit_PSRF))
 		{
 			colnames(r.gls$refit_PSRF) <- r.gls$refit_PSRF[1,];
-			r.gls$refit_PSRF <- r.gls$refit_PSRF[-1,]
-
+			r.gls$refit_PSRF <- r.gls$refit_PSRF[-1,,drop=F]
 		}
 
 		if(!is.null(r.filter)) r.gls$fgwas <- r.filter$r;
+		
+		## calculate Z.min and Z.max to draw curves
+		tb <-read.csv(options$params$file.phe, header=T)
+		options$Z.range <- c( min(tb[,grep( options$params$Z.prefix, colnames(tb) )], na.rm=T),
+		                      max(tb[,grep( options$params$Z.prefix, colnames(tb) )], na.rm=T) )
 
 		r.gls$options <- options;
 
@@ -1083,7 +1134,7 @@ get_sig_gls_snp <- function( r.gls )
 }
 
 
-plot.GLS.ret<-function( x, y=NULL, ... , fig.prefix=NULL )
+plot.GLS.ret<-function( x, y=NULL, ... , fig.prefix=NULL, q.probs=0.1 )
 {
 	r.gls <- x;
 
@@ -1110,14 +1161,27 @@ plot.GLS.ret<-function( x, y=NULL, ... , fig.prefix=NULL )
 	else
 		cat("! No varible selection results.\n");
 
+
+	if( is.null(r.gls$refit_add) && is.null(r.gls$refit_dom) )
+		cat("! No refit results.\n");
+
 	if( !is.null(r.gls$refit_add) || !is.null(r.gls$refit_dom) )
 	{
-		refit<- merge_add_dom( r.gls$refit_add, r.gls$refit_dom);
-
-		draw_refit_curve( refit, fig.prefix, "curve" );
+		refit<- merge_add_dom( r.gls$refit_add, r.gls$refit_dom );
+		draw_refit_curve( refit, r.gls$options$Z.range, fig.prefix, "curve" );
 	}
-	else
-		cat("! No refit results.\n");
+	
+	if(!is.null( r.gls$refit_add ))
+	{
+		idx.add<- which(rowSums( r.gls$refit_add[,c(3:6)]  )>0 );
+		draw_refit_CI_curve( r.gls$refit_add[idx.add,], r.gls$options$Z.range, fig.prefix, "add", ReverseCurve=TRUE, q.probs=q.probs );
+	}
+
+	if(!is.null( r.gls$refit_dom ))
+	{
+		idx.dom<- which(rowSums( r.gls$refit_dom[,c(3:6)]  )>0 );
+		draw_refit_CI_curve( r.gls$refit_dom[idx.dom,], r.gls$options$Z.range, fig.prefix, "dom", ReverseCurve=FALSE, q.probs=q.probs );
+	}
 }
 
 read_simple_gls_data <- function( file.phe, file.snp, bImputed=TRUE )

@@ -36,6 +36,9 @@ GLS_res::GLS_res(CMDOPTIONS *pCmd, GLS_cfg* pCfg)
     m_nMcmcIter = 0;
     m_nRefitSnp = 0;
 
+    m_pVarsel_SnpStat  = NULL;
+    m_pRefit_SnpStat   = NULL;
+
     m_pVarsel_SnpName = NULL;
     m_pVarsel_SnpChr  = NULL;
     m_pVarsel_SnpPos  = NULL;
@@ -61,10 +64,16 @@ GLS_res::GLS_res(CMDOPTIONS *pCmd, GLS_cfg* pCfg)
     m_pSigAddSnps = NULL;
     m_pSigDomSnps = NULL;
     m_nTotalSnp = 0;
+
+    LG = m_pCfg->m_nLegendre + 1;
+
 }
 
 GLS_res::~GLS_res()
 {
+    if(m_pVarsel_SnpStat) destroy( m_pVarsel_SnpStat );
+    if(m_pRefit_SnpStat) destroy( m_pRefit_SnpStat );
+
     if(m_pVarsel_SnpName) destroy( m_pVarsel_SnpName );
     if(m_pVarsel_SnpChr) destroy( m_pVarsel_SnpChr );
     if(m_pVarsel_SnpPos) destroy( m_pVarsel_SnpPos );
@@ -127,7 +136,7 @@ int GLS_res::GetRefitSnp(CFmVector** pVct)
         return(ERR_NULL_DATA);
 }
 
-int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* pVctChr, CFmVector* pVctPos, CFmFileMatrix* pMatRet, int nCov )
+int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* pVctChr, CFmVector* pVctPos, CFmMatrix* pSnpStat, CFmFileMatrix* pMatRet, int nCov )
 {
     _log_debug(_HI_, "SetMcmcResults: bRefit=%d, pMat.Dim(%d,%d)", bRefit?1:0, pMatRet->GetNumRows(), pMatRet->GetNumCols());
 
@@ -135,6 +144,8 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
     if (bRefit)
     {
         int nSnp = m_nRefitSnp;
+
+        m_pRefit_SnpStat = new (refNew) CFmMatrix(pSnpStat);
 
         m_pRefit_SnpName = new (refNew) CFmVectorStr(pVctSnpName);
         m_pRefit_SnpChr  = new (refNew) CFmVector(pVctChr);
@@ -160,6 +171,8 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
     else
     {
         int nSnp = m_nSnpP;
+
+        m_pVarsel_SnpStat = new (refNew) CFmMatrix(pSnpStat);
 
         m_pVarsel_SnpName = new (refNew) CFmVectorStr(pVctSnpName);
         m_pVarsel_SnpChr  = new (refNew) CFmVector(pVctChr);
@@ -189,6 +202,7 @@ int GLS_res::SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* p
 int GLS_res::SortoutMcmc(CFmFileMatrix* pMatRet, CFmMatrix* pMu, CFmMatrix* pAlpha, CFmMatrix* pRa, CFmMatrix* pRd, int nSnp, int nCov)
 {
     _log_debug(_HI_, "SortoutMcmc: AD matrix file(%s). SNP=%d nCov=%d q_add=%.4f q_dom=%.4f", pMatRet->GetFileName(), nSnp, nCov, m_pCfg->m_fQval_add, m_pCfg->m_fQval_dom );
+    Rprintf("SortoutMcmc: AD matrix file(%s). SNP=%d nCov=%d q_add=%.4f q_dom=%.4f\n", pMatRet->GetFileName(), nSnp, nCov, m_pCfg->m_fQval_add, m_pCfg->m_fQval_dom );
 
     CFmVector fmTmp(0, 0.0);
     CFmVector fmModel(0, 0.0);
@@ -506,10 +520,24 @@ SEXP GLS_res::GetRObj()
     _log_info(_HI_, "GetRObj: Start to save the matrix to R.");
 
     SEXP sRet, t;
-    int nList = 5;
-    if (m_pRefit_SnpName) nList = 10;
+    int nList = 6;
+    if (m_pRefit_SnpName) nList = 12;
 
-       PROTECT(sRet = t = allocList(nList));
+    PROTECT(sRet = t = allocList(nList));
+
+    if(m_pVarsel_SnpStat)
+    {
+        CFmMatrix matVs1(0,0);
+        matVs1.Cbind( *m_pVarsel_SnpChr );
+        matVs1.Cbind( *m_pVarsel_SnpPos );
+        matVs1.Cbind( *m_pVarsel_SnpStat);
+        matVs1.SetRowNames(m_pVarsel_SnpName);
+
+        SEXP expVS = GetSEXP(&matVs1);
+        SETCAR( t, expVS );
+        SET_TAG(t, install("varsel_snp") );
+        t = CDR(t);
+    }
 
     // #NO1: ret.vs
     if (m_pVarsel_Ra)
@@ -571,7 +599,7 @@ SEXP GLS_res::GetRObj()
 
     if (m_pVarsel_PSRF)
     {
-          SEXP expPSRF = GetSEXP(m_pVarsel_PSRF);
+        SEXP expPSRF = GetSEXP(m_pVarsel_PSRF);
         SETCAR( t, expPSRF );
         SET_TAG(t, install("varsel_PSRF") );
         t = CDR(t);
@@ -580,6 +608,20 @@ SEXP GLS_res::GetRObj()
     // #NO2: ret.refit
     if (m_pRefit_SnpName)
     {
+        if(m_pRefit_SnpStat)
+        {
+            CFmMatrix matVs1(0,0);
+            matVs1.Cbind( *m_pRefit_SnpChr );
+            matVs1.Cbind( *m_pRefit_SnpPos );
+            matVs1.Cbind( *m_pRefit_SnpStat);
+            matVs1.SetRowNames(m_pRefit_SnpName);
+
+            SEXP expVS = GetSEXP(&matVs1);
+            SETCAR( t, expVS );
+            SET_TAG(t, install("refit_snp") );
+            t = CDR(t);
+        }
+
         if (m_pRefit_Ra)
         {
             CFmMatrix matVs1(0,0);

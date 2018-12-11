@@ -14,10 +14,10 @@ gls.simple(file.phe,
       Z.prefix, 
       covar.names,
       refit = TRUE, 
-      gpu.used=FALSE,
       add.used = TRUE, 
       dom.used = TRUE, 
-      fgwas.filter = FALSE, 
+      fgwas.filter = FALSE,
+      gpu.used = FALSE,
       options = NULL)}
 
 \arguments{
@@ -27,11 +27,11 @@ gls.simple(file.phe,
 \item{Z.prefix}{String, the prefix of column names of measure time.}
 \item{covar.names}{String or vector of string indicating the column names of covariates. }
 \item{refit}{Logical, if TRUE, the refit procedure should be processed. \cr Default: TRUE.}
-\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
 \item{add.used}{Logical, if TRUE, additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{Logical, If TRUE, the SNPs will be filtered by the fGWAS model before the lasso method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr
+\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
+\item{options}{A list containing control parameters, including \code{nLegendre}, \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr
 and \code{debug}. See the details in \code{\link{bls.plink}}.
 }
 }
@@ -45,8 +45,6 @@ An object of class \code{GLS.ret}, see "Details" in the \code{\link{gls.plink}}.
 The simple format is introduced in the section of \code{\link{bls.simple}}. Other details can be found in the section of \code{\link{gls.plink}}
 
 }
-
-\author{Zhong Wang and Nating Wang }
 
 \references{
 (1)Group lasso model\cr

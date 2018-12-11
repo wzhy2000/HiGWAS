@@ -45,13 +45,16 @@ public:
 private:
     double func_invGau(double theta, double chi);
     void UpdatePcfFile( int nStatus, int nSnpSect, int nTotalSect,  int nMcmcRound, int nTotalRound);
-    int proc_mcmc( CFmMatrix& Y, CFmMatrix& Z, CFmMatrix& Z0, CFmMatrix& X, CFmSnpMat& gen, CFmFileMatrix* pMatRet);
+    int proc_mcmc( CFmMatrix& Y, CFmMatrix& Z, CFmMatrix& Z0, CFmMatrix& X, CFmSnpMat& gen, CFmMatrix* SnpStat, CFmFileMatrix* pMatRet);
     int ExportFig(char* szFigFile, bool bRefit );
+    void Build_snpinfo(CFmSnpMat& gen, CFmMatrix* pSnpStat, int N, int P);
 
     int m_nDataType;
+    int LG;
     bool m_bRefit;
     bool m_bUseGPU;
     bool m_bCompared;
+    bool m_bMergeFewPosAdd;
 
     GLS_dat* m_pDat;
     GLS_res* m_pRes;

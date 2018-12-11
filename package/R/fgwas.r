@@ -70,8 +70,8 @@ plink_fgwas_bigdata <- function( file.plink.bed,  file.plink.bim, file.plink.fam
 		cat(" ", NROW(chr.filter$snp.mat), "SNPs are significant at the pvalue level in ", chr, "(th) chromosome/group.\n");	
 		
 		phe.mat <- chr.pd$phe.mat;
-		snp.mat.list[[i]] <- chr.filter$snp.mat;
-		r.fgwas.list[[i]] <- chr.filter$r.fgwas;
+		snp.mat.list[[chr]] <- chr.filter$snp.mat;
+		r.fgwas.list[[chr]] <- chr.filter$r.fgwas;
 		
 		try(unlink(paste(tmp, ".bed", sep="")));
 		try(unlink(paste(tmp, ".bim", sep="")));
@@ -309,7 +309,7 @@ gls.fgwas <- function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names=NULL, o
 	
 
 	r.gls <- c();
-	if( op.cpu>1 && require("snowfall") )
+	if( op.cpu>1 && requireNamespace("snowfall") )
 	{
 		cat("Starting parallel computing, snowfall/snow......\n"); 
 		snowfall::sfInit(parallel = TRUE, cpus = op.cpu, type = "SOCK")
@@ -436,7 +436,7 @@ bls.fgwas <- function( phe.mat, snp.mat, Y.name, covar.names=NULL, op.cpu=0)
 	}
 	
 	r.bls <- c();
-	if( op.cpu>1 && require("snowfall") )
+	if( op.cpu>1 && requireNamespace("snowfall") )
 	{
 		cat("\n  Starting parallel computing, snowfall/snow......\n"); 
 		snowfall::sfInit(parallel = TRUE, cpus = op.cpu, type = "SOCK")

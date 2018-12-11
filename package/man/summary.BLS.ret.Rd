@@ -20,8 +20,6 @@
 The \code{summary} command summarizes some tables of the result object \code{r.bls}, and the command exports all of this values to R console.
 }
 
-\author{Zhong Wang and Nating Wang }
-
 \references{
  Li, J., Das, K., Fu, G., Li, R., & Wu, R. (2011). The Bayesian lasso for genome-wide association studies. Bioinformatics, 27(4), 516-523.
 }

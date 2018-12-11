@@ -17,7 +17,7 @@ bls.plink(file.phe,
       dom.used = TRUE, 
       fgwas.filter = FALSE, 
       options = NULL,
-      force.split=TRUE,
+      force.split=FALSE,
       plink.command=NULL)}
 
 \arguments{
@@ -33,48 +33,51 @@ bls.plink(file.phe,
 \item{fgwas.filter}{Logical, if TRUE, the SNPs will be filtered by fGWAS model before the LASSO method is applied. \cr Default: FALSE.}
 \item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr 
 and \code{debug}.See blow details. }
-\item{force.split}{Logical, if TRUE, the PLINK command will be applied to extract the data for each single chromosome and then the analysis will be performed on these single chromosomes separately. \cr Default: TRUE.}
+\item{force.split}{Logical, if TRUE, the PLINK command will be applied to extract the data for each single chromosome and then the analysis will be performed on these single chromosomes separately. \cr Default: FALSE.}
 \item{plink.command}{String, the full path of PLINK command, if not assigned, data extraction maybe failed due to PLINK command can not be found from defulat path. }
 }
 
 \value{
 An object of class \code{BLS.ret} including the following elements. 
-\item{varsel}{Matrix, additive and dominant effects estimated by the procedure of variable selection for each SNP. 
-Eleven columns are available, 
-\itemize{
-\item{(1) chromosome group}{}
-\item{(2) position}{}
-\item{(3) significant sign of additive effect, 1: siginificant, 0:nonsignificant.}{}
-\item{(4) mean value of additive effect}{}
-\item{(5) minimum value of addtive effect}{}
-\item{(6) maximum value of addtive effect}{}
-\item{(7) significant sign of dominant effect, 1: siginificant, 0:nonsignificant.}{}
-\item{(8) mean value of dominant effect}{}
-\item{(9) minimum value of dominant effect}{}
-\item{(10) maximum value of dominant effect}{}
-\item{(11) Heritability rate}{}
-}
-}
-\item{varsel_cov}{Matrix, covariate effects estimated by the variable selection procedure, Four columns as follows:
-\itemize{
-\item{(1) significant sign of covariate effect, 1: siginificant, 0:nonsignificant.}{}
-\item{(2) overall mean value of covariate effect}{}
-\item{(3) minimum value of covariate effect}{}
-\item{(4) maximum value of covariate effect}{}
-}
-}
-\item{refit}{Matrix, additive and dominant effects estimated by the refit procedure for the SNPs selected by the variable selection, Eleven columns are same as the matrix of varible selection(\code{varsel}).}
-\item{refit_cov}{Matrix, covariate effects estimated by the refit procedure, 4 columns are same as the matrix of varible selection(\code{varsel_cov}).}
-\item{fgwas.filter}{Matrix, the p-values estimated by fGWAS method for each SNP, 5 columns as follows:  
-\itemize{
-\item{(1) SNP ID}{}
-\item{(2) chromosome group}{}
-\item{(3) position}{}
-\item{(4) likelihood ratio}{}
-\item{(5) p-value}{}
-}
-}
-\item{options}{ List, data file names and all calling parameters, including the control parameters defined in \code{options} }
+  \item{varsel}{Matrix, additive and dominant effects estimated by the procedure of variable selection for each SNP. 
+  Eleven columns are available, 
+    \itemize{
+    \item{(1) chromosome group}{}
+    \item{(2) position}{}
+    \item{(3) significant sign of additive effect, 1: siginificant, 0:nonsignificant.}{}
+    \item{(4) mean value of additive effect}{}
+    \item{(5) minimum value of addtive effect}{}
+    \item{(6) maximum value of addtive effect}{}
+    \item{(7) significant sign of dominant effect, 1: siginificant, 0:nonsignificant.}{}
+    \item{(8) mean value of dominant effect}{}
+    \item{(9) minimum value of dominant effect}{}
+    \item{(10) maximum value of dominant effect}{}
+    \item{(11) Heritability rate}{}
+    }
+  }
+  
+  \item{varsel_cov}{Matrix, covariate effects estimated by the variable selection procedure, Four columns as follows:
+    \itemize{
+    \item{(1) significant sign of covariate effect, 1: siginificant, 0:nonsignificant.}{}
+    \item{(2) overall mean value of covariate effect}{}
+    \item{(3) minimum value of covariate effect}{}
+    \item{(4) maximum value of covariate effect}{}
+    }
+  }
+  
+  \item{refit}{Matrix, additive and dominant effects estimated by the refit procedure for the SNPs selected by the variable selection, Eleven columns are same as the matrix of varible selection(\code{varsel}).}
+  \item{refit_cov}{Matrix, covariate effects estimated by the refit procedure, 4 columns are same as the matrix of varible selection(\code{varsel_cov}).}
+  \item{fgwas.filter}{Matrix, the p-values estimated by fGWAS method for each SNP, 5 columns as follows:  
+    \itemize{
+    \item{(1) SNP ID}{}
+    \item{(2) chromosome group}{}
+    \item{(3) position}{}
+    \item{(4) likelihood ratio}{}
+    \item{(5) p-value}{}
+    }
+  }
+  
+  \item{options}{ List, data file names and all calling parameters, including the control parameters defined in \code{options} }
 }
 
 \details{
@@ -104,26 +107,29 @@ are included in the final process. The parameter \code{refit} indicates whether 
 
 (4) Control parameters\cr
 The control parameters include the following items.\cr
-\itemize{
-\item{\code{nParallel.cpu}}    {Default:1, the number of the CPU used to calculate.}
-\item{\code{nPiecewise.ratio}} {Default:2, the ratio of grouping SNPs.}
-\item{\code{nMcmcIter}}        {Default:2000, the number of iteration of the MCMC algorithm. }
-\item{\code{fBurnInRound}}     {Default:0.3, a ratio to cut off unstable iterations in order to obtain the reasonable results.}
-\item{\code{fRhoTuning}}       {Default:0.095, a ratio used for narrowing the scope of parameter rho to reduce parameter oscillation.}
-\item{\code{fgwas.cutoff}}     {Default:0.05, a p-value cutoff for fGWAS model to select the significant marginal SNPs.}
-\item{\code{debug}}            {Default:FALSE, logical value, indicating whether or not debug information is outputted.}
+\tabular{rll}{
+1\tab nParallel.cpu   \tab Default:1, the number of the CPU used to calculate.\cr
+2\tab nMcmcIter       \tab Default:2000, the number of iteration of the MCMC \cr 
+ \tab                 \tab algorithm. \cr
+3\tab BurnInRound     \tab Default:0.3, a ratio to cut off unstable iterations \cr 
+ \tab                 \tab in order to obtain the reasonable results.\cr
+4\tab RhoTuning       \tab Default:0.095, a ratio used for narrowing the scope \cr 
+ \tab                 \tab of parameter rho to reduce parameter oscillation.\cr
+5\tab fQval.add       \tab Default:0.025, quantile of additive effect for each \cr
+ \tab                 \tab SNP, indicating how the confidence interval is \cr
+ \tab                 \tab calculated, e.g. range is 2.5-97.5\% if fQval.add \cr
+ \tab                 \tab is 0.025.\cr
+6\tab fQval.dom       \tab Default:0.025, quantile of dominant effect for each \cr 
+ \tab                 \tab SNP.\cr
+7\tab fgwas.cutoff    \tab Default:0.05, a p-value cutoff for fGWAS model to \cr 
+ \tab                 \tab select the significant marginal SNPs.\cr
+8\tab nPiecewise.ratio\tab Default:2, the ratio of grouping SNPs.\cr
+9\tab debug           \tab Default:FALSE, logical value, indicating whether or \cr 
+ \tab                 \tab not debug information is outputted.\cr
 }
 
 }
 
-\author{Zhong Wang and Nating Wang }
-
-\references{
-(1)Beyasian lasso model\cr
-Li, J., Das, K., Fu, G., Li, R., & Wu, R. (2011). The Bayesian lasso for genome-wide association studies. Bioinformatics, 27(4), 516-523.\cr
-(2)fGWAS model\cr
-Li, J., Wang, Z., Li, Y., & Wu, R. (2010). Functional genome-wide association studies of longitudinal traits. Handbook of Adaptive Designs in Pharmaceutical and Clinical Development.\cr
-}
 
 \examples{
 
@@ -161,7 +167,6 @@ summary(r.bls);
 plot(r.bls);
 
 }
-
 \keyword{functions}
 \keyword{BLS model}
 \keyword{PLINK}

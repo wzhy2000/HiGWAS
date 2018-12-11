@@ -27,6 +27,7 @@ public:
     bool m_bRData;
     int m_lpOrder;
     int m_neffect;
+    int m_nLegendre;
 
     double m_fRhoTuning;
     double m_fDetRefit;

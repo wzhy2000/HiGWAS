@@ -192,8 +192,8 @@ convert_simpe_to_plink <- function( snp.mat, snp.file.base )
 			chromosome=chromosome, 
 			genetic.distance=position, 
 			position= position, 
-			allele.1 = rep("A",dim.snps[1]), 
-			allele.2 = rep("B",dim.snps[1]), 
+			allele.1 = rep("B",dim.snps[1]), 
+			allele.2 = rep("A",dim.snps[1]), 
 			na.code=0);
 
 	cat("Genotype files have been converted into PLINK binary format(bed/bim/fam)\n");

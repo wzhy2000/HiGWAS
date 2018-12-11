@@ -1,16 +1,16 @@
 Package: gwas.lasso
 Type: Package
 Title: Bayesian Lasso and Group Lasso for GWAS
-Version: 0.4
-Date: 2018-09-17
-Author: Zhong Wang, Nating Wang and Jiahan Li
+Version: 0.5
+Date: 2018-12-10
+Author: Zhong Wang
 Maintainer: Zhong Wang <wzhy2000@hotmail.com>
 Description: Bayesian Group Lasso for GWAS
 License: GPL (>= 2)
 Depends: R (>= 2.10.0)
-Imports: nlme, snpStats
-Suggests: snowfall
-Packaged: 2018-09-17 02:23:25 UTC; 
+Imports: nlme, snpStats, scales, snowfall
+Suggests: 
+Packaged: 2018-12-10 02:23:25 UTC; 
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2018-09-17 07:21:49
+Date/Publication: 2018-12-10 07:21:49

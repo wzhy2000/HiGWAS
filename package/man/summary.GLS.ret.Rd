@@ -21,8 +21,6 @@ Summarize the result object obtained from the GLS method.
 The \code{summary} command summarizes some tables of the result object \code{r.gls}, and the command exports all of this values to R console.
 }
 
-\author{Zhong Wang and Nating Wang }
-
 \references{
 Li, J., Wang, Z., Li, R., & Wu, R. (2015). Bayesian group Lasso for nonparametric varying-coefficient models with application to functional genome-wide association studies. The Annals of Applied Statistics, 9(2), 640-664.\cr
 }

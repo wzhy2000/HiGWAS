@@ -18,8 +18,6 @@
 #define TMP_FILE_RALPHA 3
 #define TMP_FILE_RMU    4
 
-#define LG    4
-
 class CFmVectorStr;
 class CFmMatrix;
 class CFmVector;
@@ -32,7 +30,7 @@ public:
     virtual ~GLS_res();
 
     int InitVarsel(int mRound, int nSnpP, int SubjN, int mcmcIter);
-    int SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* pVctChr, CFmVector* pVctPos,CFmFileMatrix* pMatRet, int nCov);
+    int SetMcmcResults(bool bRefit, CFmVectorStr* pVctSnpName, CFmVector* pVctChr, CFmVector* pVctPos,CFmMatrix* pSnpStat,CFmFileMatrix* pMatRet, int nCov);
     int InitRefit( int mcmcIter );
 
     char* GetVarselSnpName(int idx);
@@ -58,6 +56,7 @@ private:
     int m_nSubjN;
     int m_nMcmcIter;
     int m_nRefitSnp;
+    int LG;
 
     GLS_cfg* m_pCfg;
     CMDOPTIONS *m_pCmd;
@@ -65,6 +64,8 @@ private:
     CFmVectorStr* m_pVarsel_SnpName;
     CFmVector* m_pVarsel_SnpChr;
     CFmVector* m_pVarsel_SnpPos;
+    CFmMatrix* m_pVarsel_SnpStat;//[P, 4], 1:MAF 2: SNP0 count 3: SNP1 count 4 SNP2 count
+
     CFmMatrix* m_pVarsel_Mu;    //[1,19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pVarsel_Alpha; //[nCovar, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pVarsel_Ra;    //[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
@@ -75,6 +76,9 @@ private:
     CFmVectorStr* m_pRefit_SnpName;
     CFmVector* m_pRefit_SnpChr;
     CFmVector* m_pRefit_SnpPos;
+    CFmMatrix* m_pRefit_SnpStat;//[P, 4], 1:MAF 2: SNP0 count 3: SNP1 count 4 SNP2 count
+
+
     CFmMatrix* m_pRefit_Mu;     //[1,19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pRefit_Alpha;  //[nCovar, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;
     CFmMatrix* m_pRefit_Ra;     //[P, 19], 1-4: Model; 5-9:L2/Median; 10-14: L2/Min; 15-19:L2/Max;

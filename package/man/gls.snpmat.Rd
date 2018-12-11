@@ -14,10 +14,10 @@ gls.snpmat(phe.mat,
       Z.prefix,
       covar.names, 
       refit = TRUE,
-      gpu.used=FALSE,
       add.used = TRUE,
       dom.used = TRUE,
       fgwas.filter = FALSE,
+      gpu.used=FALSE,
       options = NULL)}
 
 \arguments{
@@ -27,11 +27,11 @@ gls.snpmat(phe.mat,
 \item{Z.prefix}{String, prefix of column names of measurement times.}
 \item{covar.names}{String or vector of string indicating column names of covariates. }
 \item{refit}{ Logical, if TRUE, the refit procedure should be processed. \cr Default: TRUE.}
-\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
 \item{add.used}{Logical, if TRUE, additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{Logical, If TRUE, the SNPs will be filtered by the fGWAS model before the lasso method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr and \code{debug}. see details.}
+\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
+\item{options}{A list containing control parameters, including \code{nLegendre}, \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr and \code{debug}. see details.}
 }
 
 \value{
@@ -65,8 +65,6 @@ The control parameters include the following items.\cr
 \item{\code{debug}}            {Default:FALSE, logical value, indicating whether or not debug information is outputted.}
 }
 }
-
-\author{Zhong Wang and Nating Wang }
 
 \references{
 (1)Group lasso model\cr

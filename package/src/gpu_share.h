@@ -15,10 +15,6 @@ extern "C" {
 
 #ifdef USECUDA
 
-//#include <curand_kernel.h>
-
-#define LG 4
-
 #define THREADS_PER_BLOCK 1024
 
 #define _M(a, i, j) a[ (i) + (j) * (int)(a[1]) + 3]

@@ -70,8 +70,6 @@ Except genetic effects, covariates can be simulated in this function. The covari
 
 }
 
-\author{Zhong Wang and Nating Wang }
-
 \references{
 }
 

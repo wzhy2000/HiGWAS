@@ -583,6 +583,7 @@ PACKAGE_URL=''
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+R_LIBS
 COMPILE_CUDA
 CUDA_LIBS
 NCFLAGS
@@ -2532,7 +2533,8 @@ fi
 $as_echo "setting R header files to ${R_INCLUDE_DIR}" >&6; }
 R_CPICFLAGS=`"${R_HOME}/bin/R" CMD config CPICFLAGS`
 NCFLAGS="${NCFLAGS} -Xcompiler \"-O2 ${R_CPICFLAGS} -I${R_INCLUDE_DIR}\" -dlink -lcublas"
-
+R_BLAS=`"${R_HOME}/bin/R" CMD config BLAS_LIBS`
+R_LAPACK=`"${R_HOME}/bin/R" CMD config LAPACK_LIBS`
 
 #################### SET FLAGS ####################
 
@@ -2543,6 +2545,8 @@ COMPILER_FLAGS="-O2 ${COMPILER_OPTIMIZE_FLAGS} ${COMPILER_FLAGS}"
 
 CFLAGS="-std=gnu99 ${COMPILER_FLAGS}"
 CXXFLAGS="${COMPILER_FLAGS}"
+R_LIBS="${R_BLAS} ${R_LAPACK}"
+
 
 
 

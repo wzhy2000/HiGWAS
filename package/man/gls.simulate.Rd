@@ -78,8 +78,6 @@ In particular, since measurements within each subject are possibly correlated wi
 AR(1) model is employed to approximate the residual covariance matrix, and assume AR(1) with \code{simu_rho} and \code{simu_sigma2}. \cr
 }
 
-\author{Zhong Wang and Nating Wang }
-
 \references{
  Li, J., Wang, Z., Li, R., & Wu, R. (2015). Bayesian group Lasso for nonparametric varying-coefficient models with application to functional genome-wide association studies. The Annals of Applied Statistics, 9(2), 640-664.\cr
 }

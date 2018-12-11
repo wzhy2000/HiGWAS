@@ -33,8 +33,6 @@ greater than the threshold value specified in the control parameters.\cr
 In the BLS model, the figures of genetic effects output heritability information.\cr
 }
 
-\author{Zhong Wang and Nating Wang }
-
 \references{
 Li, J., Das, K., Fu, G., Li, R., & Wu, R. (2011). The Bayesian lasso for genome-wide association studies. Bioinformatics, 27(4), 516-523.
 }

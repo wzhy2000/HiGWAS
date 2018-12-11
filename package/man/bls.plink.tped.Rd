@@ -35,8 +35,6 @@ Input genotypic files contains two text files: one (TPED) containing SNP and gen
 The TFAM file is just the first six columns of a standard PED file. In otherwords, we have just taken the standard PED/MAP file format, but swapped all the genotype information between files, after rotating it 90 degrees.\cr
 }
 
-\author{Zhong Wang and Nating Wang}
-
 
 \references{
  Li, J., Das, K., Fu, G., Li, R., & Wu, R. (2011). The Bayesian lasso for genome-wide association studies. Bioinformatics, 27(4), 516-523.

@@ -246,6 +246,7 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				0,
 				"BLS");
 		}
 		else
@@ -270,6 +271,7 @@ bls.simple<-function(file.phe, file.snp, Y.name, covar.names, refit=TRUE, add.us
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				0,
 				"BLS");
 		}
 	}
@@ -412,6 +414,7 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			options$fQval.dom,
 			options$debug,
 			options$nParallel.cpu,
+			0,
 			"BLS");
 
 	}
@@ -444,6 +447,7 @@ bls.plink<-function( file.phe, file.plink.bed, file.plink.bim, file.plink.fam, Y
 			options$fQval.dom,
 			options$debug,
 			options$nParallel.cpu,
+			0,
 			"BLS");
 	}
 
@@ -670,6 +674,7 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				0,
 				"BLS");
 		}
 		else
@@ -694,6 +699,7 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 				options$fQval.dom,
 				options$debug,
 				options$nParallel.cpu,
+				0,
 				"BLS");
 		}
 	}
@@ -711,9 +717,9 @@ bls.snpmat<-function(phe.mat, snp.mat, Y.name, covar.names, refit=TRUE, add.used
 	}
 }
 
-print.BLS.ret<-function( object )
+print.BLS.ret<-function( x, ... )
 {
-	print(summary.BLS.ret(object));
+	print(summary.BLS.ret(x));
 }
 
 show.BLS.ret<-function( object )
@@ -937,13 +943,15 @@ wrap_BLS_ret<-function(r.bls, r.filter, options)
 get_default_options<-function()
 {
 	options=list(
+	            #The order of Legendre polynomials
+	            nLegendre = 3,   
 				nParallel.cpu = 0,
 				nPiecewise.ratio = 0,
 				nMcmcIter = 2000,
 				fBurnInRound = 0.3,
 				fRhoTuning = 0.095,
-				fQval.add  = 0.05,
-				fQval.dom  = 0.09,
+				fQval.add  = 0.025,  #0.05
+				fQval.dom  = 0.025,  #0.09
 				fgwas.cutoff = 0.05,
 				debug      = F )
 
@@ -959,10 +967,11 @@ show_options<-function(options)
 	cat( "* Iteration of  Markov chain: ",  options$nMcmcIter, "\n");
 	cat( "* fBurnInRound: ",  options$fBurnInRound, "\n");
 	cat( "* fRhoTuning: ",  options$fRhoTuning, "\n");
+	cat( "* nLegendre: ",  options$nLegendre, "\n");
 	
-	##We dont use the percentile to determine the genetic effects 
-	##cat( "* fQval.add: ",  options$fQval.add, "\n");
-	##cat( "* fQval.dom: ",  options$fQval.dom , "\n");
+	##We use the percentile to determine the genetic effects 
+	cat( "* Quantile of additive: ",  options$fQval.add, "-", 1-options$fQval.add, "\n");
+	cat( "* Quantile of dominant: ",  options$fQval.dom, "-", 1-options$fQval.dom, "\n");
 
 	cat( "* Debug Output: ", ifelse( options$debug, "Yes", "No"),"\n");
 }

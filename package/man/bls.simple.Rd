@@ -45,8 +45,6 @@ start with 2 columns of chromosome information (chromosome number and SNP positi
 
 }
 
-\author{Zhong Wang and Nating Wang }
-
 \examples{
 
 

@@ -75,6 +75,7 @@ SEXP gls_simple( SEXP szPhefile,
                  SEXP sfRhoTuning,
                  SEXP sfQval_add,
                  SEXP sfQval_dom,
+                 SEXP snLegendre,
                  SEXP snDebug)
 {
     const char* pszPhefile = CHAR(STRING_ELT(szPhefile,0));
@@ -94,6 +95,7 @@ SEXP gls_simple( SEXP szPhefile,
     double fRhoTuning   = NUMERIC_ELT( sfRhoTuning,0);
     double fQval_add    = NUMERIC_ELT( sfQval_add, 0);
     double fQval_dom    = NUMERIC_ELT( sfQval_dom, 0);
+    int   nLegendre     = round(NUMERIC_ELT( snLegendre, 0) );
     int   nDebug        = round(NUMERIC_ELT(snDebug, 0));
 
     SEXP ret = glasso_simple( pszPhefile,
@@ -110,6 +112,7 @@ SEXP gls_simple( SEXP szPhefile,
                          fRhoTuning,
                          fQval_add,
                          fQval_dom,
+                         nLegendre,
                          nDebug);
     return(ret);
 }
@@ -129,6 +132,7 @@ SEXP gls_plink_tped( SEXP szPhefile,
                  SEXP sfRhoTuning,
                  SEXP sfQval_add,
                  SEXP sfQval_dom,
+                 SEXP snLegendre,
                  SEXP snDebug )
 {
     const char* pszPhefile = CHAR(STRING_ELT(szPhefile,0));
@@ -150,6 +154,7 @@ SEXP gls_plink_tped( SEXP szPhefile,
     double fQval_add  = NUMERIC_ELT( sfQval_add, 0);
     double fQval_dom  = NUMERIC_ELT( sfQval_dom, 0);
     int    nDebug     = round( NUMERIC_ELT(snDebug, 0) );
+    int   nLegendre   = round(NUMERIC_ELT( snLegendre, 0) );
 
     SEXP ret = glasso_plink_tped( pszPhefile,
                          pzTpedfile,
@@ -166,6 +171,7 @@ SEXP gls_plink_tped( SEXP szPhefile,
                          fRhoTuning,
                          fQval_add,
                          fQval_dom,
+                         nLegendre,
                          nDebug);
     return(ret);
 }
@@ -184,6 +190,7 @@ SEXP gls_snpmat( SEXP smatPhe,
                  SEXP sfRhoTuning,
                  SEXP sfQval_add,
                  SEXP sfQval_dom,
+                 SEXP snLegendre,
                  SEXP snDebug )
 {
     bool bRefit   = BOOLEAN_ELT(sbRefit, 0);
@@ -201,6 +208,7 @@ SEXP gls_snpmat( SEXP smatPhe,
     double fQval_add  = NUMERIC_ELT( sfQval_add, 0);
     double fQval_dom  = NUMERIC_ELT( sfQval_dom, 0);
     int    nDebug     = round( NUMERIC_ELT( snDebug, 0) );
+    int    nLegendre  = round(NUMERIC_ELT( snLegendre, 0) );
 
     SEXP ret = glasso_snpmat( smatPhe,
                          smatSnp,
@@ -216,6 +224,7 @@ SEXP gls_snpmat( SEXP smatPhe,
                          fRhoTuning,
                          fQval_add,
                          fQval_dom,
+                         nLegendre,
                          nDebug);
     return(ret);
 }

@@ -35,6 +35,7 @@ GLS_cfg::GLS_cfg():CFmSys()
     m_fPerSig   = 0.02;
     m_fQval_add = 0.05;
     m_fQval_dom = 0.09;
+    m_nLegendre = 3;
 
     _log_debug( _HI_, "CFG File: NULL");
 }
@@ -56,6 +57,7 @@ GLS_cfg::GLS_cfg(char* szCfgFile):CFmSys()
     m_fPerSig   = 0.02;
     m_fQval_add = 0.05;
     m_fQval_dom = 0.09;
+    m_nLegendre = 3;
 
     _log_debug( _HI_, "CFG File: %s", szCfgFile);
     if(strlen(szCfgFile)!=0)
@@ -174,6 +176,14 @@ int GLS_cfg::Load(char* szCfgFile)
             _log_debug( _HI_, "m_fBurnInRound: %f", m_fBurnInRound);
             continue;
         }
+
+        if ( extract_value(aLine, "legendre_order", tmp ) )
+        {
+            m_nLegendre = atoi(tmp);
+            _log_debug( _HI_, "m_nLegendre: %f", m_nLegendre);
+            continue;
+        }
+
     }
 
     fclose( fp );

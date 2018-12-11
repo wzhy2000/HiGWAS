@@ -14,12 +14,12 @@ gls.plink(file.phe,
       Z.prefix,
       covar.names,
       refit = TRUE,
-      gpu.used = FALSE,
       add.used = TRUE,
       dom.used = TRUE,
       fgwas.filter = FALSE, 
+      gpu.used = FALSE,
       options = NULL,
-      force.split=TRUE,
+      force.split=FALSE,
       plink.command=NULL)
 }
 \arguments{
@@ -31,13 +31,13 @@ gls.plink(file.phe,
 \item{Z.prefix}{String, the prefix of column names of measurement times.}
 \item{covar.names}{String or vector of string indicating column names of covariates.}
 \item{refit}{ Logical, if TRUE, the refit procedure should be processed. \cr Default: TRUE.}
-\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
 \item{add.used}{Logical, if TRUE, the additive effects will be estimated jointly. \cr Default: TRUE.}
 \item{dom.used}{Logical, if TRUE, the dominant effects will be estimated jointly. \cr Default: TRUE.}
 \item{fgwas.filter}{Logical, If TRUE, the SNPs will be filtered by fGWAS model before the lasso method is applied. \cr Default: FALSE.}
-\item{options}{A list containing control parameters, including \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr
-   and \code{debug}. See the details in \code{\link{bls.plink}}.}
-\item{force.split}{Logical, if TRUE, the PLINK command will be applied to extract the data for each single chromosome and then the analysis will be performed on these single chromosomes separately. \cr Default: TRUE.}
+\item{gpu.used}{Logical, if TRUE, the computational performance will be improved by GPU if GPU is avalaible. \cr Default: FALSE.}
+\item{options}{A list containing control parameters, including \code{nLegendre}, \code{nParallel.cpu}, \code{nMcmcIter}, \code{nPiecewise.ratio}, \code{fBurnInRound}, \code{fRhoTuning}, \code{fgwas.cutoff}, \cr
+   \code{fQval.add}, \code{fQval.dom}, and \code{debug}. See the details in \code{\link{bls.plink}}.}
+\item{force.split}{Logical, if TRUE, the PLINK command will be applied to extract the data for each single chromosome and then the analysis will be performed on these single chromosomes separately. \cr Default: FALSE.}
 \item{plink.command}{String, the full path of PLINK command, if not assigned, data extraction maybe failed due to PLINK command can not be found from defulat path. }
 
 }
@@ -149,7 +149,7 @@ The control parameters include the following items.\cr
 }
 
 }
-\author{Zhong Wang and Nating Wang }
+
 \references{
 (1)Group lasso model\cr
 Li, J., Wang, Z., Li, R., & Wu, R. (2015). Bayesian group Lasso for nonparametric varying-coefficient models with application to functional genome-wide association studies. The Annals of Applied Statistics, 9(2), 640-664.\cr

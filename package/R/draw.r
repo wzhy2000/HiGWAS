@@ -16,6 +16,7 @@ draw_man_adh2<-function( adh2, fig.prefix=NULL, fig.name=NULL )
 		nB <- length(values);
 		snps <- c(0:nB);
 		plot(1:10,1:10, xlim=xlim, ylim=ylim, type="n", xlab="SNP", ylab=yLabel, cex.axis=cex );
+		
 		rect(snps[-(nB+1)], 0, snps[-1L], values,  col = col, border = col);
 	}
 
@@ -33,18 +34,18 @@ draw_man_adh2<-function( adh2, fig.prefix=NULL, fig.name=NULL )
 		par(mfrow=c( NCOL(adh2)-2 , 1 ) );
 
 		par(mfg=c(1, 1));
-		draw_snplist( adh2[, 3, drop=F ], "Additive effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6), col="orange" );
+		draw_snplist( unlist(adh2[,3, drop=F ]), "Additive effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6), col="orange" );
 
 		if( n.subfig >= 2)
 		{
 			par(mfg=c(2, 1));
-			draw_snplist( adh2[, 4, drop=F ], "Dominant effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6), col="purple" );
+			draw_snplist( unlist(adh2[,4, drop=F ]), "Dominant effects", cex=ifelse( n.subfig >= 3, 1.0, 0.6), col="purple" );
 		}
 	
 		if( n.subfig >= 3)
 		{
 			par(mfg=c(3, 1));
-			draw_snplist( adh2[, 5, drop=F ], "Heritability", cex=ifelse( n.subfig >= 3, 1.0, 0.6) );
+			draw_snplist( unlist(adh2[,5, drop=F ]), "Heritability", cex=ifelse( n.subfig >= 3, 1.0, 0.6) );
 		}	
 	}
 
@@ -151,8 +152,10 @@ draw_man_fgwas<-function( r.fgwas, fig.prefix=NULL, fig.name=NULL )
 #
 #--------------------------------------------------------------
 
-draw_refit_curve<-function( refit, fig.prefix=NULL, fig.name=NULL, n.lgr = 4)
+draw_refit_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL, n.lgr = 4)
 {
+    if(is.null(Z.range))  Z.range <- c(-1,1);
+
 	pdf.file <- NULL;
 	if (!is.null( fig.prefix ))
 	{
@@ -160,9 +163,9 @@ draw_refit_curve<-function( refit, fig.prefix=NULL, fig.name=NULL, n.lgr = 4)
 		pdf( pdf.file, width=6, height=6);
 	}
 
-	n.row <- 3;
-	n.col <- 3;
-	n.page.seq <- seq(1, NROW(refit), 9);	
+	n.row <- 4;
+	n.col <- 4;
+	n.page.seq <- seq(1, NROW(refit), 16);	
 	
 	for(p in n.page.seq )
 	{
@@ -171,18 +174,21 @@ draw_refit_curve<-function( refit, fig.prefix=NULL, fig.name=NULL, n.lgr = 4)
 		for (i in 1:n.row )
 		for (j in 1:n.col )
 		{
-			if ( (i-1)*3+j + p-1 > NROW(refit) )
+			if ( (i-1)*4+j + p-1 > NROW(refit) )
 				break;
 
-			n.par <- (i-1)*3+j + p-1 ;
-			Add.par<- refit[ n.par, c(5:8) ];
-			Dom.par<- refit[ n.par, c(11:14) ];
+			n.par <- (i-1)*4+j + p-1 ;
+			Add.par <- Dom.par <- NULL;
+
+			## In order to draw negative Additive (For genetype=0) instead of positive Additive(For genetype=2)
+			if(refit[ n.par,3]>0) Add.par<- refit[ n.par, c(5:8) ] * -1;
+			if(refit[ n.par,9]>0) Dom.par<- refit[ n.par, c(11:14) ];
 			
 			par(mfg=c(i, j));
-			draw_single_curve( rownames(refit)[n.par], add=Add.par, dom=Dom.par);
+			draw_single_curve( rownames(refit)[n.par], Z.range, add=Add.par, dom=Dom.par, bLegend=(i==1 & j==1) );
 		}
 		
-		plot.new();
+		if (p != n.page.seq[ NROW(n.page.seq)] ) plot.new();
 	}
 	
 	if (!is.null( pdf.file ))
@@ -192,8 +198,9 @@ draw_refit_curve<-function( refit, fig.prefix=NULL, fig.name=NULL, n.lgr = 4)
 	}		
 }
 
-draw_single_curve<-function( snp_name, add=NULL, dom=NULL )
+draw_single_curve<-function( snp_name, Z.range, add=NULL, dom=NULL, bLegend=FALSE )
 {
+    
 	old.p1 <- par( mar=c(2,2,1,1)+0.1);
 	on.exit( par(old.p1), add = T);
 
@@ -205,16 +212,18 @@ draw_single_curve<-function( snp_name, add=NULL, dom=NULL )
 	if (!is.null(add)) y <- cbind(y, ui%*%t(add))
 	if (!is.null(dom)) y <- cbind(y, ui%*%t(dom))
 
-	ylim.max <- max(y, na.rm=T)*1.1;
-	ylim.min <- min(y, na.rm=T)*1.1;
-	if (ylim.min > 0)
-	   ylim.min - min(y, na.rm=T)*0.9;
-	if (ylim.min>0) ylim.min = 0;
+	ylim.max <- max(y, na.rm=T);
+	ylim.min <- min(y, na.rm=T);
+	ylim.len <- ylim.max - ylim.min
+	ylim.max <- ylim.max + 0.15*abs(ylim.len);
+	ylim.min <- ylim.min - 0.15*abs(ylim.len);
 
 	y.num <- length(tp);
 
-	plot( c(0,0), c(0,0), type="n", xaxt="s", yaxt="s", yaxs="i", main=snp_name, cex.main=0.8, 
-		  xlab="Time", ylab="Y", xlim=c(-1, 1.2), ylim=c( ylim.min, ylim.max ) );
+	plot( c(0,0), c(0,0), type="n", xaxt="n", yaxt="s", yaxs="i", main=snp_name, cex.main=0.8, cex.axis=0.8, 
+		  xlab="Time", ylab="Y", xlim=c(-1,1.2), ylim=c( ylim.min, ylim.max ) );
+
+    axis(1, at=c(-1, -0.5, 0, 0.5, 1), labels=c(Z.range[1],NA, (Z.range[1] + Z.range[2])/2, NA, Z.range[2]), cex.axis=0.8)
 
 	cur.lab <- c();
 	cur.col <- c();
@@ -235,8 +244,147 @@ draw_single_curve<-function( snp_name, add=NULL, dom=NULL )
 		cur.col <- c( cur.col, "purple");
 	}
 
-	legend( "topright", 
+    if (bLegend)
+	legend( "topleft", 
 			legend = cur.lab,
+			text.width = strwidth("ABC"),
+			text.col = cur.col,
+			col = cur.col,
+			lty=1,
+			xjust = 1, 
+			yjust = 1,
+			cex=0.8)
+}
+
+draw_refit_CI_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL, n.lgr = 4, ReverseCurve = FALSE, q.probs=0.1)
+{
+    if(is.null(Z.range))  Z.range <- c(-1,1);
+
+	pdf.file <- NULL;
+	if (!is.null( fig.prefix ))
+	{
+		pdf.file <- paste( fig.prefix, fig.name, "pdf", sep=".");
+		pdf( pdf.file, width=6, height=6);
+	}
+
+	n.row <- 4;
+	n.col <- 4;
+	n.page.seq <- seq(1, NROW(refit), 16);	
+	
+	for(p in n.page.seq )
+	{
+		par( mfrow=c( n.row,n.col ) );
+
+		for (i in 1:n.row )
+		for (j in 1:n.col )
+		{
+			if ( (i-1)*4+j + p-1 > NROW(refit) )
+				break;
+
+			n.par <- (i-1)*4+j + p-1 ;
+		
+			par(mfg=c(i, j));
+			draw_single_CI_curve( rownames(refit)[n.par], 
+			                    Z.range,
+			                    fig.name,
+			                    hat= refit[ n.par, c(8:11), drop=F ]*ifelse(ReverseCurve, -1, 1) ,
+			                    CI0= refit[ n.par, c(13:16), drop=F ]*ifelse(ReverseCurve, -1, 1),
+			                    CI1= refit[ n.par, c(18:21), drop=F ]*ifelse(ReverseCurve, -1, 1),
+			                    bLegend=(i==1 & j==1),
+			                    q.probs=q.probs);
+		}
+		
+		if (p != n.page.seq[ NROW(n.page.seq)] ) plot.new();
+	}
+	
+	if (!is.null( pdf.file ))
+	{
+		dev.off();
+		cat("* The figure is exported into", pdf.file, "\n");
+	}		
+}
+  
+get_curve_range <- function( ui, hat, CI0=NULL, CI1=NULL, q.probs=0.1 )
+{
+    rowMins <- function(tb) { unlist(apply(tb, 1, function(x){min(x, na.rm=TRUE)}) ) }
+    rowMaxs <- function(tb) { unlist(apply(tb, 1, function(x){max(x, na.rm=TRUE)}) ) }
+    rowQuantile <- function(tb, thres) { unlist(apply(tb, 1, function(x){quantile(x, thres, na.rm=TRUE)}) ) }
+
+	y <- c();
+	if (!is.null(hat)) y <- cbind(y, ui %*% t(hat))
+		
+	if (!is.null(CI0)) 
+	{
+        y <- cbind(y, ui %*% t(CI0));
+	    for (i in 1:NROW(CI0))
+	    {
+	        hatx <- hat;
+	        hatx[1,i] <- CI0[1, i];
+	        y <- cbind(y, ui %*% t(hatx))     ;
+	    }     
+	}
+		
+	if (!is.null(CI1)) 
+	{
+        y <- cbind(y, ui %*% t(CI1));
+	    for (i in 1:NROW(CI1))
+	    {
+	        hatx <- hat;
+	        hatx[1,i] <- CI1[1, i];
+	        y <- cbind(y, ui %*% t(hatx))     ;
+	    }     
+	}
+
+	if (!is.null(CI0) && !is.null(CI1)) 
+    {
+        for(i in 1:1000)
+        {
+        	hatx <- hat;
+        	for(k in 1:4)
+        	   hatx[1,k] <- runif(1, min(CI0[1, k], CI1[1, k]), max( CI0[1, k], CI1[1, k]) );
+        	y <- cbind(y, ui %*% t(hatx))     ;
+        }	
+    }     
+		
+	#return( data.frame(y=y[,1], y.min=rowMins(y), y.max=rowMaxs(y))); 
+	return( data.frame(y=y[,1], y.min=rowQuantile(y, q.probs), y.max=rowQuantile(y, 1-q.probs))); 
+}
+
+
+draw_single_CI_curve<-function( snp_name, Z.range, effect.lab, hat, CI0=NULL, CI1=NULL, bLegend=FALSE, q.probs=0.1 )
+{
+	old.p1 <- par( mar=c(2,2,1,1)+0.1);
+	on.exit( par(old.p1), add = T);
+
+	tp <- seq(-1, 1, 0.05);
+	ui <- cbind( rep(1, length(tp)), tp, (3*tp^2-1)/2, (5*tp^3-3*tp)/2 ) ;
+	# ui <- cbind( rep(1, length(tp)), tp, (3*tp^2-1)/2, (5*tp^3-3*tp)/2, (35*tp^4-30*tp^2+3)/8 ) ;
+
+	y <- get_curve_range( ui, hat, CI0, CI1, q.probs );
+	y[,2] <- smooth.spline(x=tp, y=y[,2], df=10)$y;
+	y[,3] <- smooth.spline(x=tp, y=y[,3], df=10)$y;
+
+	ylim.max <- max(y, na.rm=T);
+	ylim.min <- min(y, na.rm=T);
+	ylim.len <- ylim.max - ylim.min
+	ylim.max <- ylim.max + 0.15*abs(ylim.len);
+	ylim.min <- ylim.min - 0.15*abs(ylim.len);
+
+	y.num <- length(tp);
+
+	plot( c(0,0), c(0,0), type="n", xaxt="n", yaxt="s", yaxs="i", main=snp_name, cex.main=0.8, cex.axis=0.8,  
+		  xlab="Time", ylab="Y", xlim=c(-1, 1.2) , ylim=c( ylim.min, ylim.max ) );
+    
+    axis(1, at=c(-1, -0.5, 0, 0.5, 1), labels=c(Z.range[1],NA, (Z.range[1] + Z.range[2])/2, NA, Z.range[2]), cex.axis=0.8)
+    
+	cur.col <- ifelse(effect.lab=="add", "orange", "purple");
+	 
+	polygon(c(tp, rev(tp)), c(y[,2], rev(y[,3])), col=alpha(cur.col, 0.1), border=alpha(cur.col, 0.1)); 
+	lines(tp, y[,1], col=cur.col);
+
+    if (bLegend)
+		legend( "topleft", 
+			legend = effect.lab,
 			text.width = strwidth("ABC"),
 			text.col = cur.col,
 			col = cur.col,

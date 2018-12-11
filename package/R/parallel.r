@@ -92,6 +92,7 @@ snpmat_parallel<-function( n.snp,
 			op.fQval.dom,
 			op.debug,
 			op.cpu,
+			op.Legendre,
 			lasso.method)
 {
 	cat( "Genetic Effect Analysis by BLS/GLS method......\n");
@@ -120,6 +121,7 @@ snpmat_parallel<-function( n.snp,
 				op.fQval.add,
 				op.fQval.dom,
 				op.debug,
+				op.Legendre,
 				lasso.method);
 		return(r.xls);
 	}
@@ -167,6 +169,7 @@ snpmat_parallel<-function( n.snp,
 					op.fQval.dom * 1.5,
 					op.debug,
 					op.cpu,
+					op.Legendre,
 					lasso.method);
 
 		r.cluster.init <- merge_xls_varsel( r.cluster.init, r.cluster );
@@ -258,6 +261,7 @@ snpmat_parallel<-function( n.snp,
 						op.fQval.dom,
 						op.debug,
 						op.cpu,
+						op.Legendre,
 						lasso.method);
 
 
@@ -299,6 +303,7 @@ snpmat_parallel<-function( n.snp,
 			op.fQval.add,
 			op.fQval.dom,
 			op.debug,
+			op.Legendre,
 			lasso.method);
 	# r.xls$varsel
 	# r.xls$varsel_add
@@ -326,6 +331,7 @@ snpmat_parallel_list<-function( phe.mat,
 				op.fQval.dom,
 				op.debug,
 				op.ncpu,
+				op.Legendre,
 				lasso.method)
 
 {
@@ -336,7 +342,7 @@ snpmat_parallel_list<-function( phe.mat,
 		library(gwas.lasso);
 		if (execInSnow)
 		{
-			library(snowfall);
+			requireNamespace("snowfall");
 			sfCat( paste("snpmat[", NROW(snpmat), NCOL(snpmat), "]", "\n") );
 		}
 
@@ -357,6 +363,7 @@ snpmat_parallel_list<-function( phe.mat,
 				op.fQval.add,
 				op.fQval.dom,
 				op.debug,
+				op.Legendre,
 				lasso.method);
 
 		return(r.xls.i);
@@ -364,7 +371,7 @@ snpmat_parallel_list<-function( phe.mat,
 
 	r.cluster <- list();
 
-	if( op.ncpu>1 && require("snowfall") )
+	if( op.ncpu>1 && requireNamespace("snowfall") )
 	{
 		cat("Starting parallel computing, snowfall/snow......\n");
 		sfInit(parallel = TRUE, cpus = op.ncpu, type = "SOCK" )
@@ -383,6 +390,7 @@ snpmat_parallel_list<-function( phe.mat,
 				"op.fQval.add",
 				"op.fQval.dom",
 				"op.debug",
+				"op.Legendre",
 				"execInSnow",
 				"lasso.method");
 
@@ -418,6 +426,7 @@ snpmat_call<-function(  snp.mat,
 			op.fQval.add,
 			op.fQval.dom,
 			op.debug,
+			op.Legendre,
 			lasso.method)
 {
 	if(lasso.method=="BLS")
@@ -455,6 +464,7 @@ snpmat_call<-function(  snp.mat,
 			op.fRhoTuning,
 			op.fQval.add,
 			op.fQval.dom,
+			op.Legendre,
 			ifelse(op.debug, 3, 1));
 	}
 

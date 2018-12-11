@@ -290,6 +290,7 @@ SEXP glasso_simple( const char* pszPhefile,
                  double fRhoTuning,
                  double fQval_add,
                  double fQval_dom,
+                 int   nLegendre,
                  int   nDebug)
 {
     CMDOPTIONS cmd;
@@ -317,6 +318,7 @@ SEXP glasso_simple( const char* pszPhefile,
     pCfg->m_fQval_add     = fQval_add;
     pCfg->m_fQval_dom     = fQval_dom;
     pCfg->m_fRhoTuning    = fRhoTuning;
+    pCfg->m_nLegendre     = nLegendre;
 
     if ( strlen(cmd.szSnpFile)==0 ||
          strlen(cmd.szPheFile)==0 )
@@ -350,6 +352,7 @@ SEXP glasso_plink_tped( const char* pszPhefile,
                  double fRhoTuning,
                  double fQval_add,
                  double fQval_dom,
+                 int   nLegendre,
                  int   nDebug)
 {
     CMDOPTIONS cmd;
@@ -378,6 +381,7 @@ SEXP glasso_plink_tped( const char* pszPhefile,
     pCfg->m_fQval_add     = fQval_add;
     pCfg->m_fQval_dom     = fQval_dom;
     pCfg->m_fRhoTuning    = fRhoTuning;
+    pCfg->m_nLegendre     = nLegendre;
 
     if ( strlen(cmd.szSnpFile)==0 ||
          strlen(cmd.szPheFile)==0 )
@@ -411,6 +415,7 @@ SEXP glasso_snpmat( SEXP smatPhe,
                  double fRhoTuning,
                  double fQval_add,
                  double fQval_dom,
+                 int nLegendre,
                  int nDebug)
 {
     CFmNewTemp refNew;
@@ -444,6 +449,7 @@ SEXP glasso_snpmat( SEXP smatPhe,
     pCfg->m_fQval_add     = fQval_add;
     pCfg->m_fQval_dom     = fQval_dom;
     pCfg->m_fRhoTuning    = fRhoTuning;
+    pCfg->m_nLegendre     = nLegendre;
 
     SEXP sRet;
     sRet = _glasso_snpmat( pFmPhe, pFmSnp, &cmd, pCfg );

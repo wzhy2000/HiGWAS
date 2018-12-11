@@ -8,8 +8,8 @@
 } 
 
 \usage{gls.plink.tped(file.phe,file.plink.tped,file.plink.tfam,
-Y.prefix,Z.prefix,covar.names,refit=TRUE, gpu.used=FALSE, add.used=TRUE,dom.used=TRUE,
-options=NULL )}
+   Y.prefix,Z.prefix,covar.names,refit=TRUE, add.used=TRUE,dom.used=TRUE,
+   gpu.used=FALSE, options=NULL )}
 
 \arguments{
 \item{file.phe}{Input phenotypic data file containing longitudinal phenotypic data and covariate data.}
@@ -36,9 +36,6 @@ The phenotype file should be filled with numerical values and missing values rec
 Input genotypic files contains two text files: one (TPED) containing SNP and genotype information where one row is a SNP; one (TFAM) containing individual and family information, where one row is an individual. The first 4 columns of a TPED file are chromosome, snp identifier, Genetic distance (morgans) and Base-pair position (bp units).Then all genotypes are listed for all individuals for each particular SNP on each line. 
 The TFAM file is just the first six columns of a standard PED file. In otherwords, we have just taken the standard PED/MAP file format, but swapped all the genotype information between files, after rotating it 90 degrees.\cr
 }
-
-\author{Zhong Wang and Nating Wang }
-
 
 \references{
  Li, J., Wang, Z., Li, R., & Wu, R. (2015). Bayesian group Lasso for nonparametric varying-coefficient models with application to functional genome-wide association studies. The Annals of Applied Statistics, 9(2), 640-664.\cr

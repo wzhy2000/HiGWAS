@@ -44,6 +44,7 @@ GLS::GLS(bool bUseGPU)
     m_nDataType = RUNMODE_UNK;
     m_bRefit = false;
     m_bUseGPU = bUseGPU;
+    m_bMergeFewPosAdd = true;
 
 #ifdef MONTIME
     m_bCompared = true;
@@ -54,6 +55,7 @@ GLS::GLS(bool bUseGPU)
     m_pDat = NULL;
     m_pRes = NULL;
     m_pCfg = NULL;
+    LG = 4;
 }
 
 GLS::~GLS()
@@ -207,6 +209,7 @@ int GLS::Varsel(GLS_cfg *pCfg)
         destroy( m_pRes );
 
     m_pCfg = pCfg;
+    LG = m_pCfg->m_nLegendre + 1;
 
     int P = m_pDat->m_nSnpP;
     int N = m_pDat->m_nSubjN;
@@ -228,10 +231,13 @@ int GLS::Varsel(GLS_cfg *pCfg)
 
     try
     {
-        CFmSnpMat gen( P , m_pDat->m_nSubjN);   /* [P, N]*/
+        CFmSnpMat gen( P, m_pDat->m_nSubjN );   /* [P, N]*/
         m_pDat->GetPartialSNP( &gen, 0, P );
 
-        int ret = proc_mcmc( *(m_pDat->m_pPhenoY), *(m_pDat->m_pPhenoZ), *(m_pDat->m_pPhenoZ0), *(m_pDat->m_pCovars), gen, pMatRet );
+        CFmMatrix *pSnpStat = new CFmMatrix( P, 4 );
+        Build_snpinfo( gen, pSnpStat, N, P );
+
+        int ret = proc_mcmc( *(m_pDat->m_pPhenoY), *(m_pDat->m_pPhenoZ), *(m_pDat->m_pPhenoZ0), *(m_pDat->m_pCovars), gen, pSnpStat, pMatRet );
         if (ret!=0)
         {
             _log_error( _HI_, "VARSEL: MCMC procedure return error code(%d).", ret);
@@ -243,7 +249,9 @@ int GLS::Varsel(GLS_cfg *pCfg)
         CFmVector vctSnpPos(0, 0.0);
         gen.GetSnpInfo(&vctSnpName, &vctSnpChr, &vctSnpPos);
 
-        m_pRes->SetMcmcResults( false, &vctSnpName, &vctSnpChr, &vctSnpPos, pMatRet, m_pDat->m_pCovars->GetNumCols() );
+        m_pRes->SetMcmcResults( false, &vctSnpName, &vctSnpChr, &vctSnpPos, pSnpStat, pMatRet, m_pDat->m_pCovars->GetNumCols() );
+
+        if( pSnpStat) delete( pSnpStat );
 
     }
     catch(const char* str)
@@ -293,6 +301,7 @@ int GLS::Refit(GLS_cfg *pCfg)
     }
 
     m_pCfg = pCfg;
+    LG = m_pCfg->m_nLegendre + 1;
 
     int ret = m_pRes->InitRefit( m_pCfg->m_nMcmcIter );
     if ( ret!=0 )
@@ -327,6 +336,9 @@ int GLS::Refit(GLS_cfg *pCfg)
     int P = pSnpList->GetLength();
     int N = m_pDat->m_nSubjN;
 
+    CFmMatrix *pSnpStat = new CFmMatrix( P, 4 );
+    Build_snpinfo( gen, pSnpStat, N, P );
+
     _log_prompt( _HI_, "REFIT: SnpP:%d, SubjN:%d ", P, N );
     m_bRefit = true;
 
@@ -340,7 +352,7 @@ int GLS::Refit(GLS_cfg *pCfg)
 
     try
     {
-        int ret = proc_mcmc( *(m_pDat->m_pPhenoY), *(m_pDat->m_pPhenoZ), *(m_pDat->m_pPhenoZ0), *(m_pDat->m_pCovars), gen, pMatRet );
+        int ret = proc_mcmc( *(m_pDat->m_pPhenoY), *(m_pDat->m_pPhenoZ), *(m_pDat->m_pPhenoZ0), *(m_pDat->m_pCovars), gen, pSnpStat, pMatRet );
 
         if (ret!=0)
         {
@@ -353,7 +365,7 @@ int GLS::Refit(GLS_cfg *pCfg)
         CFmVectorStr vctSnpName(0);
         gen.GetSnpInfo(&vctSnpName, &vctSnpChr, &vctSnpPos);
 
-        m_pRes->SetMcmcResults( true, &vctSnpName, &vctSnpChr, &vctSnpPos, pMatRet, m_pDat->m_pCovars->GetNumCols());
+        m_pRes->SetMcmcResults( true, &vctSnpName, &vctSnpChr, &vctSnpPos, pSnpStat, pMatRet, m_pDat->m_pCovars->GetNumCols());
     }
     catch(const char* str)
     {
@@ -365,6 +377,7 @@ int GLS::Refit(GLS_cfg *pCfg)
         return( ERR_EXCEPTION );
     }
 
+    if (pSnpStat) delete(pSnpStat);
     if (pMatRet) destroy( pMatRet );
 
     _log_info( _HI_, "REFIT: Select Sig. SNPs.");
@@ -393,13 +406,66 @@ int GLS::Refit(GLS_cfg *pCfg)
         m_pRes->SaveSigFile( szSig1, true );
     }
 
+
     _log_prompt( _HI_, "REFIT: End");
 
     return 0;
 }
 
+void GLS::Build_snpinfo(CFmSnpMat& gen, CFmMatrix* pSnpStat, int N, int P)
+{
+    for(int j=0; j<P; j++)
+    {
+		int n1 = 0;
+		int n2 = 0;
+		int n0 = 0;
+
+        for(int i=0; i<N; i++)
+        {
+           double a0 = gen.Get_a(j,i);
+           if ( a0>0  ) n2++;
+           if ( a0==0 ) n1++;
+           if ( a0<0  ) n0++;
+        }
+
+        // change few positive additive (2) to negaive additive
+        // ignore the addtive effect.
+        if(m_bMergeFewPosAdd && n2 <= imin2(5, (int)( N * 0.05 ) ) )
+        {
+	        for(int i=0; i<N; i++)
+	        {
+	           if ( gen.Get_a(j,i) > 0  ) gen.Set(j,i, -1);
+	        }
+	        int nx0 = n0 + n2;
+	        int nx2 = 0;
+
+			n1 = 0;
+			n2 = 0;
+			n0 = 0;
+        	for(int i=0; i<N; i++)
+        	{
+        	   double a0 = gen.Get_a(j,i);
+        	   if ( a0>0  ) n2++;
+        	   if ( a0==0 ) n1++;
+        	   if ( a0<0  ) n0++;
+        	}
+
+if(nx0!=n0) printf("Nx0(%d)==>N0(%d)\n", nx0, n0);
+if(nx2!=n2) printf("Nx2(%d)==>N2(%d)\n", nx2, n2);
+
+		}
+
+        pSnpStat->Set(j, 0, (n2*2+n1)*1.0/(2*n0+2*n1+2*n2) );
+        pSnpStat->Set(j, 1, n0);
+        pSnpStat->Set(j, 2, n1);
+        pSnpStat->Set(j, 3, n2);
+
+    }
+    return;
+}
+
 //**
-int GLS::proc_mcmc( CFmMatrix& Y,  CFmMatrix& Z,  CFmMatrix& Z0, CFmMatrix& X, CFmSnpMat& gen, CFmFileMatrix* pMatRet)
+int GLS::proc_mcmc( CFmMatrix& Y,  CFmMatrix& Z,  CFmMatrix& Z0, CFmMatrix& X, CFmSnpMat& gen, CFmMatrix* pSnpStat, CFmFileMatrix* pMatRet)
 {
     //!!!TEST for R
     int nSeed = m_pCfg->GetTempId();
@@ -484,6 +550,26 @@ int GLS::proc_mcmc( CFmMatrix& Y,  CFmMatrix& Z,  CFmMatrix& Z0, CFmMatrix& X, C
     for(int i=0; i<N; i++)
         mInZ[i] = Z.GetRow(i).GetLengthNonNan();
 
+
+    for(int j=0; j<P; j++)
+    {
+		int n1 = 0;
+		int n2 = 0;
+		int n0 = 0;
+
+        for(int i=0; i<N; i++)
+        {
+           double a0 = gen.Get_a(j,i);
+           if ( a0>0  ) n2++;
+           if ( a0==0 ) n1++;
+           if ( a0<0  ) n0++;
+        }
+
+        if ( pSnpStat->Get(j, 1 ) != n0 ||
+             pSnpStat->Get(j, 2 ) != n1 ||
+             pSnpStat->Get(j, 3 ) != n2 )
+			printf("%d, =%d, %d, %d\n", j, n0, n1, n2 );
+	}
 
 //---------------------------------------------------
 // PART A in the R code
@@ -573,7 +659,7 @@ strcpy(m_szTraceTag, "A");
         Rprintf("The package is not compiled with CUDA library\n");
         return(-1);
 #else
-        if( Init_GPUobj( &gCpuObj, &gCuda, &gGpuMap, N, P, Q, nC) ==0 )
+        if( Init_GPUobj( &gCpuObj, &gCuda, &gGpuMap, LG, N, P, Q, nC) ==0 )
         {
             _copy_fmMatrix_Device( gCpuObj->Z,       Z);
             _copy_fmMatrix_Device( gCpuObj->Z0,      Z0);
@@ -676,7 +762,7 @@ strcpy(m_szTraceTag, "B");
 #ifdef USECUDA
             _copy_fmMatrix_list( gCpuObj->all_corMat_Inv, N, all_corMat_Inv);
             _copy_fmMatrix_list( gCpuObj->all_corMat_MH_Inv, N, all_corMat_MH_Inv);
-            _cuda_gpart1( gCuda, gCpuObj, N, rho, tmp5);
+            _cuda_gpart1( gCuda, gCpuObj, LG, N, rho, tmp5);
 #endif
 
 #ifdef MONTIME
@@ -725,13 +811,13 @@ strcat(m_szTraceTag, "C");
             CFmMatrix tmp2x(0, 0, Q, Q);
             CFmMatrix tmp3x(0, 0, Q, Q);
 
-            _cuda_gpart2( gCuda, gCpuObj, gGpuMap, N, Q, nC, sigma2, alpha, tmp2x, tmp3x );
+            _cuda_gpart2( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, sigma2, alpha, tmp2x, tmp3x );
 
-             if (!tmp2.Compare(tmp2x)) { tmp2.Show(); tmp2x.Show(); printf("???? part2 tmp2\n");}
+            if (!tmp2.Compare(tmp2x)) { tmp2.Show(); tmp2x.Show(); printf("???? part2 tmp2\n");}
             if (!tmp3.Compare(tmp3x)) { tmp3.Show(); tmp3x.Show(); printf("???? part2 tmp3\n");}
             printf("GPU part2: %.4f seconds\n", stopTimer(st0) );
 #else
-            _cuda_gpart2( gCuda, gCpuObj, gGpuMap, N, Q, nC, sigma2, alpha, tmp2, tmp3 );
+            _cuda_gpart2( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, sigma2, alpha, tmp2, tmp3 );
 #endif
 
 #endif
@@ -785,7 +871,7 @@ strcat(m_szTraceTag, "E");
         {
 #ifdef USECUDA
             st0 = startTimer();
-            _cuda_gpart3( gCuda, gCpuObj, N, Q, P, a, d );
+            _cuda_gpart3( gCuda, gCpuObj, LG, N, Q, P, a, d );
 #endif
 
 #ifdef MONTIME
@@ -804,6 +890,15 @@ strcat(m_szTraceTag, "F");
 
         double nCPUsec=0.0;
         double nGPUsec=0.0;
+
+//_copy_fmVector_list( gCpuObj->all_rd, N, all_rd);
+//_copy_fmMatrix_list( gCpuObj->all_ui, N, all_ui);
+//_copy_fmMatrix_list( gCpuObj->all_corMat_Inv, N, all_corMat_Inv);
+//_copy_fmMatrix_list( gCpuObj->all_corMat_MH_Inv, N, all_corMat_MH_Inv);
+//_copy_fmMatrix_Device( gCpuObj->a, a);
+//_copy_fmVector_Device( gCpuObj->mu, mu);
+//_copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+//_copy_fmMatrix_Device( gCpuObj->X, X);
 
         vctP = 0.0;
         // -- updating additive effects: a for each SNP
@@ -846,42 +941,34 @@ strcat(m_szTraceTag, "F");
                 CFmMatrix tmp2x(0, 0, Q, Q);
                 CFmMatrix tmp3x(0, 0, Q, Q);
                 st0 = startTimer();
-                _cuda_gpart4( gCuda, gCpuObj, gGpuMap, N, Q, j, nC, sigma2, mu, alpha, a, tmp2x, tmp3x );
-                if (!tmp3.Compare(tmp3x)) { tmp3.Show("tmp3"); tmp3x.Show("tmp3x"); printf("???? part4 tmp3\n"); exit(-1);}
-                if (!tmp2.Compare(tmp2x)) { tmp2.Show("tmp2"); tmp2x.Show("tmp2x"); printf("???? part4 tmp2\n"); exit(-1);}
+                _cuda_gpart4( gCuda, gCpuObj, gGpuMap, LG, N, Q, j, nC, sigma2, mu, alpha, a, tmp2x, tmp3x );
+                if ( round>0 && !tmp3.Compare(tmp3x)) { tmp3.Show("tmp3"); tmp3x.Show("tmp3x"); printf("???? part4 tmp3[j=%d]\n", j); exit(-1);}
+                if ( round>0 && !tmp2.Compare(tmp2x)) { tmp2.Show("tmp2"); tmp2x.Show("tmp2x"); printf("???? part4 tmp2[j=%d]\n", j); exit(-1);}
                 nGPUsec += stopTimer(st0);
 #else
-                _cuda_gpart4( gCuda, gCpuObj, gGpuMap, N, Q, j, nC, sigma2, mu, alpha, a, tmp2, tmp3 );
+                _cuda_gpart4( gCuda, gCpuObj, gGpuMap, LG, N, Q, j, nC, sigma2, mu, alpha, a, tmp2, tmp3 );
 #endif
 
 #endif
             }
 
-            int N0 = 0;
-            int N2 = 0;
-            int N1 = 0;
-
-            for(int i=0; i<N; i++)
+            int N_APos = (int)(pSnpStat->Get(j, 3));
+            int N_Dom = (int)(pSnpStat->Get(j, 2));
+            int N_ANeg = (int)(pSnpStat->Get(j, 1));
+            if ( (N_ANeg==0 && N_APos==0) || (N_APos==0) )
+            //if ( (N_ANeg==0 && N_APos==0) )
             {
-                double a0 = gen.Get_a(j,i);
-                if( a0 >0 ) N0++;
-                if( a0 <0 ) N2++;
-                if( a0 == 0 ) N1++;
-            }
-
-            if (N0==0 && N2==0)
-            {
-                double fBuf[LG] = { 0.0 };
+                double fBuf[4] = { 0.0 };
                 a.SetRow( j,  (double*)fBuf);
                 vctP[j] = 0;
             }
             else
             {
-                if (N1==0) vctP[j] = 1; else vctP[j] = 2;
+                if ( N_Dom == 0 ) vctP[j] = 1; else vctP[j] = 2;
 
                 if (!m_bRefit)
                 {
-                    if (N1>0)
+                    if (N_Dom>0)
                         diag.Square(LG, true, 1/tau2[j]);
                     else
                         diag.Square(LG, true, 1/tau2_x[j]);
@@ -898,29 +985,28 @@ strcat(m_szTraceTag, "F");
                 aMu_j = aVar_j* _t( tmp3 );
                 rmultnorm(1, aMu_j.GetData(), aVar_j.GetData(), LG, fBuf);
                 a.SetRow( j,  (double*)fBuf);
+            }
 
-                if( !m_bUseGPU || m_bCompared)
-                {
-                    st0 =startTimer();
+            if( !m_bUseGPU || m_bCompared)
+            {
+                st0 =startTimer();
 
-                    // -- update all_rd[i] for the newly updated genetic effect.
-                    for (int i=0; i<N; i++)
-                        if (gen.Get_a(j,i)!=0)
+                // -- update all_rd[i] for the newly updated genetic effect.
+                for (int i=0; i<N; i++)
+                    if (gen.Get_a(j,i)!=0)
                             (*all_rd[i]) = (*all_rd[i]) + _t( (*all_ui[i]) * a_old.GetRow(j) - (*all_ui[i]) * a.GetRow(j) ).GetRow(0) * gen.Get_a(j,i);
-                    nCPUsec += stopTimer(st0);
+                nCPUsec += stopTimer(st0);
 
+            }
 
-                }
-
-                if( m_bUseGPU)
-                {
-                    st0 = startTimer();
+            if( m_bUseGPU)
+            {
+                st0 = startTimer();
 #ifdef USECUDA
-                    _cuda_gpart5( gCuda, gCpuObj, N, Q, j, a, a_old );
+                _cuda_gpart5( gCuda, gCpuObj, LG, N, Q, j, a, a_old );
 #endif
-                    nGPUsec += stopTimer(st0);
-                }
-           }
+                nGPUsec += stopTimer(st0);
+            }
 
         }
 
@@ -961,7 +1047,7 @@ strcat(m_szTraceTag, "G");
                 for (int j=0; j<P; j++)
                 {
                     //if (a.RowProd(j,j )!=0)
-                    if (vctP[j]==2)
+                    if (vctP[j]==2 )
                     {
                         double InvTau2_1 = sqrt( LG * lambda2 * sigma2/a.RowProd(j,j ) );
                         //R_set_seed( j*10  );
@@ -996,14 +1082,14 @@ strcat(m_szTraceTag, "G");
                 CFmVector gtau2( P, 1);
                 CFmVector gtau2_x(P, 1);
 
-                _cuda_gpart6( gCuda, gCpuObj, P, sigma2, lambda2, lambda2_x, vctP, a, gtau2, gtau2_x);
+                _cuda_gpart6( gCuda, gCpuObj, LG, P, sigma2, lambda2, lambda2_x, vctP, a, gtau2, gtau2_x);
 
-                if (!tau2.Compare(gtau2)) { tau2.Show("tau2"); gtau2.Show("gtau2"); printf("?part6 tau2\n");exit(-1);}
-                if (!tau2_x.Compare(gtau2_x)) { tau2_x.Show("tau2_x"); gtau2_x.Show("gtau2_x"); printf("?part6 tau2_x\n");exit(-1);}
+                if (round>0 && !tau2.Compare(gtau2)) { tau2.Show("tau2"); gtau2.Show("gtau2"); printf("?part6 tau2\n");exit(-1);}
+                if (round>0 && !tau2_x.Compare(gtau2_x)) { tau2_x.Show("tau2_x"); gtau2_x.Show("gtau2_x"); printf("?part6 tau2_x\n");exit(-1);}
 
                 printf("GPU part6: %.4f seconds\n", stopTimer(st0) );
 #else
-                _cuda_gpart6( gCuda, gCpuObj, P, sigma2, lambda2, lambda2_x, vctP, a, tau2, tau2_x);
+                _cuda_gpart6( gCuda, gCpuObj, LG, P, sigma2, lambda2, lambda2_x, vctP, a, tau2, tau2_x);
 #endif
 
 #endif
@@ -1028,12 +1114,11 @@ strcat(m_szTraceTag, "H");
         nCPUsec=0.0;
         nGPUsec=0.0;
 
-        int d_P = 0;
+        //int d_P = 0;
         //-- Updating dominant effects: d, for each SNP
         if(m_pCmd->bDomUsed)
         for(int j=0; j<P; j++)
         {
-
             tmp2 = 0;
             tmp3 = 0;
 
@@ -1073,39 +1158,36 @@ strcat(m_szTraceTag, "H");
                 CFmMatrix gtmp2(0, 0, Q, Q);
                 CFmMatrix gtmp3(0, 0, Q, Q);
 
-                _cuda_gpart7( gCuda, gCpuObj, gGpuMap, N, Q, j, nC, sigma2, alpha, mu, d, gtmp2, gtmp3 );
+                _cuda_gpart7( gCuda, gCpuObj, gGpuMap, LG, N, Q, j, nC, sigma2, alpha, mu, d, gtmp2, gtmp3 );
 
-                if (!tmp2.Compare(gtmp2)) { tmp2.Show("tmp2"); gtmp2.Show("gtmp2"); printf("?part7 tmp2\n"); exit(-1);}
-                if (!tmp3.Compare(gtmp3)) { tmp3.Show("tmp3"); gtmp3.Show("gtmp3"); printf("?part7 tmp3\n"); exit(-1);}
+                if (round>0 && !tmp2.Compare(gtmp2)) { tmp2.Show("tmp2"); gtmp2.Show("gtmp2"); printf("?part7 tmp2\n"); exit(-1);}
+                if (round>0 && !tmp3.Compare(gtmp3)) { tmp3.Show("tmp3"); gtmp3.Show("gtmp3"); printf("?part7 tmp3\n"); exit(-1);}
 #else
-                _cuda_gpart7( gCuda, gCpuObj, gGpuMap, N, Q, j, nC, sigma2, alpha, mu, d, tmp2, tmp3 );
+                _cuda_gpart7( gCuda, gCpuObj, gGpuMap, LG, N, Q, j, nC, sigma2, alpha, mu, d, tmp2, tmp3 );
 #endif
 #endif
                 nGPUsec += stopTimer(st0);
             }
 
-            int N0 = 0;
-            int N2 = 0;
-            int N1 = 0;
+            // + additive
+            int N_APos = (int)(pSnpStat->Get(j, 3));
+            // - additive
+            int N_ANeg = (int)(pSnpStat->Get(j, 1));
+            // dominant
+            int N_Dom = (int)(pSnpStat->Get(j, 2));
 
-            for(int i=0; i<N; i++)
+            if ( N_Dom==0 )
             {
-                double a0 = gen.Get_a(j,i);
-                if( a0 >0 ) N0++;
-                if( a0 <0 ) N2++;
-                // dominant effect only if a0==0
-                if( a0 ==0 ) N1++;
-            }
-
-            if ( N1==0 )
-            {
-                double fBuf[LG] = { 0.0 };
+                double fBuf[ 4 ] = { 0.0 };
                 d.SetRow( j,  (double*)fBuf);
                 vctP[j] = 0;
             }
             else
             {
-                if (N0>0 && N2>0) vctP[j] = 2; else vctP[j] = 1;
+				//Here if we think the SNP with N_Apos=0 and N_ANeg>0 dont have additive,
+				// So the dominent
+                if (N_APos>0 && N_ANeg>0) vctP[j] = 2; else vctP[j] = 1;
+
                 if (!m_bRefit)
                 {
                     if (vctP[j] == 2)
@@ -1129,26 +1211,26 @@ strcat(m_szTraceTag, "H");
                 dMu_j  = dVar_j * _t(tmp3);
                 ret = rmultnorm( 1, dMu_j.GetData(), dVar_j.GetData(), LG, fBuf);
                 d.SetRow(j, fBuf);
+		    }
 
-                if( !m_bUseGPU || m_bCompared)
-                {
-                    st0 =startTimer();
+            if( !m_bUseGPU || m_bCompared)
+            {
+                st0 =startTimer();
 
-                    // Update all_rd{i} for the newly updated genetic effect
-                    for (int i=0; i<N; i++)
-                        if (gen.Get_d(j,i)!=0)
+                // Update all_rd{i} for the newly updated genetic effect
+                for (int i=0; i<N; i++)
+                    if (gen.Get_d(j,i)!=0)
                             (*all_rd[i]) = (*all_rd[i]) + _t( (*all_ui[i]) * d_old.GetRow(j) - (*all_ui[i]) * d.GetRow(j) ).GetRow(0)* gen.Get_d(j,i);
-                    nCPUsec += stopTimer(st0);
-                }
+                nCPUsec += stopTimer(st0);
+            }
 
-                if( m_bUseGPU)
-                {
-                    st0 =startTimer();
+            if( m_bUseGPU)
+            {
+                st0 =startTimer();
 #ifdef USECUDA
-                    _cuda_gpart8( gCuda, gCpuObj, N, Q, j, d, d_old );
+                _cuda_gpart8( gCuda, gCpuObj, LG, N, Q, j, d, d_old );
 #endif
-                   nGPUsec += stopTimer(st0);
-                }
+                nGPUsec += stopTimer(st0);
             }
         }
 
@@ -1156,6 +1238,45 @@ strcat(m_szTraceTag, "H");
         printf("CPU part8: %.4f seconds\n", nCPUsec );
         printf("GPU part8: %.4f seconds\n", nGPUsec );
 #endif
+
+if(0)
+{
+        CFmVector old_dj ( LG, 0.0 );
+        CFmVector old_aj ( LG, 0.0 );
+        CFmVector zero4  ( LG, 0.0 );
+
+        for(int j=0; j<P; j++)
+        {
+            int N_Dom  = (int)(pSnpStat->Get(j, 2));
+            int N_APos = (int)(pSnpStat->Get(j, 3));
+            int N_ANeg = (int)(pSnpStat->Get(j, 1));
+
+            old_dj = d.GetRow(j);
+            old_aj = a.GetRow(j);
+
+            //  0:    d   ==> d-a   all_rd = y - d      delta +a
+            //  1:    a   == >  0   all_rd = y - a      delta +a
+            // (1)
+            if (N_APos!=0 && N_Dom!=0 && N_ANeg==0)
+            {
+				a.SetRow(j, zero4);
+				d.SetRow(j, old_dj - old_aj );
+                for (int i=0; i<N; i++)
+                    (*all_rd[i]) = (*all_rd[i]) + ( (*all_ui[i]) * old_aj).GetCol(0);
+			}
+
+            // (1) No Positive Additive
+            //  0:    d   ==> d+a   all_rd = y - d      delta -a
+            // -1:   -a   ==>   0   all_rd = y - (-a)   delta -a
+            if ( N_APos==0 && N_Dom!=0 && N_ANeg!=0 )
+            {
+				a.SetRow(j, zero4);
+				d.SetRow(j, old_dj - old_aj*(-1.0) );
+                for (int i=0; i<N; i++)
+                    (*all_rd[i]) = (*all_rd[i]) - ( (*all_ui[i]) * old_aj).GetCol(0);
+			}
+		}
+}
 
 //---------------------------------------------------
 // part I in the R code
@@ -1200,7 +1321,7 @@ strcat(m_szTraceTag, "I");
                     else if (vctP[j]==1)
                     {
                         double InvTau2_1 = sqrt( LG * lambda_st2_x * sigma2/d.RowProd(j,j ) );
-                        //R_set_seed( (j+1)*10  );
+                        //R_set_seed( j*10 + 1  );
                         tau_st2_x[j] = 1/func_invGau(InvTau2_1, LG*lambda_st2_x );
                         tau_st2[j] = 0;
                     }
@@ -1223,12 +1344,14 @@ strcat(m_szTraceTag, "I");
 #ifdef MONTIME
                 CFmVector gtau_st2( P, 1);
                 CFmVector gtau_st2_x(P, 1);
-                _cuda_gpart9( gCuda, gCpuObj, P, lambda_st2, lambda_st2_x, sigma2, vctP, d, gtau_st2, gtau_st2_x );
-                if (!tau_st2.Compare(gtau_st2)) { tau_st2.Show("tau2"); gtau_st2.Show("gtau_st2"); printf("?part9 tau_st2\n");exit(-1);}
-                if (!tau_st2_x.Compare(gtau_st2_x)) { tau_st2_x.Show("tau2_x"); gtau_st2_x.Show("gtau_st2_x"); printf("?part9 tau_st2x\n");exit(-1);}
+                _cuda_gpart9( gCuda, gCpuObj, LG, P, lambda_st2, lambda_st2_x, sigma2, vctP, d, gtau_st2, gtau_st2_x );
+
+                if (round>0 &&  !tau_st2.Compare(gtau_st2)) { tau_st2.Show("tau2"); gtau_st2.Show("gtau_st2"); printf("?part9 tau_st2\n");exit(-1);}
+                if (round>0 &&  !tau_st2_x.Compare(gtau_st2_x)) { tau_st2_x.Show("tau2_x"); gtau_st2_x.Show("gtau_st2_x"); printf("?part9 tau_st2x\n");exit(-1);}
+
                 printf("GPU part9: %.4f seconds\n", stopTimer(st0) );
 #else
-                _cuda_gpart9( gCuda, gCpuObj, P, lambda_st2, lambda_st2_x, sigma2, vctP, d, tau_st2, tau_st2_x );
+                _cuda_gpart9( gCuda, gCpuObj, LG, P, lambda_st2, lambda_st2_x, sigma2, vctP, d, tau_st2, tau_st2_x );
 #endif
 
 #endif
@@ -1281,19 +1404,19 @@ strcat(m_szTraceTag, "J");
 
             if( m_bUseGPU)
             {
-                st0 =startTimer();
+                st0 = startTimer();
 #ifdef USECUDA
 #ifdef MONTIME
                 CFmMatrix gtmp2(0, 0, Q, Q);
                 CFmMatrix gtmp3(0, 0, Q, Q);
 
-                _cuda_gpart10( gCuda, gCpuObj, gGpuMap, N, Q, nC, nX, sigma2, alpha, mu, gtmp2, gtmp3 );
+                _cuda_gpart10( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, nX, sigma2, alpha, mu, gtmp2, gtmp3 );
 
-                if (!tmp2.Compare(gtmp2)) { tmp2.Show("tmp2"); gtmp2.Show("gtmp2"); printf("?part10 tmp2\n"); exit(-1);}
-                if (!tmp3.Compare(gtmp3)) { tmp3.Show("tmp3"); gtmp3.Show("gtmp3"); printf("?part10 tmp3\n"); exit(-1);}
+                if (round>0 && !tmp2.Compare(gtmp2)) { tmp2.Show("tmp2"); gtmp2.Show("gtmp2"); printf("?part10 tmp2\n"); exit(-1);}
+                if (round>0 && !tmp3.Compare(gtmp3)) { tmp3.Show("tmp3"); gtmp3.Show("gtmp3"); printf("?part10 tmp3\n"); exit(-1);}
                 printf("GPU part10: %.4f seconds\n", stopTimer(st0) );
 #else
-                _cuda_gpart10( gCuda, gCpuObj, gGpuMap, N, Q, nC, nX, sigma2, alpha, mu, tmp2, tmp3 );
+                _cuda_gpart10( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, nX, sigma2, alpha, mu, tmp2, tmp3 );
 #endif
 #endif
             }
@@ -1342,11 +1465,12 @@ strcat(m_szTraceTag, "K");
 #ifdef MONTIME
             st0 = startTimer();
             double gsigma2_scale=0.0;
-            _cuda_gpart11( gCuda, gCpuObj, gGpuMap, N, Q, nC, alpha, mu, &gsigma2_scale );
-            if( abs(gsigma2_scale-sigma2_scale)> 1e-6 ) {printf("part11, %f!=%f\n", gsigma2_scale, sigma2_scale );exit(-1);}
+            _cuda_gpart11( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, alpha, mu, &gsigma2_scale );
+
+            if( round>0 && abs(gsigma2_scale-sigma2_scale)> 1e-6 ) {printf("part11, %f!=%f\n", gsigma2_scale, sigma2_scale );exit(-1);}
             printf("GPU part11: %.4f seconds\n", stopTimer(st0) );
 #else
-            _cuda_gpart11( gCuda, gCpuObj, gGpuMap, N, Q, nC, alpha, mu, &sigma2_scale );
+            _cuda_gpart11( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, alpha, mu, &sigma2_scale );
 #endif
 #endif
 
@@ -1410,11 +1534,11 @@ strcat(m_szTraceTag, "L");
 #ifdef USECUDA
 #ifdef MONTIME
             double gexp_diff=0.0;
-            _cuda_gpart12( gCuda, gCpuObj, gGpuMap, N, Q, nC, sigma2, alpha, mu, &gexp_diff );
-            if( abs(gexp_diff-exp_diff)>1e-6) {printf("part12, %f!=%f\n", gexp_diff, exp_diff );exit(-1);}
+            _cuda_gpart12( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, sigma2, alpha, mu, &gexp_diff );
+            if( round>0 && abs(gexp_diff-exp_diff)>1e-6) {printf("part12, %f!=%f\n", gexp_diff, exp_diff );exit(-1);}
             printf("GPU part12: %.4f seconds\n", stopTimer(st0) );
 #else
-            _cuda_gpart12( gCuda, gCpuObj, gGpuMap, N, Q, nC, sigma2, alpha, mu, &exp_diff );
+            _cuda_gpart12( gCuda, gCpuObj, gGpuMap, LG, N, Q, nC, sigma2, alpha, mu, &exp_diff );
 #endif
 #endif
         }
@@ -1480,7 +1604,7 @@ Rprintf( "Round=%d sigma2=%f rho=%.4f tmp5=%f lambda2=%f,%f,%f,%f mu=%.4f, %.4f,
 #ifdef USECUDA
     if(m_bUseGPU)
     {
-        if( Free_GPUobj( gCuda, gCpuObj, gGpuMap, N) != 0 )
+        if( Free_GPUobj( gCuda, gCpuObj, gGpuMap, LG, N) != 0 )
             return( ERR_ON_GPU );
 
         //printf("End of GPU\n");

@@ -14,9 +14,9 @@ The HiGWAS package is developed to identify significant SNPs that control phenot
 
 ## Document
 
-> 1) Vignette (https://github.com/wzhy2000/gwas.lasso/blob/master/higwas.vignette.pdf)
+> 1) Vignette (https://github.com/wzhy2000/HiGWAS/blob/master/higwas.vignette.pdf)
 
-> 2) Manual (https://github.com/wzhy2000/gwas.lasso/blob/master/higwas.manual.pdf)
+> 2) Manual (https://github.com/wzhy2000/HiGWAS/blob/master/higwas.manual.pdf)
 
 ## Installation Instructions:
 
@@ -41,9 +41,14 @@ R CMD INSTALL package
 
 ### Install package on Windows
 
-1) Please download windows package from (https://github.com/wzhy2000/HiGWAS/raw/master/windows/gwas.lasso.zip)
+Please use **install_github** to install the package: 
 
-2) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
+```
+library("devtools");
+install_github("wzhy2000/HiGWAS/package")
+```
+
+The details are avalaible in the vignette document (https://github.com/wzhy2000/HiGWAS/blob/master/higwas.vignette.pdf)
 
 ## Usage Instructions
 

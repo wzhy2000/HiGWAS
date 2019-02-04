@@ -1,4 +1,4 @@
-library(gwas.lasso)
+library(HiGWAS)
 
 #Yale BulldongN
 file.plink.bed <- "/home/zw224/f/bmi/FHS-bmi-v1.bed"  

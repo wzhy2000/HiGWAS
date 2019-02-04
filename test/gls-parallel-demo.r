@@ -1,4 +1,4 @@
-library(gwas.lasso)
+library(HiGWAS)
  
 # simu_id=as.integer(get_par("ID"))
 # simu_p=as.integer(get_par("P"))

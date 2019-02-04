@@ -28,8 +28,8 @@ R_LIBS := @R_LIBS@
 COMPILE_CUDA := @COMPILE_CUDA@
 
 # Program-specifics
-TARGET := gwas.lasso.so
-OBJS := gwas.lasso.o
+TARGET := HiGWAS.so
+OBJS := HiGWAS.o
 
 HEADERS := \
 	$(wildcard *.h) 

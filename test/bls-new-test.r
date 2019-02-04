@@ -1,4 +1,4 @@
-library(gwas.lasso)
+library(HiGWAS)
 library(parallel)
 
 get_cmd_option<-function(arg.name, def)

@@ -339,7 +339,7 @@ snpmat_parallel_list<-function( phe.mat,
 
 	cpu.fun<-function( snpmat )
 	{
-		library(gwas.lasso);
+		library(HiGWAS);
 		if (execInSnow)
 		{
 			requireNamespace("snowfall");

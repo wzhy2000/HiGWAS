@@ -1,4 +1,4 @@
-library(gwas.lasso)
+library(HiGWAS)
 
 phe.out <- "gls.test.qbest.phe"  
 snp.out <- "gls.test.qbest.snp"

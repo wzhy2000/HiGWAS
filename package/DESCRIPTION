@@ -1,7 +1,7 @@
-Package: gwas.lasso
+Package: HiGWAS
 Type: Package
 Title: Bayesian Lasso and Group Lasso for GWAS
-Version: 0.5
+Version: 0.5.0
 Date: 2018-12-10
 Author: Zhong Wang
 Maintainer: Zhong Wang <wzhy2000@hotmail.com>

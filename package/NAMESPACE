@@ -1,4 +1,4 @@
-useDynLib(gwas.lasso, .registration = TRUE)
+useDynLib(HiGWAS, .registration = TRUE)
 
 import(utils)
 import(graphics)

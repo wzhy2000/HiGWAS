@@ -1,4 +1,4 @@
-library(gwas.lasso)
+library(HiGWAS)
 
 #file.plink.bed <- "/home/zw224/f/bmi/FHS-bmi-v1.bed"  
 #file.plink.bim <- "/home/zw224/f/bmi/FHS-bmi-v1.bim"  

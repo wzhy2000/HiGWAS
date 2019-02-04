@@ -1,4 +1,4 @@
-library(gwas.lasso)
+library(HiGWAS)
 
 
 phe.out <- "gls.test.snpmat.phe"  

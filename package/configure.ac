@@ -1,4 +1,4 @@
-## gwas.lasso package,  Zhong Wang<zw355@cornell.edu>
+## HiGWAS(gwas.lasso) package,  Zhong Wang<zw355@cornell.edu>
 ##
 ## This scipt is a modification of the configure.in file
 ## from the magma package (version 0.2.1)
@@ -7,7 +7,7 @@
 ## Copyright (C) 2010 Brian J Smith
 ## Licensed under GNU GPL 3 or later
 
-AC_INIT([gwas.lasso], 0.0.1)
+AC_INIT([HiGWAS], 0.5.0)
 #AC_CONFIG_AUX_DIR([tools])
 
 #################### GCC Compiler ####################

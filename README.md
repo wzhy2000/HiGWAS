@@ -1,8 +1,6 @@
-# gwas.lasso
+# HiGWAS
 
 Implementing Lasso methods to identify significant SNPs and estimate joint genetic effects for non-longitudinal traits or longitudinal traits in GWAS.
-
-The package has been moved from http://statgen.psu.edu/software/fgwas-r2.html to here.
 
 # Reference
 
@@ -16,9 +14,9 @@ The GWAS Lasso package is developed to identify significant SNPs that control ph
 
 ## Document
 
-> 1) Vignette (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso.vignette.pdf)
+> 1) Vignette (https://github.com/wzhy2000/gwas.lasso/blob/master/higwas.vignette.pdf)
 
-> 2) Manual (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso.manual.pdf)
+> 2) Manual (https://github.com/wzhy2000/gwas.lasso/blob/master/higwas.manual.pdf)
 
 ## Installation Instructions:
 
@@ -28,14 +26,14 @@ The GWAS Lasso package is developed to identify significant SNPs that control ph
     
 > 2. Package [snpStats](http://bioconductor.org/packages/release/bioc/html/snpStats.html), nlme, snowfall.
 
-Please install the required R packages before you install the fGWAS package. After the  installation of the dependencies, please install the **gwas.lasso** as following steps.
+Please install the required R packages before you install the fGWAS package. After the  installation of the dependencies, please install the **HiGWAS** as following steps.
 
 ### Install package on LINUX or Mac OSX
 
 ```
-git clone https://github.com/wzhy2000/gwas.lasso.git
+git clone https://github.com/wzhy2000/HiGWAS.git
 
-cd gwas.lasso
+cd HiGWAS
 
 R CMD INSTALL package
 
@@ -69,7 +67,7 @@ The following codes show how to call above steps in R.
 We don't attach any data set in the package, so here we use the simulation to generate the phenotype taits andgenotype data. The simulation function returns a list containing one phenotype object and one genotype object.
 
 ```
-library(gwas.lasso);
+library(HiGWAS);
 ## generate for BLS model
 bls.simulate(“bls.phe.csv”, “bls.gen.csv”);
 ## generate the longitudinal traits for GLS model

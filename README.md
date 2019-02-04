@@ -10,7 +10,7 @@ Implementing Lasso methods to identify significant SNPs and estimate joint genet
 
 ## Abstract:
 
-The GWAS Lasso package is developed to identify significant SNPs that control phenotypic variation and estimate their additive and dominant genetic effects based on the Bayesian Lasso or Group Lasso model. The package provides two statistical models, **BLS** can detect the association using one single time measured phenotypc and **GLS** solve the association based on the longitudinal phenotype.
+The HiGWAS package is developed to identify significant SNPs that control phenotypic variation and estimate their additive and dominant genetic effects based on the Bayesian Lasso or Group Lasso model. The package provides two statistical models, **BLS** can detect the association using one single time measured phenotypc and **GLS** solve the association based on the longitudinal phenotype.
 
 ## Document
 
@@ -41,7 +41,7 @@ R CMD INSTALL package
 
 ### Install package on Windows
 
-1) Please download windows package from (https://github.com/wzhy2000/gwas.lasso/raw/master/windows/gwas.lasso.zip)
+1) Please download windows package from (https://github.com/wzhy2000/HiGWAS/raw/master/windows/gwas.lasso.zip)
 
 2) Install the package in R GUI by selecting the menu "Packages|Install package(s) from local zip files..."
 
@@ -104,4 +104,4 @@ summary(r.bls);
 summary(r.gls);
 ```
 
-All functions and examples in the GWAS.lasso package are available in the manual (https://github.com/wzhy2000/gwas.lasso/blob/master/gwaslasso.manual.pdf).
+All functions and examples in the HiGWAS package are available in the manual (https://github.com/wzhy2000/HiGWAS/blob/master/higwas.manual.pdf).

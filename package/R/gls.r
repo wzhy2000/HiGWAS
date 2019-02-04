@@ -1134,7 +1134,7 @@ get_sig_gls_snp <- function( r.gls )
 }
 
 
-plot.GLS.ret<-function( x, y=NULL, ... , fig.prefix=NULL, q.probs=0.1 )
+plot.GLS.ret<-function( x, y=NULL, ... , fig.prefix=NULL, q.probs=0.05, ylim=NULL )
 {
 	r.gls <- x;
 
@@ -1168,19 +1168,19 @@ plot.GLS.ret<-function( x, y=NULL, ... , fig.prefix=NULL, q.probs=0.1 )
 	if( !is.null(r.gls$refit_add) || !is.null(r.gls$refit_dom) )
 	{
 		refit<- merge_add_dom( r.gls$refit_add, r.gls$refit_dom );
-		draw_refit_curve( refit, r.gls$options$Z.range, fig.prefix, "curve" );
+		draw_refit_curve( refit, r.gls$options$Z.range, fig.prefix, "curve", ylim=ylim );
 	}
 	
 	if(!is.null( r.gls$refit_add ))
 	{
 		idx.add<- which(rowSums( r.gls$refit_add[,c(3:6)]  )>0 );
-		draw_refit_CI_curve( r.gls$refit_add[idx.add,], r.gls$options$Z.range, fig.prefix, "add", ReverseCurve=TRUE, q.probs=q.probs );
+		draw_refit_CI_curve( r.gls$refit_add[idx.add,], r.gls$options$Z.range, fig.prefix, "Add", ReverseCurve=TRUE, q.probs=q.probs, ylim=ylim );
 	}
 
 	if(!is.null( r.gls$refit_dom ))
 	{
 		idx.dom<- which(rowSums( r.gls$refit_dom[,c(3:6)]  )>0 );
-		draw_refit_CI_curve( r.gls$refit_dom[idx.dom,], r.gls$options$Z.range, fig.prefix, "dom", ReverseCurve=FALSE, q.probs=q.probs );
+		draw_refit_CI_curve( r.gls$refit_dom[idx.dom,], r.gls$options$Z.range, fig.prefix, "Dom", ReverseCurve=FALSE, q.probs=q.probs, ylim=ylim );
 	}
 }
 

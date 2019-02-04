@@ -152,7 +152,7 @@ draw_man_fgwas<-function( r.fgwas, fig.prefix=NULL, fig.name=NULL )
 #
 #--------------------------------------------------------------
 
-draw_refit_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL, n.lgr = 4)
+draw_refit_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL, n.lgr = 4, ylim=NULL)
 {
     if(is.null(Z.range))  Z.range <- c(-1,1);
 
@@ -185,7 +185,7 @@ draw_refit_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL,
 			if(refit[ n.par,9]>0) Dom.par<- refit[ n.par, c(11:14) ];
 			
 			par(mfg=c(i, j));
-			draw_single_curve( rownames(refit)[n.par], Z.range, add=Add.par, dom=Dom.par, bLegend=(i==1 & j==1) );
+			draw_single_curve( rownames(refit)[n.par], Z.range, add=Add.par, dom=Dom.par, bLegend=(i==1 & j==1), ylim=ylim );
 		}
 		
 		if (p != n.page.seq[ NROW(n.page.seq)] ) plot.new();
@@ -198,7 +198,7 @@ draw_refit_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL,
 	}		
 }
 
-draw_single_curve<-function( snp_name, Z.range, add=NULL, dom=NULL, bLegend=FALSE )
+draw_single_curve<-function( snp_name, Z.range, add=NULL, dom=NULL, bLegend=FALSE, ylim=NULL )
 {
     
 	old.p1 <- par( mar=c(2,2,1,1)+0.1);
@@ -212,12 +212,20 @@ draw_single_curve<-function( snp_name, Z.range, add=NULL, dom=NULL, bLegend=FALS
 	if (!is.null(add)) y <- cbind(y, ui%*%t(add))
 	if (!is.null(dom)) y <- cbind(y, ui%*%t(dom))
 
-	ylim.max <- max(y, na.rm=T);
-	ylim.min <- min(y, na.rm=T);
-	ylim.len <- ylim.max - ylim.min
-	ylim.max <- ylim.max + 0.15*abs(ylim.len);
-	ylim.min <- ylim.min - 0.15*abs(ylim.len);
-
+    if(is.null(ylim))
+    {
+        ylim.max <- max(y, na.rm=T);
+	    ylim.min <- min(y, na.rm=T);
+	    ylim.len <- ylim.max - ylim.min
+	    ylim.max <- ylim.max + 0.15*abs(ylim.len);
+	    ylim.min <- ylim.min - 0.15*abs(ylim.len);
+    }
+    else
+    {
+         ylim.min <- ylim[1];
+         ylim.max <- ylim[2];
+    }
+    
 	y.num <- length(tp);
 
 	plot( c(0,0), c(0,0), type="n", xaxt="n", yaxt="s", yaxs="i", main=snp_name, cex.main=0.8, cex.axis=0.8, 
@@ -246,17 +254,17 @@ draw_single_curve<-function( snp_name, Z.range, add=NULL, dom=NULL, bLegend=FALS
 
     if (bLegend)
 	legend( "topleft", 
-			legend = cur.lab,
+			legend = c("Add", "Dom"),
 			text.width = strwidth("ABC"),
-			text.col = cur.col,
-			col = cur.col,
+			text.col = c("orange", "purple"),
+			col = c("orange", "purple"),
 			lty=1,
 			xjust = 1, 
 			yjust = 1,
 			cex=0.8)
 }
 
-draw_refit_CI_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL, n.lgr = 4, ReverseCurve = FALSE, q.probs=0.1)
+draw_refit_CI_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NULL, n.lgr = 4, ReverseCurve = FALSE, q.probs=0.1, ylim=NULL)
 {
     if(is.null(Z.range))  Z.range <- c(-1,1);
 
@@ -291,7 +299,8 @@ draw_refit_CI_curve<-function( refit, Z.range=NULL, fig.prefix=NULL, fig.name=NU
 			                    CI0= refit[ n.par, c(13:16), drop=F ]*ifelse(ReverseCurve, -1, 1),
 			                    CI1= refit[ n.par, c(18:21), drop=F ]*ifelse(ReverseCurve, -1, 1),
 			                    bLegend=(i==1 & j==1),
-			                    q.probs=q.probs);
+			                    q.probs=q.probs,
+			                    ylim=ylim);
 		}
 		
 		if (p != n.page.seq[ NROW(n.page.seq)] ) plot.new();
@@ -351,7 +360,7 @@ get_curve_range <- function( ui, hat, CI0=NULL, CI1=NULL, q.probs=0.1 )
 }
 
 
-draw_single_CI_curve<-function( snp_name, Z.range, effect.lab, hat, CI0=NULL, CI1=NULL, bLegend=FALSE, q.probs=0.1 )
+draw_single_CI_curve<-function( snp_name, Z.range, effect.lab, hat, CI0=NULL, CI1=NULL, bLegend=FALSE, q.probs=0.1, ylim=NULL )
 {
 	old.p1 <- par( mar=c(2,2,1,1)+0.1);
 	on.exit( par(old.p1), add = T);
@@ -364,12 +373,19 @@ draw_single_CI_curve<-function( snp_name, Z.range, effect.lab, hat, CI0=NULL, CI
 	y[,2] <- smooth.spline(x=tp, y=y[,2], df=10)$y;
 	y[,3] <- smooth.spline(x=tp, y=y[,3], df=10)$y;
 
-	ylim.max <- max(y, na.rm=T);
-	ylim.min <- min(y, na.rm=T);
-	ylim.len <- ylim.max - ylim.min
-	ylim.max <- ylim.max + 0.15*abs(ylim.len);
-	ylim.min <- ylim.min - 0.15*abs(ylim.len);
-
+    if(is.null(ylim))
+    {
+	   ylim.max <- max(y, na.rm=T);
+	   ylim.min <- min(y, na.rm=T);
+	   ylim.len <- ylim.max - ylim.min
+	   ylim.max <- ylim.max + 0.15*abs(ylim.len);
+	   ylim.min <- ylim.min - 0.15*abs(ylim.len);
+    }
+    else
+    {
+       ylim.min <- ylim[1];
+       ylim.max <- ylim[2];
+    }
 	y.num <- length(tp);
 
 	plot( c(0,0), c(0,0), type="n", xaxt="n", yaxt="s", yaxs="i", main=snp_name, cex.main=0.8, cex.axis=0.8,  
@@ -377,7 +393,7 @@ draw_single_CI_curve<-function( snp_name, Z.range, effect.lab, hat, CI0=NULL, CI
     
     axis(1, at=c(-1, -0.5, 0, 0.5, 1), labels=c(Z.range[1],NA, (Z.range[1] + Z.range[2])/2, NA, Z.range[2]), cex.axis=0.8)
     
-	cur.col <- ifelse(effect.lab=="add", "orange", "purple");
+	cur.col <- ifelse(effect.lab=="Add", "orange", "purple");
 	 
 	polygon(c(tp, rev(tp)), c(y[,2], rev(y[,3])), col=alpha(cur.col, 0.1), border=alpha(cur.col, 0.1)); 
 	lines(tp, y[,1], col=cur.col);

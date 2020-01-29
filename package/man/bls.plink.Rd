@@ -121,10 +121,10 @@ The control parameters include the following items.\cr
  \tab                 \tab is 0.025.\cr
 6\tab fQval.dom       \tab Default:0.025, quantile of dominant effect for each \cr 
  \tab                 \tab SNP.\cr
-7\tab fgwas.cutoff    \tab Default:0.05, a p-value cutoff for fGWAS model to \cr 
- \tab                 \tab select the significant marginal SNPs.\cr
-8\tab nPiecewise.ratio\tab Default:2, the ratio of grouping SNPs.\cr
-9\tab debug           \tab Default:FALSE, logical value, indicating whether or \cr 
+7\tab fgwas.cutoff    \tab a p-value cutoff for fGWAS model to select the \cr 
+ \tab                 \tab significant marginal SNPs.Default:0, the cutoff is \cr
+ \tab                 \tab determined automatically. \cr
+8\tab debug           \tab Default:FALSE, logical value, indicating whether or \cr 
  \tab                 \tab not debug information is outputted.\cr
 }
 

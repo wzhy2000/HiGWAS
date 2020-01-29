@@ -27,13 +27,16 @@
 #include "bls_dat.h"
 #include "bls_cfg.h"
 
+#include "hello.h"
+
+
 #define _t(x) ((x).GetTransposed())
 
-BLS::BLS(bool bGpuUsed)
+BLS::BLS( bool bGpuUsed )
 {
     m_nDataType = RUNMODE_UNK;
     m_bRefit = false;
-    m_bCompared = bGpuUsed;
+    m_bGpuUsed = bGpuUsed;
 
     m_pDat = NULL;
     m_pRes = NULL;
@@ -618,7 +621,7 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
                 double old_aj = a[j];
                 double new_a = rnorm( aMu_j, sqrt( aVar[j] ) );
 
-                //isnana(new_a) <==> new_a!=new_a
+                //R_isnancpp(new_a) <==> new_a!=new_a
                 if ( new_a != new_a )
                 {
                     _log_debug( _HI_, "PART C_test.....j=%d, aMu_j=%f, var_a=%f", j, aMu_j, aVar[j]);
@@ -675,6 +678,9 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
 
         if (!m_bRefit)
         {
+
+if( !m_bGpuUsed )
+{
             for (int j=0; j<P; j++)
             {
                 if (a[j] == 0.0 )
@@ -688,14 +694,37 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
                 if ( _tau2 <= 0 || _tau2 != _tau2 )
                 {
                     _log_debug( _HI_, "PART D_test.....j=%d, tau2=%f, lambda2=%f, sigma2=%f, a[j]=%f, mu=%f",
-                                     j, tau2[j], lambda2, sigma2, a[j], InvTau2_1);
+                                    j, tau2[j], lambda2, sigma2, a[j], InvTau2_1);
                 }
                 else
                     tau2[j] = _tau2;
             }
+}
+else
+{
+		#ifdef CUDALIB
+			_cuda_partB1( gCuda, P, lambda2, sigma2, a, tau );
+		#else
+			Rprintf("The package is not compiled with CUDA library");
+		#endif
+
+}
+
+/*** test CUDA
+if(0)
+{
+	for(int kk=0;kk<P; kk++)
+		 	{
+				if(tau2[kk] != tauX[kk]) Rprintf("%d, %f!=%f\n", kk, tau2[kk], tauX[kk]);
+			}
+
+Free( _runif );
+Free( _rnorm );
+			Rprintf("Comparing End\n");
+}*/
 
             lambda2 = rgamma( P+gammaTau, tau2.Sum()/2 + deltaTau );
-            if ( lambda2 <= 0 || std::isnan(lambda2) )
+            if ( lambda2 <= 0 || R_isnancpp(lambda2) )
             {
                 _log_debug( _HI_, "PART D_test.....tau2*=%f, P=%f, gammaTau_st=%f, deltaTau_st=%f",
                              tau2.Sum(), P, gammaTau_st, deltaTau_st);
@@ -805,7 +834,7 @@ int BLS::proc_mcmc( CFmVector& Y0, CFmMatrix& Covs, CFmSnpMat& gen, CFmFileMatri
             }
 
             lambda_st2 = rgamma( P + gammaTau_st, tau_st2.Sum()/2+deltaTau_st );
-            if ( lambda_st2 <= 0 || std::isnan(lambda_st2) )
+            if ( lambda_st2 <= 0 || R_isnancpp(lambda_st2) )
             {
                 _log_debug( _HI_, "PART F_test.....tau2*=%f, P=%f, gammaTau_st=%f, deltaTau_st=%f",
                              tau_st2.Sum(), P, gammaTau_st, deltaTau_st);
@@ -966,7 +995,6 @@ CFmMatrix* BLS::GetPrePcaAd()
 
     CFmNewTemp refNew;
     CFmMatrix* pSnp = new (refNew) CFmMatrix(0, 0);
-
     for( int i=0; i<m_pDat->m_nSnpP; i++ )
     {
         if(fabs(vct_ca[i]) >= fMarker_a)
@@ -974,8 +1002,7 @@ CFmMatrix* BLS::GetPrePcaAd()
             vct.Resize(0);
             m_pDat->m_pPackedSNP->GetSnpRow( i, &vct );
             vct = vct - 1;
-            if(vct.Sum()!=0)
-               pSnp->Cbind( vct );
+            pSnp->Cbind( vct );
         }
     }
 
@@ -988,8 +1015,7 @@ CFmMatrix* BLS::GetPrePcaAd()
             m_pDat->m_pPackedSNP->GetSnpRow( i, &vct );
             vct = vct - 1;
             vct = vct.abs()*(-1)+1;
-            if(vct.Sum()!=0)
-               pSnp->Cbind( vct );
+            pSnp->Cbind( vct );
         }
     }
 

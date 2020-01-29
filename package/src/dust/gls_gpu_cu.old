@@ -1,0 +1,1597 @@
+#include <R.h>
+#include <Rinternals.h>
+#include <Rembedded.h>
+#include <Rdefines.h>
+
+#include <curand_kernel.h>
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+
+#include <stdio.h>
+ 
+#include "gls_gpu.h"
+#include "gpu_matrix.cux"
+#include "gpu_matrix_new.cux"
+#include "gpu_reduction.cux"
+
+using namespace std;
+
+ 
+__global__ void g_part0(int N, double rho, double tmp5 )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+        printf("hello %d\n", i);   
+    } 
+}
+
+int _cuda_part0( int N, double rho, double tmp5)
+{   
+    g_part0<<< 1, 5>>>(N, rho, tmp5 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+    return(0);
+}
+ 
+__global__ void g_cuda_show(double* gMat )
+{
+    double* tx = gMat;
+    printf("GPUADDR=%p  (%.1f %.1f %.1f)\n", tx,  tx[0], tx[1],  tx[2]);
+    if(round(tx[2])!=1)
+       for( int i=0; i<5; i++ )
+            printf("[%f %f %f %f %f ]\n", _M(tx, i, 0), _M(tx, i, 1), _M(tx, i, 2 ), _M(tx, i, 3 ), _M(tx, i, 4 ) ); 
+    else        
+        printf("[%f %f %f %f %f ]\n", _V(tx, 0), _V(tx, 1), _V(tx, 2 ), _V(tx, 3 ), _V(tx, 4 ) ); 
+}
+
+int _cuda_show( double* gMat)
+{   
+    g_cuda_show<<< 1, 1>>>(gMat);
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+    return(0);
+}
+
+__device__ GPUShare* ConvetSharePoint( double* smb, int Q )
+{
+    GPUShare* p = (GPUShare*)smb; 
+    p->tempMat0 = &(p->pNext[0]);
+    p->tempMat1 = p->tempMat0 + (Q*Q+3);
+    p->tempMat2 = p->tempMat1 + (Q*Q+3);
+    p->tempMat3 = p->tempMat2 + (Q*Q+3);
+    p->tempMat4 = p->tempMat3 + (Q*Q+3);
+    p->tMA  = p->tempMat4 + (Q*Q+3);
+    p->tMB  = p->tMA + (Q*Q+3);
+    p->tMC  = p->tMB + (Q*Q+3);
+    p->tMD  = p->tMC + (Q*Q+3);
+    p->tME  = p->tMD + (Q*Q+3);
+
+    p->tempVec0 = p->tME + (Q+3);
+    p->tempVec1 = p->tempVec0 + (Q+3);
+    p->tempVec2 = p->tempVec1 + (Q+3);
+    p->tempVec3 = p->tempVec2 + (Q+3);
+    p->tempVec4 = p->tempVec3 + (Q+3);
+    p->tVA  = p->tempVec4 + (Q+3);
+    p->tVB  = p->tVA + (Q+3);
+    p->tVC  = p->tVB + (Q+3);
+    p->tVD  = p->tVC + (Q+3);
+    p->tVE  = p->tVD + (Q+3);
+
+    p->tempMat0[0]= Q*Q;
+    p->tempMat1[0]= Q*Q;
+    p->tempMat2[0]= Q*Q;
+    p->tempMat3[0]= Q*Q;
+    p->tempMat4[0]= Q*Q;
+    p->tMA[0]= Q*Q;
+    p->tMB[0]= Q*Q;
+    p->tMC[0]= Q*Q;
+    p->tMD[0]= Q*Q;
+    p->tME[0]= Q*Q;
+
+    p->tempVec0[0]= Q;
+    p->tempVec1[0]= Q;
+    p->tempVec2[0]= Q;
+    p->tempVec3[0]= Q;
+    p->tempVec4[0]= Q;
+    p->tVA[0]= Q;
+    p->tVB[0]= Q;
+    p->tVC[0]= Q;
+    p->tVD[0]= Q;
+    p->tVE[0]= Q;
+
+    return(p);
+}
+        
+double** make_vector_list( double** pList, unsigned int N, unsigned int nLen, bool verbose=FALSE  )
+{
+    printf("make_vector_list, N=%d, %p\n", N, (void*)pList); 
+
+    for(int i=0;i<N;i++)
+    {
+        double* p;
+        PERR( cudaMalloc( &p, (nLen + 3 )*sizeof(double) ) );
+        pList[i] = p;
+
+        double nMatHead[3];
+        nMatHead[0] = ( nLen * 1.0 );
+        nMatHead[1] = ( nLen * 1.0 );
+        nMatHead[2] = ( 1.0 );
+        PERR( cudaMemcpy( p, &nMatHead, 3*sizeof(double), cudaMemcpyHostToDevice ) );
+if(verbose) printf("I=%d, %p\n", i, p);         
+    } 
+    
+    return(pList);
+}
+
+double** make_matrix_list( double** pList, unsigned int N, unsigned int nRow, unsigned int nCol, bool verbose=FALSE )
+{
+    printf("make_matrix_list, N=%d, %p\n", N, (void*)pList);         
+
+    for(int i=0;i<N;i++)
+    {
+        double* p;
+        PERR( cudaMalloc( &p, (nRow*nCol+3)*sizeof(double) ) );
+        pList[i] = p;
+
+        double nMatHead[3];
+        nMatHead[0] = ( nRow * nCol * 1.0 );
+        nMatHead[1] = ( nRow * 1.0 );
+        nMatHead[2] = ( nCol * 1.0 );
+        PERR( cudaMemcpy( p, &nMatHead, 3*sizeof(double), cudaMemcpyHostToDevice ) );
+if(verbose) printf("I=%d, %p\n", i, p);         
+    } 
+    
+    return(pList);
+}
+
+double* make_matrix_ongpu( unsigned int nRow, unsigned int nCol )
+{
+    double* p;
+    PERR( cudaMalloc( &p, (nRow*nCol+3)*sizeof(double) ) );
+
+    double nMatHead[3];
+    nMatHead[0] = ( nRow * nCol * 1.0 );
+    nMatHead[1] = ( nRow * 1.0 );
+    nMatHead[2] = ( nCol * 1.0 );
+    PERR( cudaMemcpy( p, &nMatHead, 3*sizeof(double), cudaMemcpyHostToDevice ) );
+
+    return(p);
+}
+
+void _initGPUobj(struct GPUobj* gCpu, struct GPUobj* gGpuObj, struct GPUobj* gGpuMap, unsigned int nsize, unsigned int N, unsigned int P, unsigned int Q, unsigned int NC )
+{
+printf("%p, %d, %d, %d, %d \n", nsize, N, P, Q, NC );
+
+    memset(gCpu, 0, nsize);
+    gCpu->nSize = nsize;
+    gCpu->pNext = &(gCpu->pNext);
+
+    gCpu->X     = make_matrix_ongpu( N, NC+1 );
+    gCpu->Z     = make_matrix_ongpu( N, Q );
+    gCpu->Z0    = make_matrix_ongpu( N, Q );
+    gCpu->mInZ  = make_matrix_ongpu( N, 1 );
+    gCpu->mu    = make_matrix_ongpu( LG, 1 );
+    gCpu->alpha = make_matrix_ongpu( NC+1, LG );
+    gCpu->a     = make_matrix_ongpu( P, LG );
+    gCpu->a_old = make_matrix_ongpu( P, LG );
+    gCpu->d     = make_matrix_ongpu( P, LG );
+    gCpu->d_old = make_matrix_ongpu( P, LG );
+    gCpu->vctP  = make_matrix_ongpu( P, 1 );
+    gCpu->tau2  = make_matrix_ongpu( P, 1 );
+    gCpu->tau2_x= make_matrix_ongpu( P, 1 );
+    gCpu->gen_a = make_matrix_ongpu( P, N );
+    gCpu->gen_d = make_matrix_ongpu( P, N );
+    gCpu->tVN0  = make_matrix_ongpu( N, 1 );
+    gCpu->tVN1  = make_matrix_ongpu( N, 1 );
+    gCpu->tVN2  = make_matrix_ongpu( N, 1 );
+
+printf("gCpu->X=%p\n", gCpu->X );
+printf("gCpu->gen_a=%p \n", gCpu->gen_a );
+printf("gCpu->gen_d=%p \n", gCpu->gen_d );
+printf("Test %p +1 %p\n", &(gCpu->pNext), &(gCpu->pNext) + sizeof(double*) );
+
+    gCpu->all_corTime = make_matrix_list( (double**)(&(gCpu->pNext) + sizeof(double*)), N, Q, Q );
+    gCpu->all_corMat = make_matrix_list( (double**)(&(gCpu->pNext) + sizeof(double*)), N, Q, Q );
+    gCpu->all_corMat_MH = make_matrix_list( (double**)((char*)(gCpu->all_corMat) + sizeof(double*)*N), N, Q, Q );
+    gCpu->all_corMat_Inv = make_matrix_list( (double**)(&(gCpu->pNext) + sizeof(double*)), N, Q, Q );
+    gCpu->all_corMat_MH_Inv = make_matrix_list( (double**)((char*)(gCpu->all_corMat) + sizeof(double*)*N), N, Q, Q );
+    gCpu->all_yi  = make_vector_list( (double**)((char*)(gCpu->all_corMat_MH) + sizeof(double*)*N), N, Q );
+    gCpu->all_rd  = make_vector_list( (double**)((char*)(gCpu->all_yi) + sizeof(double*)*N), N, Q );
+    gCpu->all_ui  = make_matrix_list( (double**)((char*)(gCpu->all_rd) + sizeof(double*)*N), N, Q, LG  );
+
+    gCpu->tempMat0 = make_matrix_list( (double**)((char*)(gCpu->all_ui) + sizeof(double*)*N), N, Q, Q  );
+    gCpu->tempMat1 = make_matrix_list( (double**)((char*)(gCpu->tempMat0) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tempMat2 = make_matrix_list( (double**)((char*)(gCpu->tempMat1) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tempMat3 = make_matrix_list( (double**)((char*)(gCpu->tempMat2) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tempMat4 = make_matrix_list( (double**)((char*)(gCpu->tempMat3) + sizeof(double*)*N), N, Q, Q );
+
+    gCpu->tMA      = make_matrix_list( (double**)((char*)(gCpu->tempMat4) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tMB      = make_matrix_list( (double**)((char*)(gCpu->tMA) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tMC      = make_matrix_list( (double**)((char*)(gCpu->tMB) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tMD      = make_matrix_list( (double**)((char*)(gCpu->tMC) + sizeof(double*)*N), N, Q, Q );
+    gCpu->tME      = make_matrix_list( (double**)((char*)(gCpu->tMD) + sizeof(double*)*N), N, Q, Q );
+
+    gCpu->tempVec0 = make_vector_list( (double**)((char*)(gCpu->tME) + sizeof(double*)*N), N, Q );
+    gCpu->tempVec1 = make_vector_list( (double**)((char*)(gCpu->tempVec0) + sizeof(double*)*N), N, Q );
+    gCpu->tempVec2 = make_vector_list( (double**)((char*)(gCpu->tempVec1) + sizeof(double*)*N), N, Q );
+    gCpu->tempVec3 = make_vector_list( (double**)((char*)(gCpu->tempVec2) + sizeof(double*)*N), N, Q );
+    gCpu->tempVec4 = make_vector_list( (double**)((char*)(gCpu->tempVec3) + sizeof(double*)*N), N, Q );
+
+    gCpu->tVA      = make_vector_list( (double**)((char*)(gCpu->tempVec4) + sizeof(double*)*N), N, Q );
+    gCpu->tVB      = make_vector_list( (double**)((char*)(gCpu->tVA) + sizeof(double*)*N), N, Q );
+    gCpu->tVC      = make_vector_list( (double**)((char*)(gCpu->tVB) + sizeof(double*)*N), N, Q );
+    gCpu->tVD      = make_vector_list( (double**)((char*)(gCpu->tVC) + sizeof(double*)*N), N, Q );
+    gCpu->tVE      = make_vector_list( (double**)((char*)(gCpu->tVD) + sizeof(double*)*N), N, Q );
+
+    //gCpu->tmp2     = make_matrix_list( (double**)((char*)(gCpu->tVE) + sizeof(double*)*N), N, Q, Q );
+    //gCpu->tmp3     = make_matrix_list( (double**)((char*)(gCpu->tmp2) + sizeof(double*)*N), N, Q, Q );
+    
+    memcpy(gGpuMap, gCpu, nsize); 
+
+printf("gCpu            =%p\n", gCpu);
+printf("gGpuObj         =%p\n", gGpuObj);
+
+    #define MAP_ADDR(x)  (double**)((char*)gGpuObj + (unsigned int)((char*)(x) - (char*)gCpu) )
+
+    gGpuMap->all_corTime = MAP_ADDR( gCpu->all_corTime );
+    gGpuMap->all_corMat = MAP_ADDR( gCpu->all_corMat );
+    gGpuMap->all_corMat_MH = MAP_ADDR( gCpu->all_corMat_MH );
+    gGpuMap->all_corMat_Inv = MAP_ADDR( gCpu->all_corMat_Inv );
+    gGpuMap->all_corMat_MH_Inv = MAP_ADDR( gCpu->all_corMat_MH_Inv );
+    gGpuMap->all_yi   = MAP_ADDR( gCpu->all_yi );
+    gGpuMap->all_rd   = MAP_ADDR( gCpu->all_rd );
+    gGpuMap->all_ui   = MAP_ADDR( gCpu->all_ui );
+
+    gGpuMap->tempMat0 = MAP_ADDR( gCpu->tempMat0 );
+    gGpuMap->tempMat1 = MAP_ADDR( gCpu->tempMat1 );
+    gGpuMap->tempMat2 = MAP_ADDR( gCpu->tempMat2 );
+    gGpuMap->tempMat3 = MAP_ADDR( gCpu->tempMat3 );
+    gGpuMap->tempMat4 = MAP_ADDR( gCpu->tempMat4 );
+
+    gGpuMap->tMA      = MAP_ADDR( gCpu->tMA );
+    gGpuMap->tMB      = MAP_ADDR( gCpu->tMB );
+    gGpuMap->tMC      = MAP_ADDR( gCpu->tMC );
+    gGpuMap->tMD      = MAP_ADDR( gCpu->tMD );
+    gGpuMap->tME      = MAP_ADDR( gCpu->tME );
+
+    gGpuMap->tempVec0 = MAP_ADDR( gCpu->tempVec0 );
+    gGpuMap->tempVec1 = MAP_ADDR( gCpu->tempVec1 );
+    gGpuMap->tempVec2 = MAP_ADDR( gCpu->tempVec2 );
+    gGpuMap->tempVec3 = MAP_ADDR( gCpu->tempVec3 );
+    gGpuMap->tempVec4 = MAP_ADDR( gCpu->tempVec4 );
+
+    gGpuMap->tVA      = MAP_ADDR( gCpu->tVA );
+    gGpuMap->tVB      = MAP_ADDR( gCpu->tVB );
+    gGpuMap->tVC      = MAP_ADDR( gCpu->tVC );
+    gGpuMap->tVD      = MAP_ADDR( gCpu->tVD );
+    gGpuMap->tVE      = MAP_ADDR( gCpu->tVE );
+
+    //gGpuMap->tmp2     = MAP_ADDR( gCpu->tmp2 );
+    //gGpuMap->tmp3     = MAP_ADDR( gCpu->tmp3 );
+
+}
+
+int Init_GPUobj(struct GPUobj** pCpuObj, struct GPUobj** pGpuObj, struct GPUobj** pGpuMap, int N, int P, int Q, int NC)
+{
+    int ngCudaSize = sizeof(struct GPUobj) + 50* N * sizeof(double*);
+
+    //cublasHandle_t h;
+    //cublasCreate(&h);
+    //cublasSetPointerMode(h, CUBLAS_POINTER_MODE_DEVICE);
+ 
+    struct GPUobj* gGpuObj;
+    PERR( cudaMalloc( (void **)&gGpuObj, ngCudaSize ) );
+    *pGpuObj = gGpuObj;
+
+    struct GPUobj* gCpuCopy = (struct GPUobj*)Calloc( ngCudaSize, char);
+    *pCpuObj = gCpuCopy;
+
+    struct GPUobj* gGpuMap = (struct GPUobj*)Calloc( ngCudaSize, char);
+    *pGpuMap = gGpuMap;
+
+    _initGPUobj( gCpuCopy, gGpuObj, gGpuMap, ngCudaSize, N, P, Q, NC );
+
+    PERR( cudaMemcpy( gGpuObj, gGpuMap, ngCudaSize, cudaMemcpyHostToDevice ) );
+    
+printf("CPU copy=%p\n", *pCpuObj);
+printf("GPU addr=%p\n", *pGpuObj);
+printf("GPU map =%p\n", *gGpuMap);
+    
+    return(0);
+}
+
+void _freeGPUobj(struct GPUobj* gCuda, int N )
+{
+    PERR( cudaFree( gCuda->X ) );
+    PERR( cudaFree( gCuda->Z ) );
+    PERR( cudaFree( gCuda->Z0 ) );
+    PERR( cudaFree( gCuda->mInZ ) );
+    PERR( cudaFree( gCuda->mu ) );
+    PERR( cudaFree( gCuda->alpha ) );
+    PERR( cudaFree( gCuda->a ) );
+    PERR( cudaFree( gCuda->d ) );
+    PERR( cudaFree( gCuda->a_old ) );
+    PERR( cudaFree( gCuda->d_old ) );
+    PERR( cudaFree( gCuda->vctP ) );
+    PERR( cudaFree( gCuda->tau2 ) );
+    PERR( cudaFree( gCuda->tau2_x ) );
+    PERR( cudaFree( gCuda->gen_a ) );
+    PERR( cudaFree( gCuda->gen_d ) );
+    PERR( cudaFree( gCuda->tVN0 ) );
+    PERR( cudaFree( gCuda->tVN1 ) );
+    PERR( cudaFree( gCuda->tVN2 ) );
+
+    for(int i=0;i<N;i++)
+    {
+        PERR( cudaFree( gCuda->all_corTime[i] ) );
+        PERR( cudaFree( gCuda->all_corMat[i] ) );
+        PERR( cudaFree( gCuda->all_corMat_MH[i] ) );
+        PERR( cudaFree( gCuda->all_corMat_Inv[i] ) );
+        PERR( cudaFree( gCuda->all_corMat_MH_Inv[i] ) );
+        PERR( cudaFree( gCuda->all_yi[i] ) );
+        PERR( cudaFree( gCuda->all_rd[i] ) );
+        PERR( cudaFree( gCuda->all_ui[i] ) );
+        PERR( cudaFree( gCuda->tempMat0[i] ) );
+        PERR( cudaFree( gCuda->tempMat1[i] ) );
+        PERR( cudaFree( gCuda->tempMat2[i] ) );
+        PERR( cudaFree( gCuda->tempMat3[i] ) );
+        PERR( cudaFree( gCuda->tempMat4[i] ) );
+        PERR( cudaFree( gCuda->tempVec0[i] ) );
+        PERR( cudaFree( gCuda->tempVec1[i] ) );
+        PERR( cudaFree( gCuda->tempVec2[i] ) );
+        PERR( cudaFree( gCuda->tempVec3[i] ) );
+        PERR( cudaFree( gCuda->tempVec4[i] ) );
+        PERR( cudaFree( gCuda->tMA[i] ) );
+        PERR( cudaFree( gCuda->tMB[i] ) );
+        PERR( cudaFree( gCuda->tMC[i] ) );
+        PERR( cudaFree( gCuda->tMD[i] ) );
+        PERR( cudaFree( gCuda->tME[i] ) );
+        PERR( cudaFree( gCuda->tVA[i] ) );
+        PERR( cudaFree( gCuda->tVB[i] ) );
+        PERR( cudaFree( gCuda->tVC[i] ) );
+        PERR( cudaFree( gCuda->tVD[i] ) );
+        PERR( cudaFree( gCuda->tVE[i] ) );
+    }
+    
+     PERR( cudaFree(gCuda) );
+}
+    
+int Free_GPUobj(struct GPUobj* pGpuObj, struct GPUobj* pCpuObj, int N)
+{
+    _freeGPUobj( pGpuObj, N );
+
+    Free(pCpuObj); 
+
+    return(0);
+}
+
+__device__ double _cuda_invGau(int seed, double theta, double chi)
+{
+    curandState s ;
+    // seed a random number generator
+    curand_init ( (unsigned int) seed, 0, 0, &s) ;
+    //double _rn = curand_normal_double (&s);   
+    //double _ru = curand_uniform_double (&s)'
+    
+    double _rn = 0.66;
+    double _ru = 0.88;
+
+    //squared normal, i.e., chi-square with df=1
+    double chisq1 = _rn * _rn;
+    double y1    = theta + 0.5*theta/chi * ( theta*chisq1 - sqrt(4*theta*chi*chisq1 + theta*theta*chisq1*chisq1) );
+    double y2    = theta*theta/y1;
+    double out_1 = _ru < (theta/(theta+y1));
+    double value = out_1*y1+(1-out_1)*y2;
+
+    return(value);
+}
+
+__global__ void g_part1(struct GPUobj* gCuda, int N, double rho, double tmp5 )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+       int m = (int)_V( gCuda->mInZ, i) ;
+
+        double* sigma0 = gCuda->tempMat0[i];
+        double* sigma00 = gCuda->tempMat1[i];
+        double* Z0 = gCuda->Z0;
+ 
+        Matrix_Resize( sigma0, m, m, TRUE);
+        Matrix_Resize( sigma00, m, m, TRUE);
+
+        for (int ii=0; ii<m; ii++)
+        {
+          for (int jj=ii; jj<m; jj++)
+          {
+              if (ii==jj)
+              {
+                  _M( sigma0, ii, jj) = 1.0;
+                  _M( sigma00, ii, jj) = 1.0;
+              }
+              else
+              {
+                  _M( sigma0,  ii, jj ) = pow(rho, _M( Z0, i,jj) - _M(Z0, i,ii) );
+                  _M( sigma0,  jj, ii ) = _M(sigma0, ii, jj) ;
+                  _M( sigma00, ii, jj ) = pow(tmp5, _M( Z0, i,jj) - _M(Z0, i,ii) ) ;
+                  _M( sigma00, jj, ii ) = _M(sigma00, ii, jj) ;
+              }
+           }
+         }
+
+        Matrix_Copy( gCuda->all_corMat[i], sigma0 );
+        Matrix_Copy( gCuda->all_corMat_MH[i], sigma00 );
+    } 
+}
+
+int _cuda_part1( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, double rho, double tmp5)
+{   
+//printf("part1 %p, %d, %f, %f %d, %d \n", gCuda, N, rho, tmp5, (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK);
+
+    g_part1<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>(gCuda, N, rho, tmp5 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+//printf("End of part1\n");
+    // dont need copy all_corMat and all_corMat_MH back to CPU
+    return(0);
+}
+
+
+__global__ void g_part2(struct GPUobj* gCuda, int N, int Q, int nC, double sigma2 )
+{    
+    extern __shared__ double smb[];
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int col = threadIdx.x;
+    int idx = blockIdx.x;
+    
+    if(idx < N)
+    {
+#define tmp         gShare->tMA
+#define tmp4        gShare->tMD
+#define tempMat0     gShare->tempMat0
+#define tempMat1     gShare->tempMat1
+#define tempMat2     gShare->tempMat2
+#define tempVec0     gShare->tempVec0
+#define tempVec1     gShare->tempVec1
+#define tempVec2     gShare->tempVec2
+
+        GPUShare* gShare = ConvetSharePoint( smb, Q );
+
+        //Matrix_Resize_Col( col, tmp2, LG, LG, TRUE);
+        //Matrix_Resize_Col( col, tmp3, 1, LG, TRUE);
+        __syncthreads();
+
+        Matrix_mult_Double_Col( col, gCuda->all_corMat_Inv[idx], 1/sigma2, tempMat0 );
+        __syncthreads();
+
+        int ret= Matrix_mult_Matrix_Col( col, tempMat0, gCuda->all_ui[idx], tmp );
+        Matrix_Resize_Col( col, tmp4, 1.0, Vector_GetLength(gCuda->all_rd[idx]), TRUE );
+        __syncthreads();
+        
+        if(nC > 0)
+            for( int nX = 0; nX < nC; nX++ )
+            {
+               Matrix_GetRow_Col( col, gCuda->alpha, nX, tempMat0 ); 
+               Matrix_Transpose_Col( col, gCuda->all_ui[idx], tempMat1);
+               __syncthreads();
+               int ret = Matrix_mult_Matrix_Col( col, tempMat0, tempMat1, tempMat2);
+
+               __syncthreads();
+               Matrix_mult_Double_Col( col, tempMat2, _M(gCuda->X, i,nX+1), tempMat2 );
+               __syncthreads();
+               Matrix_add_Matrix_Col( col, tempMat2, tmp4, tmp4 );
+               __syncthreads();
+            }
+            
+        __syncthreads();
+
+        Matrix_GetRow_Col( col, tmp4, 0, tempVec0 ); 
+         __syncthreads();
+
+        Matrix_Transpose_Col( col, tempVec0, tempVec1 ); 
+         __syncthreads();
+
+        Matrix_sub_Matrix_Col( col, gCuda->all_rd[idx], tempVec1, tempVec0 );
+         __syncthreads();
+
+        Matrix_Transpose_Col( col, tempVec0, tempVec1 ); 
+         __syncthreads();
+
+        ret = Matrix_mult_Matrix_Col( col, tempVec1, tmp, gCuda->tMA[idx]);
+         __syncthreads();
+
+        Matrix_Transpose_Col( col, gCuda->all_ui[idx], tempMat2 ) ;
+         __syncthreads();
+
+        ret = Matrix_mult_Matrix_Col( col, tempMat2, tmp, gCuda->tMB[idx]);
+         __syncthreads();
+        
+
+#undef tempMat0 
+#undef tempMat1 
+#undef tempMat2 
+#undef tempVec0 
+#undef tempVec1 
+#undef tempVec2 
+#undef tmp
+#undef tmp4
+   }
+}
+
+int _cuda_part2( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int Q, int nC, double sigma2, 
+                 CFmMatrix& alpha, CFmMatrix& tmp2, CFmMatrix& tmp3 )
+{
+//printf("part2 %p, %d, %f, %f %d, %d \n", gCuda, N, nC, sigma2 );
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha );
+    
+    int nShareSize = ((Q*Q+3)*10 + (Q+3)*10 ) * sizeof(double)/4;
+    
+    g_part2<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK, nShareSize >>>(gCuda, N, Q, nC, sigma2 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+   // tmp2 
+    g_reduce_matrix( gGpuMap->tMA, gGpuMap->tempMat0, N );
+    _copyback_fmMatrix_Host( tmp2, gCpuObj->tempMat0[0]);
+
+    // tmp3  
+    g_reduce_matrix( gGpuMap->tMB, gGpuMap->tempMat1, N );
+    _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat1[0]);
+
+//printf("End of part2\n");
+    return(0);
+}
+ 
+__global__ void g_part3(struct GPUobj* gCuda, int N, int P )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+#define mean_effect  gCuda->tVA[i]
+         Vector_Resize( mean_effect, Vector_GetLength(gCuda->all_yi[i]), TRUE );
+         
+         for(int jj=0; jj < P; jj++)
+         {
+             if( _M(gCuda->gen_a, jj, i) != 0)
+             {
+                 Matrix_GetRow( gCuda->a, jj, gCuda->tempVec0[i]);
+                 Matrix_Transpose( gCuda->tempVec0[i], gCuda->tempVec1[i] );
+                 Matrix_mult_Vector(gCuda->all_ui[i], gCuda->tempVec1[i], gCuda->tempMat0[i]);
+                 Matrix_mult_Double(gCuda->tempMat0[i], _M(gCuda->gen_a, jj, i), gCuda->tempMat0[i]);
+                 Matrix_add_Matrix( mean_effect, gCuda->tempMat0[i], mean_effect); 
+             }
+             
+             if(_M(gCuda->gen_d, jj, i) != 0)
+             {
+                 Matrix_GetRow(gCuda->d, jj, gCuda->tempVec0[i]);
+                 Matrix_Transpose( gCuda->tempVec0[i], gCuda->tempVec1[i] );
+                 Matrix_mult_Vector(gCuda->all_ui[i], gCuda->tempVec1[i], gCuda->tempMat0[i]);
+                 Matrix_mult_Double(gCuda->tempMat0[i], _M(gCuda->gen_d, jj, i), gCuda->tempMat0[i]);;
+                 Matrix_add_Matrix( mean_effect, gCuda->tempMat0[i], mean_effect ); 
+             }   
+
+         }
+         
+         Vector_sub_Vector(gCuda->all_yi[i], mean_effect, gCuda->all_rd[i]);
+#undef mean_effect 
+    }
+}
+         
+int _cuda_part3( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int P, CFmMatrix& a, CFmMatrix& d)
+{
+//printf("part3 %p, %d, %d\n", gCuda, N, P );
+    _copy_fmMatrix_Device( gCpuObj->a, a );
+    _copy_fmMatrix_Device( gCpuObj->d, d );
+    
+    g_part3<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, N, P );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+//printf("End of part3\n");
+    return (0);
+}
+
+
+__global__ void g_part4(struct GPUobj* gCuda, int N, int j, int nC, double sigma2 )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+#define tmp         gCuda->tMA[i]
+#define tmp2        gCuda->tMB[i]
+#define tmp3        gCuda->tMC[i]
+#define tmp4        gCuda->tMD[i]
+#define tui         gCuda->tME[i]
+
+        Matrix_Resize(tmp2, LG, LG, TRUE);
+        Matrix_Resize(tmp3, 1, LG, TRUE);
+
+        double a0 = _M(gCuda->gen_a, j, i);
+        if( a0 != 0.0)
+        {
+            Matrix_Resize( tmp4, 1, Vector_GetLength(gCuda->all_rd[i]), TRUE );
+
+            Matrix_Transpose(gCuda->all_ui[i], tui );
+
+            if(nC > 0)
+            {
+                for(int nX = 0; nX < nC; nX++)
+                {
+                    Matrix_GetRow(gCuda->alpha, nX, gCuda->tempVec0[i]); 
+                    Matrix_Transpose( gCuda->tempVec0[i], gCuda->tempVec1[i] );
+                    Vector_mult_Matrix(gCuda->tempVec1[i], tui, gCuda->tempMat2[i]);
+                    Matrix_mult_Double(gCuda->tempMat2[i], _M(gCuda->X, i,nX+1), gCuda->tempMat0[i] );
+                    Matrix_add_Matrix( gCuda->tempMat0[i], tmp4, tmp4 );
+                }
+             }
+             
+             Matrix_mult_Double( gCuda->all_corMat[i], sigma2, gCuda->tempMat0[i]);
+             Matrix_Inverse( gCuda->tempMat0[i], gCuda->tempMat1[i]);
+             Matrix_mult_Double( gCuda->tempMat1[i], a0 , gCuda->tempMat1[i]);
+             Matrix_mult_Matrix( gCuda->tempMat1[i], gCuda->all_ui[i], tmp);
+                 
+             Matrix_Transpose( gCuda->mu, gCuda->tempMat0[i]);
+             Matrix_mult_Matrix( gCuda->tempMat0[i], tui, gCuda->tempMat1[i]);
+             Matrix_GetRow(gCuda->tempMat1[i], 0, gCuda->tempVec0[i]);
+
+             Matrix_GetRow(tmp4, 0, gCuda->tempVec1[i]);
+
+             Matrix_GetRow(gCuda->a, j, gCuda->tempVec2[i]);
+             Matrix_mult_Matrix( gCuda->tempVec2[i], tui, gCuda->tempMat1[i]);
+             Matrix_GetRow( gCuda->tempMat1[i], 0, gCuda->tempVec2[i]);
+             Matrix_mult_Double(gCuda->tempVec2[i], a0, gCuda->tempVec2[i]);
+
+             Matrix_Transpose( gCuda->all_rd[i], gCuda->tempVec4[i]);
+             Matrix_sub_Matrix( gCuda->tempVec4[i], gCuda->tempVec0[i], gCuda->tempVec0[i]);
+             Matrix_sub_Matrix( gCuda->tempVec0[i], gCuda->tempVec1[i], gCuda->tempVec0[i]);
+             Matrix_add_Matrix( gCuda->tempVec0[i], gCuda->tempVec2[i], gCuda->tempVec0[i]);
+             Matrix_mult_Matrix( gCuda->tempVec0[i], tmp , tmp3);
+             
+             Matrix_mult_Matrix( tui, tmp, gCuda->tempMat1[i]);
+             Matrix_mult_Double( gCuda->tempMat1[i], a0, tmp2); 
+        }
+
+#undef tui         
+#undef tmp 
+#undef tmp2
+#undef tmp3
+#undef tmp4
+        
+    }
+}
+
+/*
+int _cuda_part4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int j, int nC, double sigma2, 
+                 CFmVector& mu, CFmMatrix& alpha, CFmMatrix& a, CFmMatrix& tmp2,CFmMatrix& tmp3)
+{
+//printf("part4 %p, %d, %d, %d \n", gCuda, N, j, nC );
+    _copy_fmVector_Device( gCpuObj->mu, mu);
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+    _copy_fmMatrix_Device( gCpuObj->a, a);
+    
+    g_part4<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>(gCuda, N, j, nC, sigma2);
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    // tmp2 and tmp 3 
+    g_reduce_matrix( gGpuMap->tMB, gGpuMap->tempMat0, N );
+    _copyback_fmMatrix_Host( tmp2, gCpuObj->tempMat0[0] );
+
+if(0)
+{
+    CFmMatrix fmRet( 0, 0, 100, 100 );
+    g_reduce_matrix_test( gGpuMap->tMB, N, fmRet );
+    
+    if (!fmRet.Compare(tmp2))
+    {
+        fmRet.Show("CPU");
+        tmp2.Show("tmp2");
+        printf("Part4 Failed to reduce(tmp2)\n");
+    }
+}
+
+    g_reduce_matrix( gGpuMap->tMC, gGpuMap->tempMat1, N );
+    _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat1[0] );
+
+if(0)
+{
+    CFmMatrix fmRet( 0, 0, 100, 100 );
+    g_reduce_matrix_test( gGpuMap->tMC, N, fmRet );
+    if (!fmRet.Compare(tmp3))
+        printf("Part4 Failed to reduce(tmp3)\n");
+}
+
+//printf("End of part4\n");
+
+    return(0);
+}*/
+
+
+
+
+__global__ void sg_part4(struct GPUobj* gCuda, int N, int j, int nC, double sigma2, int Q, int smem_block  )
+{    
+    extern __shared__ double smb[];
+
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int offset = threadIdx.x * smem_block;
+
+printf("hhh=%d\n", i);        
+
+    if(i < N)
+    {
+// Q*LG matrix    
+        double*  tui=&(smb[ offset ]);
+// Q*LG
+	double*  tmp         =&(smb[ offset + (Q*LG+3)]);
+// LG*LG
+	double*  tmp2        =&(smb[ offset + (Q*LG+3)*2]);
+// 1*LG
+	double*  tmp3        =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) ]);
+// 1*Q 
+	double*  tmp4        =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3)]);
+//Q*Q
+	double*  tempMat0    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) ]);
+	double*  tempMat1    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)]);
+	double*  tempMat2    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)*2]);
+// 1*Q
+	double*  tempVec0    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)*3]);
+	double*  tempVec1    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)*3 + (Q+3)]);
+	double*  tempVec2    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)*3 + (Q+3)*2]);
+	double*  tempVec3    =&(smb[ offset + (Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)*3 + (Q+3)*3]);
+
+        tui[0] = Q*LG;
+        tmp[0] = Q*LG;
+        tmp2[0] = LG*LG;
+        tmp3[0] = 1*LG;
+        tmp4[0] = 1*Q;
+        tempMat0[0] = Q*Q;
+        tempMat1[0] = Q*Q;
+        tempMat2[0] = Q*Q;
+        tempVec0[0] = Q;
+        tempVec1[0] = Q;
+        tempVec2[0] = Q;
+        tempVec3[0] = Q;
+
+        double a0 = _M(gCuda->gen_a, j, i);
+        if( a0 != 0.0)
+        {
+            Matrix_Resize( tmp4, 1, Vector_GetLength(gCuda->all_rd[i]), TRUE );
+
+            Matrix_Transpose( gCuda->all_ui[i], tui );
+
+            if(nC > 0)
+            {
+                for(int nX = 0; nX < nC; nX++)
+                {
+                    Matrix_GetRow( gCuda->alpha, nX, tempVec0 ); 
+                    Matrix_Transpose( tempVec0,  tempVec1 );
+                    Vector_mult_Matrix(tempVec1, tui,  tempMat2);
+                    Matrix_mult_Double(tempMat2, _M(gCuda->X, i,nX+1), tempMat0 );
+                    Matrix_add_Matrix( tempMat0, tmp4, tmp4 );
+                }
+             }
+             
+             Matrix_mult_Double( gCuda->all_corMat[i], sigma2, tempMat0 );
+             Matrix_Inverse( tempMat0, tempMat1 );
+             Matrix_mult_Double( tempMat1, a0 , tempMat1 );
+             Matrix_mult_Matrix( tempMat1, gCuda->all_ui[i], tmp );
+                 
+             Matrix_Transpose( gCuda->mu, tempMat0 );
+             Matrix_mult_Matrix( tempMat0, tui, tempMat1 );
+             Matrix_GetRow( tempMat1, 0,  tempVec0 );
+
+             Matrix_GetRow(tmp4, 0, tempVec1);
+
+             Matrix_GetRow( gCuda->a, j, tempVec2 );
+             Matrix_mult_Matrix( tempVec2, tui, tempMat1 );
+             Matrix_GetRow( tempMat1, 0, tempVec2 );
+             Matrix_mult_Double(tempVec2, a0, tempVec2 );
+
+             Matrix_Transpose( gCuda->all_rd[i], tempVec3 );
+             Matrix_sub_Matrix( tempVec3, tempVec0, tempVec0 );
+             Matrix_sub_Matrix( tempVec0, tempVec1, tempVec0 );
+             Matrix_add_Matrix( tempVec0, tempVec2, tempVec0 );
+             Matrix_mult_Matrix( tempVec0, tmp , tmp3 );
+             
+             Matrix_mult_Matrix( tui, tmp, tempMat1 );
+             Matrix_mult_Double( tempMat1, a0, tmp2 ); 
+        }
+
+        
+        Matrix_Copy(gCuda->tMB[i], tmp2);
+        Matrix_Copy(gCuda->tMC[i], tmp3);
+
+    }
+}
+
+#define  THREADS_IN_PART4 16
+
+
+int _cuda_part4( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int j, int nC, int Q, double sigma2, 
+                 CFmVector& mu, CFmMatrix& alpha, CFmMatrix& a, CFmMatrix& tmp2,CFmMatrix& tmp3)
+{
+//printf("part4 %p, %d, %d, %d \n", gCuda, N, j, nC );
+    _copy_fmVector_Device( gCpuObj->mu, mu);
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+    _copy_fmMatrix_Device( gCpuObj->a, a);
+    
+    int smem_block = ((Q*LG+3)*2 + (LG*LG+3) + (LG+3) + (Q+3) + (Q*Q+3)*3 + (Q+3)*4);
+    
+printf("part4 smem_block=%d\n",smem_block);     
+    sg_part4<<< (N + (THREADS_IN_PART4-1)) / THREADS_IN_PART4, THREADS_IN_PART4, 256*sizeof(double)*THREADS_IN_PART4 >>>(gCuda, N, j, nC,sigma2, Q, smem_block );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    // tmp2 and tmp 3 
+    g_reduce_matrix( gGpuMap->tMB, gGpuMap->tempMat0, N );
+    _copyback_fmMatrix_Host( tmp2, gCpuObj->tempMat0[0] );
+
+    g_reduce_matrix( gGpuMap->tMC, gGpuMap->tempMat1, N );
+    _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat1[0] );
+
+//printf("End of part4\n");
+
+    return(0);
+}
+
+
+__global__ void g_part5(struct GPUobj* gCuda, int N, int j )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+         if( _M(gCuda->gen_a, j, i) != 0.0 )
+         {
+             Matrix_GetRow( gCuda->a_old, j, gCuda->tempVec0[i]);
+             Matrix_Transpose( gCuda->tempVec0[i], gCuda->tempMat0[i]);
+             Matrix_mult_Vector( gCuda->all_ui[i], gCuda->tempMat0[i], gCuda->tempMat2[i]);
+             
+             Matrix_GetRow( gCuda->a, j, gCuda->tempVec1[i]);
+             Matrix_Transpose( gCuda->tempVec1[i], gCuda->tempMat1[i]);
+             Matrix_mult_Vector( gCuda->all_ui[i], gCuda->tempMat1[i], gCuda->tempMat3[i]);
+             Matrix_sub_Matrix(gCuda->tempMat2[i], gCuda->tempMat3[i], gCuda->tempMat0[i]);
+             
+             Matrix_Transpose(gCuda->tempMat0[i], gCuda->tempMat1[i]);
+             Matrix_GetRow(gCuda->tempMat1[i], 0, gCuda->tempVec0[i]);
+             Matrix_mult_Double(gCuda->tempVec0[i], _M(gCuda->gen_a, j, i), gCuda->tempVec1[i]);
+         
+             Matrix_Transpose( gCuda->tempVec1[i], gCuda->tempVec2[i]);
+             Vector_add_Vector( gCuda->all_rd[i], gCuda->tempVec2[i], gCuda->all_rd[i] );
+         }
+
+    }
+}
+
+int _cuda_part5( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int j, CFmMatrix& a, CFmMatrix& a_old)
+{
+    _copy_fmMatrix_Device( gCpuObj->a, a);
+    _copy_fmMatrix_Device( gCpuObj->a_old, a_old);
+    
+    g_part5<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>(gCuda, N, j );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+//printf("End of part5\n");
+
+    return(0);
+} 
+
+
+
+__global__ void g_part6(struct GPUobj* gCuda, int P, double sigma2, double lambda2, double lambda2_x)
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < P )
+    {
+#define tau2    gCuda->tau2
+#define tau2_x  gCuda->tau2_x
+        double vp = _V( gCuda->vctP, i ); 
+        if( vp == 2.0)
+        {
+            double InvTau2_1 = sqrt( LG * lambda2 * sigma2/ Matrix_RowProd( gCuda->a, i, i));
+            _V( tau2, i) = 1/_cuda_invGau( i*10, InvTau2_1, LG * lambda2);
+            _V( tau2_x, i) = 0.0;
+         }
+         else if(vp == 1.0)
+         {
+             double InvTau2_1 = sqrt( LG * lambda2_x * sigma2/Matrix_RowProd( gCuda->a, i, i) );
+             _V( tau2_x, i) = 1/_cuda_invGau( i*10+1, InvTau2_1, LG*lambda2_x);
+             _V( tau2, i) = 0.0;
+         }
+         else
+         {
+             _V( tau2, i) = 0.0;
+             _V( tau2_x, i) = 0.0;
+         }
+#undef tau2
+#undef tau2_x
+    }
+}
+
+
+
+int _cuda_part6( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double sigma2, double lambda2, double lambda2_x, 
+                 CFmVector& vctP, CFmMatrix& a, CFmVector& tau2, CFmVector& tau2_x )
+{
+    _copy_fmVector_Device( gCpuObj->vctP, vctP);
+    _copy_fmMatrix_Device( gCpuObj->a, a);
+    
+    g_part6<<< (P + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, P, sigma2, lambda2, lambda2_x );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+    // tau2 and tau2_x
+    _copyback_fmVector_Host(tau2, gCpuObj->tau2 );
+    _copyback_fmVector_Host(tau2_x, gCpuObj->tau2_x );
+    
+//printf("End of part6\n");
+    
+    return(0);
+}
+
+__global__ void g_part7(struct GPUobj* gCuda, int N, int j, int nC, double sigma2)
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {    
+#define tmp         gCuda->tMA[i]
+#define tmp2        gCuda->tMB[i]
+#define tmp3        gCuda->tMC[i]
+#define tmp4        gCuda->tMD[i]
+#define tui         gCuda->tME[i] 
+  
+        Matrix_Resize(tmp2, LG, LG, TRUE);
+        Matrix_Resize(tmp3, 1, LG, TRUE);
+
+         double d0 = _M(gCuda->gen_d, j, i);
+         if( d0 != 0.0 )
+         {
+             Matrix_Resize( tmp4, 1, Vector_GetLength(gCuda->all_rd[i]), TRUE);
+             Matrix_Transpose( gCuda->all_ui[i], tui );
+             
+             if(nC > 0)
+             {
+                 for(int nX = 0; nX < nC; nX++)
+                 {
+                     Matrix_GetRow( gCuda->alpha, nX, gCuda->tempVec0[i]); 
+                     Matrix_mult_Matrix(gCuda->tempVec0[i], tui, gCuda->tempMat1[i]);
+                     Matrix_mult_Double(gCuda->tempMat1[i], _M( gCuda->X, i,nX+1), gCuda->tempMat1[i] );
+                     Matrix_add_Matrix( gCuda->tempMat1[i], tmp4, tmp4);
+                 }
+             }
+                 
+                 
+             Matrix_mult_Double( gCuda->all_corMat[i], sigma2, gCuda->tempMat0[i] );
+             Matrix_Inverse( gCuda->tempMat0[i], gCuda->tempMat1[i] );
+             Matrix_mult_Matrix( gCuda->tempMat1[i], gCuda->all_ui[i], gCuda->tempMat2[i]);
+             Matrix_mult_Double( gCuda->tempMat2[i], d0 , tmp );
+                 
+             Matrix_Transpose( gCuda->mu, gCuda->tempMat0[i] );
+             Matrix_mult_Matrix( gCuda->tempMat0[i], tui, gCuda->tempMat1[i] );
+             Matrix_GetRow( gCuda->tempMat1[i], 0, gCuda->tempVec0[i] );
+
+             Matrix_GetRow(tmp4, 0, gCuda->tempVec1[i]);
+
+             Matrix_GetRow(gCuda->d, j, gCuda->tempVec2[i]);
+             Matrix_mult_Matrix(gCuda->tempVec2[i], tui, gCuda->tempMat1[i]);
+             Matrix_GetRow(gCuda->tempMat1[i], 0, gCuda->tempVec2[i] );
+             Matrix_mult_Double(gCuda->tempVec2[i], d0, gCuda->tempVec2[i]);
+    
+             Matrix_Transpose( gCuda->all_rd[i], gCuda->tempVec4[i]);
+             Vector_sub_Vector( gCuda->tempVec4[i], gCuda->tempVec0[i], gCuda->tempVec0[i]);
+             Vector_sub_Vector( gCuda->tempVec0[i], gCuda->tempVec1[i], gCuda->tempVec0[i]);
+             Vector_add_Vector( gCuda->tempVec0[i], gCuda->tempVec2[i], gCuda->tempVec0[i]);
+    
+             Matrix_mult_Matrix( gCuda->tempVec0[i], tmp, tmp3);
+             Matrix_mult_Matrix( tui, tmp, gCuda->tempMat1[i]);
+             Matrix_mult_Double( gCuda->tempMat1[i], d0,  tmp2);
+         }
+         
+#undef tui
+#undef tmp 
+#undef tmp2
+#undef tmp3
+#undef tmp4
+    }
+}
+
+
+int _cuda_part7( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int j, int nC, double sigma2, 
+                 CFmMatrix& alpha, CFmVector& mu, CFmMatrix& d, CFmMatrix& tmp2, CFmMatrix& tmp3 )
+{
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+    _copy_fmMatrix_Device( gCpuObj->d, d);
+    _copy_fmVector_Device( gCpuObj->mu, mu);
+    
+    g_part7<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>(gCuda, N, j, nC, sigma2 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    // tmp2 and tmp3 
+    g_reduce_matrix( gGpuMap->tMB, gGpuMap->tempMat0, N );
+    _copyback_fmMatrix_Host( tmp2, gCpuObj->tempMat0[0] );
+
+    g_reduce_matrix( gGpuMap->tMC, gGpuMap->tempMat1, N );
+    _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat1[0]);
+    
+//printf("End of part7\n");
+
+    return(0);
+}
+
+
+__global__ void g_part8( struct GPUobj* gCuda, int N, int j )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+         if(_M(gCuda->gen_d, j, i) != 0)
+         {
+             Matrix_GetRow(gCuda->d_old, j, gCuda->tempVec0[i]);
+             Matrix_Transpose( gCuda->tempVec0[i], gCuda->tempMat0[i]);
+             Matrix_mult_Matrix(gCuda->all_ui[i], gCuda->tempMat0[i], gCuda->tempMat1[i]);
+
+             Matrix_GetRow(gCuda->d, j, gCuda->tempVec1[i]);
+             Matrix_Transpose( gCuda->tempVec1[i], gCuda->tempMat2[i]);
+             Matrix_mult_Matrix(gCuda->all_ui[i], gCuda->tempMat2[i], gCuda->tempMat3[i]);
+             
+             Matrix_sub_Matrix(gCuda->tempMat1[i], gCuda->tempMat3[i], gCuda->tempMat0[i]);
+             Matrix_Transpose(gCuda->tempMat0[i], gCuda->tempMat1[i]);
+             
+             Matrix_GetRow(gCuda->tempMat1[i], 0, gCuda->tempVec0[i]);
+             Matrix_mult_Double(gCuda->tempVec0[i], _M(gCuda->gen_d, j, i), gCuda->tempVec1[i]);
+         
+             Matrix_Transpose( gCuda->tempVec1[i], gCuda->tempVec2[i]);
+             Matrix_add_Matrix(gCuda->all_rd[i], gCuda->tempVec2[i], gCuda->all_rd[i]);
+         }
+
+    }
+}
+
+int _cuda_part8( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int N, int j, CFmMatrix& d, CFmMatrix& d_old)
+{
+    _copy_fmMatrix_Device( gCpuObj->d, d);
+    _copy_fmMatrix_Device( gCpuObj->d_old, d_old);
+    
+    g_part8<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, N, j );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+//printf("End of part8\n");
+
+    return(0);
+}
+
+
+__global__ void g_part9(struct GPUobj* gCuda, int P, double lambda2_st, double lambda2_st_x, double sigma2 )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if( i < P )
+    {
+#define tau2_st    gCuda->tau2
+#define tau2_st_x  gCuda->tau2_x
+
+        double vp = _V( gCuda->vctP, i ); 
+        if( vp == 2.0)
+        {
+            double InvTau2_1 = sqrt( LG * lambda2_st * sigma2/ Matrix_RowProd(gCuda->d, i, i));
+            _V( tau2_st, i) = 1/_cuda_invGau( i*10, InvTau2_1, LG * lambda2_st);
+            _V( tau2_st_x, i) = 0.0;
+        }
+        else if( vp == 1.0)
+        {
+            double InvTau2_1 = sqrt( LG * lambda2_st_x * sigma2/Matrix_RowProd(gCuda->d, i, i) );
+            _V( tau2_st_x, i) = 1/_cuda_invGau( i*10+1, InvTau2_1, LG*lambda2_st_x);
+            _V( tau2_st, i) = 0;
+        }
+        else
+        {
+            _V( tau2_st, i) = 0;
+            _V( tau2_st_x, i) = 0;
+        }
+#undef tau2_st
+#undef tau2_st_x 
+    }
+}
+
+
+int _cuda_part9( struct GPUobj* gCuda, struct GPUobj* gCpuObj, int P, double lambda_st2, double lambda_st2_x, double sigma2, 
+                 CFmVector& vctP, CFmMatrix& d, CFmVector& tau2_st, CFmVector& tau2_st_x  )
+{
+    _copy_fmVector_Device( gCpuObj->vctP, vctP );
+    _copy_fmMatrix_Device( gCpuObj->d, d );
+
+    g_part9<<< (P + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, P, lambda_st2, lambda_st2_x, sigma2 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+    _copyback_fmVector_Host( tau2_st, gCpuObj->tau2);
+    _copyback_fmVector_Host( tau2_st_x, gCpuObj->tau2_x);
+   
+ //printf("End of part9\n");
+    
+    return(0);
+}
+
+
+__global__ void g_part10( struct GPUobj* gCuda, int N, int nC, int nX, double sigma2 )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+#define tmp         gCuda->tMA[i]
+#define tmp2        gCuda->tMB[i]
+#define tmp3        gCuda->tMC[i]
+#define tmp4        gCuda->tMD[i]
+#define tui         gCuda->tME[i] 
+
+    if(i < N)
+    {
+         Matrix_Resize(tmp2, LG, LG, TRUE);
+         Matrix_Resize(tmp3, 1, LG, TRUE);
+
+         Matrix_Resize( tmp4, 1.0, Vector_GetLength( gCuda->all_rd[i] ), TRUE );
+         Matrix_Transpose( gCuda->all_ui[i], tui );
+
+         if(nC > 0)
+            for( int nX2 = 0; nX2 < nC; nX2++ )
+            {
+                if(nX2 != nX)
+                {
+                    Matrix_GetRow( gCuda->alpha, nX2, gCuda->tempVec0[i]); 
+                    Matrix_mult_Matrix( gCuda->tempVec0[i], tui, gCuda->tempMat1[i]);
+                    Matrix_mult_Double( gCuda->tempMat1[i], _M( gCuda->X, i, nX2 + 1), gCuda->tempMat1[i] );
+                    Matrix_add_Matrix( tmp4, gCuda->tempMat1[i], tmp4 );
+                }  
+            }
+            
+         Matrix_mult_Double( gCuda->all_corMat[i], sigma2, gCuda->tempMat0[i]);
+         Matrix_Inverse( gCuda->tempMat0[i], gCuda->tempMat1[i] );
+         Matrix_mult_Double( gCuda->tempMat1[i], _M( gCuda->X, i, nX+1), gCuda->tempMat1[i] );
+         Matrix_mult_Matrix( gCuda->tempMat1[i], gCuda->all_ui[i], tmp );
+
+         Matrix_Transpose( gCuda->mu,  gCuda->tempMat0[i]);
+         Matrix_mult_Matrix( gCuda->tempMat0[i], tui,  gCuda->tempMat1[i]);
+         Matrix_GetRow( gCuda->tempMat1[i], 0, gCuda->tempVec0[i]);
+
+         Matrix_GetRow(tmp4, 0, gCuda->tempVec1[i]);
+
+         Matrix_Transpose( gCuda->all_rd[i], gCuda->tempVec4[i]);
+         Vector_sub_Vector( gCuda->tempVec4[i], gCuda->tempVec1[i], gCuda->tempVec1[i]);
+         Vector_sub_Vector( gCuda->tempVec1[i], gCuda->tempVec0[i], gCuda->tempVec0[i]);
+         Matrix_mult_Matrix( gCuda->tempVec0[i], tmp, tmp3);;
+   
+         Matrix_mult_Matrix(tui, tmp, gCuda->tempMat1[i]);
+         Matrix_mult_Double(gCuda->tempMat1[i], _M(gCuda->X, i, nX + 1), tmp2);
+
+#undef tmp         
+#undef tmp2        
+#undef tmp3        
+#undef tmp4        
+#undef tui
+     }
+}
+
+int _cuda_part10( struct GPUobj* gCuda, struct GPUobj* gCpuObj, GPUobj* gGpuMap, int N, int nC, int nX, double sigma2, 
+                  CFmMatrix& alpha, CFmVector& mu, CFmMatrix& tmp2, CFmMatrix& tmp3 )
+{
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+    _copy_fmVector_Device( gCpuObj->mu, mu);
+    
+    g_part10<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, N, nC, nX, sigma2 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+    // tmp2 
+    g_reduce_matrix( gGpuMap->tMB, gGpuMap->tempMat0, N );
+    _copyback_fmMatrix_Host( tmp2, gCpuObj->tempMat0[0]);
+	// tmp3
+    g_reduce_matrix( gGpuMap->tMC, gGpuMap->tempMat1, N );
+    _copyback_fmMatrix_Host( tmp3, gCpuObj->tempMat1[0]);
+
+//printf("End of part10\n");
+    
+    return(0);
+}
+
+
+__global__ void g_part11( struct GPUobj* gCuda, int N, int nC )
+{    
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N )
+    {
+#define tmp4        gCuda->tMA[i]
+#define tmpv_sigma2 gCuda->tMB[i]
+#define tmpv_get2   gCuda->tMC[i]
+#define sigma2_scale gCuda->tVN0
+#define tui         gCuda->tMD[i] 
+
+        Matrix_Resize( tmp4, 1, Vector_GetLength(gCuda->all_rd[i]), TRUE);
+        Matrix_Transpose( gCuda->all_ui[i], tui );
+        _V(sigma2_scale, i ) = 0.0;
+
+        if(nC > 0)
+        {
+            for(int nX = 0; nX < nC; nX++)
+            {
+                Matrix_GetRow( gCuda->alpha, nX, gCuda->tempVec0[i] );
+                Matrix_mult_Matrix( gCuda->tempVec0[i], tui, gCuda->tempMat0[i]);
+                Matrix_mult_Double( gCuda->tempMat0[i], _M(gCuda->X, i, nX+1), gCuda->tempMat1[i]);
+                Matrix_add_Matrix( gCuda->tempMat1[i], tmp4, tmp4);
+            }
+        }
+        
+        Matrix_Transpose( gCuda->mu, gCuda->tempMat0[i]);
+        Matrix_mult_Matrix( gCuda->tempMat0[i], tui, gCuda->tempMat1[i]);
+        Matrix_GetRow(gCuda->tempMat1[i], 0, gCuda->tempVec0[i]);
+        
+        Matrix_GetRow(tmp4, 0, gCuda->tempVec1[i]);
+
+        Matrix_Transpose( gCuda->all_rd[i], gCuda->tempVec4[i]);
+        Vector_sub_Vector(gCuda->tempVec4[i], gCuda->tempVec1[i], gCuda->tempVec1[i]);
+        Vector_sub_Vector(gCuda->tempVec1[i], gCuda->tempVec0[i], tmpv_sigma2);
+        
+        Matrix_Inverse(gCuda->all_corMat[i], gCuda->tempMat1[i]);
+        Matrix_Transpose( tmpv_sigma2, gCuda->tempMat0[i]);
+        Matrix_mult_Matrix( tmpv_sigma2, gCuda->tempMat1[i], gCuda->tempMat2[i]);
+        Matrix_mult_Matrix(gCuda->tempMat2[i], gCuda->tempMat0[i], gCuda->tempMat3[i]);
+        
+        _V(sigma2_scale, i ) = _M( gCuda->tempMat3[i], 0, 0);
+
+#undef tmp4
+#undef tmpv_sigma2
+#undef tmpv_get2
+#undef sigma2_scale
+#undef tui
+
+    }
+}
+
+int _cuda_part11( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int nC, 
+                  CFmMatrix& alpha, CFmVector& mu, double* sigma2_scale)
+{
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+    _copy_fmVector_Device( gCpuObj->mu, mu);
+    
+    g_part11<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, N, nC );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+    
+    //gCuda->tVA <--> sigma2_scale
+    g_reduce_double( gGpuMap->tVN0, gGpuMap->tVN1, N, sigma2_scale);
+
+    if(1) 
+    { 
+        double dRet = g_reduce_double_test( gGpuMap->tVN0, N );
+        if( (dRet - *sigma2_scale)> 1e-6 )
+           printf("Part11 Failed to reduce(sigma2_scale C:%.5f, G:%.5f)\n", dRet, *sigma2_scale );
+    }
+
+//printf("End of part11\n");
+
+    return(0);
+}
+
+__global__ void g_part12(struct GPUobj* gCuda, int N, int nC, double sigma2 )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(i < N)
+    {
+#define sigma_old gCuda->tMA[i]
+#define sigma_new gCuda->tMB[i]
+#define tmp4      gCuda->tMC[i]
+#define tui       gCuda->tMD[i]
+#define exp_mat   gCuda->tME[i]
+#define allRd_i   gCuda->tempMat4[i]
+#define exp_diff  gCuda->tVN0
+#define det_diff  gCuda->tVN1
+        
+        _V( exp_diff, i ) =0.0;
+        _V( det_diff, i ) =1.0;
+
+        Matrix_mult_Double(gCuda->all_corMat[i], sigma2,  sigma_old);
+        Matrix_mult_Double(gCuda->all_corMat_MH[i], sigma2, sigma_new);
+        Matrix_Transpose( gCuda->all_ui[i], tui );
+
+        Matrix_Resize( tmp4, 1, Vector_GetLength(gCuda->all_rd[i]), TRUE);
+        if(nC > 0)
+        {
+            for(int nX = 0; nX < nC; nX++)
+            {
+                Matrix_GetRow( gCuda->alpha, nX, gCuda->tempVec0[i]);
+                Matrix_mult_Matrix( gCuda->tempVec0[i], tui, gCuda->tempMat1[i]);
+                Matrix_mult_Double(gCuda->tempMat1[i], _M( gCuda->X, i, nX+1), gCuda->tempMat1[i]);
+                Matrix_add_Matrix( tmp4, gCuda->tempMat1[i], tmp4 );
+            }
+        }
+        
+        Matrix_Transpose( gCuda->mu, gCuda->tempMat0[i]);
+        Matrix_mult_Matrix( gCuda->tempMat0[i], tui, gCuda->tempMat1[i]);
+        Matrix_GetRow(gCuda->tempMat1[i], 0, gCuda->tempVec0[i]);
+
+        Matrix_GetRow(tmp4, 0, gCuda->tempVec1[i]);
+
+        Matrix_Transpose( gCuda->all_rd[i], gCuda->tempMat1[i]);
+        Matrix_sub_Matrix( gCuda->tempMat1[i], gCuda->tempVec0[i], gCuda->tempVec0[i]);
+        Matrix_sub_Matrix( gCuda->tempVec0[i], gCuda->tempVec1[i], allRd_i );
+
+        Matrix_Inverse( sigma_old, gCuda->tempMat3[i]);
+        Matrix_Transpose(allRd_i, gCuda->tempMat0[i]); 
+        Matrix_mult_Matrix( allRd_i, gCuda->tempMat3[i], gCuda->tempMat1[i] );
+        Matrix_mult_Matrix( gCuda->tempMat1[i], gCuda->tempMat0[i], exp_mat );
+        _V( exp_diff, i ) = _V( exp_diff, i ) - _M( exp_mat, 0, 0 );
+
+if(0)
+{
+if(i<10)
+{
+double* tx=sigma_old;
+printf("OLD=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+} 
+
+if(i<10)
+{
+double* tx=gCuda->tempMat3[i];
+printf("GI2=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+}
+
+if(i<10)
+{
+	Matrix_mult_Matrix( sigma_old, gCuda->tempMat3[i], gCuda->tempMat1[i]);
+double* tx=gCuda->tempMat1[i];
+printf("GI2=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,1,1), _M(tx,2,2), _M(tx,3,3), _M(tx,4,4) ); 
+}
+
+
+if(i<10)
+{
+double* tx=allRd_i;
+printf("allRd_i=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+}
+
+if(i<10)
+{
+double* tx=exp_mat;
+printf("exp_mat=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+}
+}
+
+        Matrix_Transpose(allRd_i, gCuda->tempMat0[i]); 
+        Matrix_Inverse( sigma_new, gCuda->tempMat3[i]);
+        Matrix_mult_Matrix( allRd_i, gCuda->tempMat3[i], gCuda->tempMat1[i] );
+        Matrix_mult_Matrix( gCuda->tempMat1[i], gCuda->tempMat0[i], exp_mat );
+        _V( exp_diff, i ) = _V( exp_diff, i ) + _M( exp_mat, 0, 0 );
+
+
+if(0)
+{
+if(i<10)
+{
+double* tx=sigma_new;
+printf("OLD=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+} 
+
+if(i<10)
+{
+double* tx=gCuda->tempMat3[i];
+printf("GI2=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+}
+
+if(i<10)
+{
+	Matrix_mult_Matrix( sigma_new, gCuda->tempMat3[i], gCuda->tempMat1[i]);
+double* tx=gCuda->tempMat1[i];
+printf("GI2=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,1,1), _M(tx,2,2), _M(tx,3,3), _M(tx,4,4) ); 
+}
+
+ 
+if(i<10)
+{
+double* tx=exp_mat;
+printf("exp_mat=%d, (%.1f,%.1f) [ %.5f, %.5f, %.5f, %.5f, %.5f ]\n", i, tx[1], tx[2], _M(tx,0,0), _M(tx,0,1), _M(tx,0,2), _M(tx,0,3), _M(tx,0,4) ); 
+}
+}
+
+
+	//double det_old =0.0;
+	//double det_new =0.0;
+	//Matrix_GetDet(sigma_old, &det_old);
+	//Matrix_GetDet(sigma_new, &det_new);
+        //_V( det_diff, i) = sqrt( det_old/det_new );
+
+#undef sigma_old
+#undef sigma_new
+#undef tmp4
+#undef tui
+#undef exp_mat
+#undef allRd_i
+#undef exp_diff
+#undef det_diff
+    }
+}
+
+int _cuda_part12( struct GPUobj* gCuda, struct GPUobj* gCpuObj, struct GPUobj* gGpuMap, int N, int nC, double sigma2, 
+                  CFmMatrix& alpha, CFmVector& mu, double* exp_diff, double* det_diff)
+{
+    _copy_fmMatrix_Device( gCpuObj->alpha, alpha);
+    _copy_fmVector_Device( gCpuObj->mu, mu);
+
+    g_part12<<< (N + (THREADS_PER_BLOCK-1)) / THREADS_PER_BLOCK, THREADS_PER_BLOCK >>>( gCuda, N, nC, sigma2 );
+    cudaDeviceSynchronize();
+    ERRCHECK;
+
+//printf("End of part12\n");
+   
+    g_reduce_double( gGpuMap->tVN0, gGpuMap->tVN2, N, exp_diff);
+
+    CFmVector tmpDetDiff( N, 0.0 );
+    _copyback_fmVector_Host( tmpDetDiff, gCpuObj->tVN1 );
+    
+    /*(*det_diff) = 1.0;
+    for(int i=0;i<N;i++)
+        *det_diff = (*det_diff) * tmpDetDiff[i];
+    */
+    
+    return(0);
+}
+
+//*run on CPU;
+int _copy_fmMatrix_list( double** cudaList, int size, CFmMatrix** matList)
+{
+//printf("_copy_fmMatrix_list %p-->%p\n", &matList, cudaList);
+    for(int i=0;i<size;i++)
+    {
+        double* pMat = cudaList[i];
+        CFmMatrix* pFm = matList[i];
+        double dRow=(double)(pFm->GetNumRows());
+        double dCol=(double)(pFm->GetNumCols());
+
+//printf("_copy_fmMatrix_list[%d] dim(%f, %f)\n", i, dRow, dCol );
+
+        
+        PERR( cudaMemcpy( pMat+3, pFm->GetData(), (int)(dRow*dCol*sizeof(double)), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( pMat+2, &dCol, sizeof(double), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( pMat+1, &dRow, sizeof(double), cudaMemcpyHostToDevice ) );
+    }
+   
+    return(0);
+}
+
+//*run on CPU;
+int _copy_fmVector_list( double** cudaList, int size, CFmVector** vecList)
+{
+//printf("_copy_fmVector_list %p-->%p\n", &vecList, cudaList);
+
+    for(int i=0;i<size;i++)
+    {
+        double* pMat = cudaList[i];
+        CFmVector* pFm = vecList[i];
+        double dRow=(double)(pFm->GetLength());
+        double dCol=1.0;
+        
+        PERR( cudaMemcpy( pMat+3, pFm->GetData(), (int)(dRow*dCol*sizeof(double)), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( pMat+2, &dCol, sizeof(double), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( pMat+1, &dRow, sizeof(double), cudaMemcpyHostToDevice ) );
+    }
+
+    return(0);
+}
+
+//*run on CPU;
+int _copy_fmVector_Device(double* gcudaDstVec, CFmVector& fmSrcVec )
+{
+//printf("_copy_fmVector_Device %p-->%p\n", &fmSrcVec, gcudaDstVec);
+
+    double dSize=0.0;
+    PERR( cudaMemcpy( &dSize, gcudaDstVec, sizeof(double), cudaMemcpyDeviceToHost ) );
+
+    if(fmSrcVec.GetLength() <= round(dSize) )
+    {
+        double fLen = fmSrcVec.GetLength()*1.0;
+        double fLen2 = 1.0;
+        double *pData = fmSrcVec.GetData();
+    
+        PERR( cudaMemcpy( gcudaDstVec+3, pData, fmSrcVec.GetLength()*sizeof(double), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( gcudaDstVec+2, &fLen2, sizeof(double), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( gcudaDstVec+1, &fLen, sizeof(double), cudaMemcpyHostToDevice ) );
+
+//_cuda_show( gcudaDstVec );
+
+        return (0);
+    }
+    else
+    {
+    	Rprintf("cudaSize(%d) < vector size(%d)\n", round(dSize), fmSrcVec.GetLength());
+	    return (-1);
+    }
+}
+
+//*run on CPU;
+int _copy_fmMatrix_Device(double* gcudaDstMat, CFmMatrix& fmSrcMat, bool bShow)
+{
+//printf("_copy_fmMatrix_Device %p-->%p\n", &fmSrcMat, gcudaDstMat);
+    double dSize = 0.0;
+    PERR(  cudaMemcpy( &dSize, gcudaDstMat, sizeof(double), cudaMemcpyDeviceToHost ) );
+
+    if( fmSrcMat.GetNumRows() * fmSrcMat.GetNumCols() <= (int)round(dSize) )
+    {
+        double dRow = fmSrcMat.GetNumRows();
+        double dCol = fmSrcMat.GetNumCols();
+        double *pData = fmSrcMat.GetData();
+        
+        PERR( cudaMemcpy( gcudaDstMat+1, &dRow, sizeof(double), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( gcudaDstMat+2, &dCol, sizeof(double), cudaMemcpyHostToDevice ) );
+        PERR( cudaMemcpy( gcudaDstMat+3, pData, round(dRow*dCol)* sizeof(double), cudaMemcpyHostToDevice ) );
+
+if (bShow) _cuda_show( gcudaDstMat );
+	
+        return (0);
+    }
+    else
+    {
+    	Rprintf("cudaSize(%d) < matrix size(%d*%d)\n", round(dSize), fmSrcMat.GetNumRows(), fmSrcMat.GetNumCols());
+	    return (-1);
+    }
+}
+
+//*run on CPU;
+int _copyback_fmVector_Host(CFmVector& fmDstVec, double* gcudaSrcVec )
+{
+//printf("_copyback_fmVector_Host %p-->%p\n", gcudaSrcVec, &fmDstVec);
+
+    double dSize=0;
+    PERR( cudaMemcpy( &dSize, gcudaSrcVec+1, sizeof(double), cudaMemcpyDeviceToHost ) );
+
+//printf("size=%.1f\n", dSize);
+    
+    fmDstVec.Resize((int)dSize, TRUE);
+    PERR( cudaMemcpy( fmDstVec.GetData(), gcudaSrcVec + 3, dSize * sizeof(double), cudaMemcpyDeviceToHost ) );
+    return (0);
+}
+
+//*run on CPU;
+int _copyback_fmMatrix_Host(CFmMatrix& fmDstMat, double* gcudaSrcMat )
+{
+//printf("_copyback_fmMatrix_Host %p-->%p\n", gcudaSrcMat, &fmDstMat);
+
+    double dRow, dCol;
+    PERR( cudaMemcpy( &dRow, gcudaSrcMat+1, sizeof(double), cudaMemcpyDeviceToHost ) );
+    PERR( cudaMemcpy( &dCol, gcudaSrcMat+2, sizeof(double), cudaMemcpyDeviceToHost ) );
+    
+    fmDstMat.Resize( round(dRow), round(dCol), TRUE);
+    PERR( cudaMemcpy( fmDstMat.GetData(), gcudaSrcMat + 3, round(dRow * dCol * sizeof(double)), cudaMemcpyDeviceToHost ) );
+    return (0);
+}
+
+clock_t startTimer()
+{
+    return(clock());
+}
+
+double stopTimer(clock_t begin)
+{
+  clock_t end = clock();
+  double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+  
+  return( elapsed_secs );
+}
+
+
+  
+

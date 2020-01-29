@@ -371,7 +371,7 @@ snpmat_parallel_list<-function( phe.mat,
 
 	r.cluster <- list();
 
-	if( op.ncpu>1 && requireNamespace("snowfall") )
+	if( op.ncpu>1 )
 	{
 		cat("Starting parallel computing, snowfall/snow......\n");
 		sfInit(parallel = TRUE, cpus = op.ncpu, type = "SOCK" )

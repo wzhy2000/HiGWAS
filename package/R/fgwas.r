@@ -104,7 +104,7 @@ plink_fgwas_filter<-function( pd, Y.name, Z.name, covar.names, op.cpu=1, fgwas.c
 	return(r);
 }
 
-snpmat_fgwas_filter<-function( phe.mat, snp.mat, Y.name, Z.name, covar.names, op.cpu=1, fgwas.cutoff=0.05, lasso_method="BLS", verbose=TRUE, only.sig.snp=FALSE)
+snpmat_fgwas_filter<-function( phe.mat, snp.mat, Y.name, Z.name, covar.names, op.cpu=1, fgwas.cutoff=NULL, lasso_method="BLS", verbose=TRUE, only.sig.snp=FALSE)
 {
 	n.snp <- NROW( snp.mat );
 	n.ind <- NCOL( snp.mat ) -2 ;
@@ -118,7 +118,7 @@ snpmat_fgwas_filter<-function( phe.mat, snp.mat, Y.name, Z.name, covar.names, op
 	return(r);
 }
 
-fgwas_filter<-function( n.snp, n.ind, f_get_snpmat, snp.obj, phe.mat, Y.name, Z.name, covar.names, op.cpu=1, fgwas.cutoff=0.05, lasso_method="BLS", verbose=TRUE, only.sig.snp=FALSE, include.na.pvalue=TRUE )
+fgwas_filter<-function( n.snp, n.ind, f_get_snpmat, snp.obj, phe.mat, Y.name, Z.name, covar.names, op.cpu=1, fgwas.cutoff=NULL, lasso_method="BLS", verbose=TRUE, only.sig.snp=FALSE, include.na.pvalue=TRUE )
 {
 	if(verbose)
 	{
@@ -163,6 +163,13 @@ fgwas_filter<-function( n.snp, n.ind, f_get_snpmat, snp.obj, phe.mat, Y.name, Z.
 	
 	if (!is.null(fgwas.cutoff))
 	{
+	    if (fgwas.cutoff==0)
+	    {
+	        n.top = round(n.ind / 2);
+	        if (n.top>150) n.top=150; 
+	        fgwas.cutoff = sort(r.fgwas[,7], decreasing=FALSE)[n.top];
+	    }   
+	        
 		r.filter0 <- get_sigsnp_nomulti_correction( f_get_snpmat, snp.obj, r.fgwas, n.snp, n.ind, fgwas.cutoff, only.sig.snp=only.sig.snp, include.na.pvalue=include.na.pvalue );
 		if( r.filter0$error )
 			stop( r.filter0$err.info );
@@ -309,7 +316,7 @@ gls.fgwas <- function( phe.mat, snp.mat, Y.prefix, Z.prefix, covar.names=NULL, o
 	
 
 	r.gls <- c();
-	if( op.cpu>1 && requireNamespace("snowfall") )
+	if( op.cpu>1 )
 	{
 		cat("Starting parallel computing, snowfall/snow......\n"); 
 		snowfall::sfInit(parallel = TRUE, cpus = op.cpu, type = "SOCK")
@@ -436,7 +443,7 @@ bls.fgwas <- function( phe.mat, snp.mat, Y.name, covar.names=NULL, op.cpu=0)
 	}
 	
 	r.bls <- c();
-	if( op.cpu>1 && requireNamespace("snowfall") )
+	if( op.cpu>1 )
 	{
 		cat("\n  Starting parallel computing, snowfall/snow......\n"); 
 		snowfall::sfInit(parallel = TRUE, cpus = op.cpu, type = "SOCK")

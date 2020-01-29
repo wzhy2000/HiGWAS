@@ -1,0 +1,77 @@
+##	Copyright (C) 2017  Zhong Wang
+##
+##	This program is free software: you can redistribute it and/or modify
+##	it under the terms of the GNU General Public License as published by
+##	the Free Software Foundation, either version 3 of the License, or
+##	(at your option) any later version.
+##
+##	This program is distributed in the hope that it will be useful,
+##	but WITHOUT ANY WARRANTY; without even the implied warranty of
+##	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##	GNU General Public License for more details.
+##
+##	You should have received a copy of the GNU General Public License
+##	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Compilers
+EXT := cu
+
+CXX := g++
+NVCC := /usr/local/cuda-8.0/bin/nvcc
+LINKER := gcc -std=gnu99
+CFLAGS := -std=gnu99 -O2 -funroll-loops -fomit-frame-pointer -ffast-math  -I/programs/R-3.4.2/include -Wall -fPIC -D_GNU_SOURCE 
+CXXFLAGS := -O2 -funroll-loops -fomit-frame-pointer -ffast-math  -I/programs/R-3.4.2/include -Wall -fPIC -D_GNU_SOURCE 
+NVCCFLAGS := -arch=sm_50 -O2 -I/usr/local/cuda-8.0/include -DUSECUDA -Xcompiler "-O2 -fpic -I/programs/R-3.4.2/include" -dlink -lcublas
+LDFLAGS := 
+CUDA_LIBS := 
+R_LIBS := -L/programs/R-3.4.2/lib -lRblas -L/programs/R-3.4.2/lib -lRlapack
+COMPILE_CUDA := 
+
+# Program-specifics
+TARGET := HiGWAS.so
+OBJS := HiGWAS.o
+
+HEADERS := \
+	$(wildcard *.h) 
+
+SOURCES := \
+	$(wildcard *.cpp) \
+	$(wildcard *.c) \
+	$(wildcard *.cu)
+
+
+#====  derived variables  =====================================================
+
+ifneq ($(COMPILE_CUDA), )
+OBJECTS := \
+	${patsubst %.cpp,%.o,${filter %.cpp,$(SOURCES)}} \
+	${patsubst %.c,%.o,${filter %.c,$(SOURCES)}} \
+	${patsubst %.cu,%.o,${filter %.cu,$(SOURCES)}}
+else
+OBJECTS := \
+	${patsubst %.cpp,%.o,${filter %.cpp,$(SOURCES)}} \
+	${patsubst %.c,%.o,${filter %.c,$(SOURCES)}} 
+endif
+
+# Build rules
+.SUFFIXES: .cu .o
+
+all: $(TARGET)
+
+$(TARGET) : $(OBJECTS)
+	$(LINKER) -shared $(LDFLAGS) $(R_LIBS) $(CUDA_LIBS) $(OBJECTS) -o $@ 
+
+%.o : %.c $(PRECOMPILED_HEADER)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o : %.cpp $(PRECOMPILED_HEADER)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+ifneq ($(COMPILE_CUDA), )
+%.o : %.cu
+	$(NVCC) $(NVCCFLAGS) -c $< -o $@
+endif
+
+clean:
+	rm -rf $(OBJECTS) $(TARGET)
+

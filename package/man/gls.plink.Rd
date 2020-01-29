@@ -144,7 +144,7 @@ The control parameters include the following items.\cr
 \item{\code{nMcmcIter}}        {Default:2000, the number of iteration of the MCMC algorithm execution. }
 \item{\code{fBurnInRound}}     {Default:0.3, a ratio to cut off unstable iteration in order to make the result precise.}
 \item{\code{fRhoTuning}}       {Default:0.095, a ratio used for narrowing the scope of parameter rho to reduce parameter oscillation.}
-\item{\code{fgwas.cutoff}}     {Default:0.05, a p-value cutoff for fGWAS model to select the significant marginal SNPs.}
+\item{\code{fgwas.cutoff}}     {Default:0, a p-value cutoff for fGWAS model to select the significant marginal SNPs, 0 indicates the cutoff is determined automatically.}
 \item{\code{debug}}            {Default:FALSE, logical value, indicating whether or not debug information is outputted.}
 }
 

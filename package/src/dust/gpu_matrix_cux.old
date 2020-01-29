@@ -1,0 +1,479 @@
+
+/*
+
+# Array structure for Matrix 
+# * * * 
+# 1 2 3 4 5 6 7 ...................................L
+# L-3 : memory block length
+#   N : Row count of Matrix
+#     M : Column count of Matrix
+#       data start............
+#
+
+# Array structure for Vector
+# * * * 
+# 1 2 3 4 5 6 7 ...................................L
+# L-3 : memory block length
+#   N : Row count of Matrix
+#     M : alway 1
+#       data start............
+#
+*/
+
+
+__device__ int Matrix_add_Double( double* inMat, double dVal, double* outMat )
+{
+    if(inMat[1] * inMat[2] <= outMat[0])
+    {
+        outMat[1] = inMat[1];
+        outMat[2] = inMat[2];
+        
+        for(int i = 3; i < inMat[1] * inMat[2] + 3; i++)
+        {
+            outMat[i] = inMat[i] + dVal;
+        }
+        return (0);
+    }
+    else{
+        printf("Space in inMat > outMat in Matrix_add_Double.\n");
+        return (-1);
+    }
+}
+    
+__device__ int Matrix_mult_Double( double* inMat, double dVal, double* outMat )
+{
+    if(inMat[1] * inMat[2] <= outMat[0])
+    {
+        outMat[1] = inMat[1];
+        outMat[2] = inMat[2];
+        
+        for(int i = 3; i < inMat[1] * inMat[2] + 3; i++)
+        {
+            outMat[i] = inMat[i] * dVal;
+        }
+        return (0);
+    }
+    else{
+        printf("Space in inMat > outMat in Matrix_mult_Double.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_add_Matrix( double* inMat1, double* inMat2, double* outMat )
+{
+    if( inMat1[1] == inMat2[1] && inMat1[2] == inMat2[2] && inMat1[1] * inMat1[2] <= outMat[0])
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat1[2];
+        
+        for(int i = 0; i < inMat1[1] * inMat1[2] ; i++)
+        {
+           outMat[i+3] = inMat1[i+3] + inMat2[i+3];
+        }
+        return (0);
+    }
+    else{
+        if(inMat1[1] != inMat2[1] || inMat1[2] != inMat2[2])
+           printf("inMat1 (%.1f, %.1f) and inMat2 (%.1f, %.1f) have different dimension in Matrix_add_Matrix.\n", inMat1[1], inMat1[2], inMat2[1], inMat2[2]);
+        if (inMat1[1] * inMat1[2] > outMat[0]) 
+           printf("Space in inMat > outMat in Matrix_add_Matrix.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_sub_Matrix(double* inMat1, double* inMat2, double* outMat)
+{
+    if( inMat1[1] == inMat2[1] && inMat1[2] == inMat2[2] && inMat1[1] * inMat1[2] <= outMat[0])
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat1[2];
+        
+        for(int i = 3; i < inMat1[1] * inMat1[2] + 3; i++)
+        {
+           outMat[i] = inMat1[i] - inMat2[i];
+        }
+        return (0);
+    }
+    else{
+        if(inMat1[1] != inMat2[1] || inMat1[2] != inMat2[2])
+           printf("inMat1 (%.1f, %.1f) and inMat2 (%.1f, %.1f) have different dimension in Matrix_sub_Matrix.\n", inMat1[1], inMat1[2], inMat2[1], inMat2[2]);
+        if (inMat1[1] * inMat1[2] > outMat[0]) 
+           printf("Space in inMat > outMat in Matrix_sub_Matrix.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_mult_Matrix( double* inMat1, double* inMat2, double* outMat )
+{
+    //check the outmat has a different space with input matrics
+    if( inMat1==outMat || inMat2==outMat )
+    {
+        printf("Address of outMat is same as inMat1 or inMat2 in Matrix_mult_Matrix.\n");
+        return(-2);
+    }
+    
+    if(inMat1[2] == inMat2[1] && (inMat1[1] * inMat2[2] <= outMat[0]) )
+    {
+        outMat[1] = inMat1[1];
+        outMat[2] = inMat2[2];
+        for(int i = 0; i < outMat[1]; i++)
+        {
+            for(int j = 0; j < outMat[2]; j++)
+            {
+                double tmp = 0.0;
+                for(int k = 0; k < inMat1[2]; k++)
+                {
+                    tmp += _M( inMat1, i, k ) * _M(inMat2, k, j);
+                }
+                
+                _M(outMat, i, j) = tmp;
+            }
+        }
+        return (0);
+    }
+    else{
+        printf("inMat1[2](%.1f) != inMat2[1](%.1f) in Matrix_mult_Matrix.\n", inMat1[2], inMat2[1] );
+        return (-1);
+    }
+}
+
+__device__ int Matrix_mult_Vector( double* inMat, double* inVec, double* outVec )
+{
+    return( Matrix_mult_Matrix(inMat, inVec, outVec) );
+}
+
+__device__ int Vector_mult_Matrix( double* inVec, double* inMat, double* outMat )
+{
+    double tmp = inVec[1];
+    inVec[1] = inVec[2];
+    inVec[2] = tmp;
+
+    return(  Matrix_mult_Matrix(inVec, inMat, outMat) );
+}
+
+__device__ int Matrix_GetRow( double* inMat, int nRow , double* outVec )
+{
+    if( inMat==outVec)
+    {
+        printf("Address of outVec is same as inMat in Matrix_GetRow.\n");
+        return(-2);
+    }
+
+    if(inMat[2] <= outVec[0])
+    {
+        outVec[1] = 1;
+        outVec[2] = inMat[2];
+        
+        for(int i = 0; i < (int)(inMat[2]); i++)
+        {
+            outVec[i + 3]= _M(inMat, nRow, i);
+        }
+        return (0);
+    }
+    else{
+        printf("Space of outVec is smaller in Matrix_GetRow.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_GetCol( double* inMat, int nCol , double* outVec )
+{
+    if( inMat==outVec)
+    {
+        printf("Address of outVec is same as inMat in Matrix_GetCol.\n");
+        return(-2);
+    }
+
+    if(inMat[1] <= outVec[0])
+    {
+        outVec[1] = inMat[1];
+        outVec[2] = 1;
+            
+        for(int i = 0; i < (int)(inMat[1]); i++)
+        {
+            outVec[i + 3]= _M(inMat, i, nCol);
+        }
+        return (0);
+    }
+    else{
+        printf("Space of outVec is smaller in Matrix_GetCol.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_Transpose( double* inMat, double* outMat )
+{
+    //check the outmat has a different space with input matrics
+    if( inMat==outMat)
+    {
+        printf("Address of outMat is same as inMat in Matrix_Transpose.\n");
+        return(-2);
+    }
+
+    if(inMat[1] * inMat[2] <= outMat[0])
+    {
+        outMat[1] = inMat[2];
+        outMat[2] = inMat[1];
+
+        for(int i = 0; i < inMat[1]; i++)
+        {
+            for(int j = 0; j < inMat[2]; j++)
+            {
+                _M(outMat, j, i) = _M(inMat, i, j);
+            }
+        }
+        return (0);
+    }
+    else{
+        printf("Space of outVec is smaller in Matrix_Transpose.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_Copy( double* dest, double* source )
+{
+    if( dest == source )
+    {
+        printf("Address of dest is same as source in Matrix_Copy.\n");
+        return(-2);
+    }
+
+    if(source[1] * source[2] <= dest[0])
+    {
+        for(int i = 1; i < source[1] * source[2] + 3; i++)
+        {
+            dest[i] = source[i];
+        }
+        return (0);
+    }
+    else{
+        printf("Space of outVec is smaller in Matrix_Copy.\n");
+        return (-1);
+    }
+}
+
+__device__ int Matrix_Inverse( double* inMat, double* outMat )
+{
+    //check the outmat has a different space with input matrics
+    if( inMat==outMat )
+    {
+        printf("Address of outMat is same as inMat in Matrix_Inverse.\n");
+        return(-2);
+    }
+
+    outMat[1] = inMat[1];
+    outMat[2] = inMat[2];
+    
+    //https://stackoverflow.com/questions/27094612/cublas-matrix-inversion-from-device
+    int nsize = (int)(inMat[2]);
+
+    int *p = (int *)malloc( nsize * sizeof(int) );
+    int *info = (int *)malloc( sizeof(int) );
+    int batch = 1;
+    info[0] = 0;
+
+    //printf("handle %d n = %d\n", status, n);
+    
+    double **a = (double **)malloc( sizeof(double *) );
+    //!!!! TO DO AGAIN;
+    *a = inMat+3;
+    const double **aconst = (const double **)a;
+    
+    double **c = (double **)malloc(sizeof(double *));
+    //!!!! TO DO AGAIN;
+    *c = outMat+3;
+
+    cublasHandle_t hdl;
+    cublasStatus_t status = cublasCreate_v2(&hdl);
+
+    // See
+    // http://docs.nvidia.com/cuda/pdf/CUDA_Dynamic_Parallelism_Programming_Guide.pdf
+    // http://stackoverflow.com/questions/27094612/cublas-matrix-inversion-from-device
+    status = cublasDgetrfBatched( hdl, nsize, a, nsize, p, info, batch);
+    __syncthreads();
+
+    //printf("rf %d info %d\n", status, info[0]);
+    status = cublasDgetriBatched(hdl, nsize, aconst, nsize, p, c, nsize, info, batch);
+    __syncthreads();
+    
+    //printf("ri %d info %d\n", status, info[0]);
+    cublasDestroy_v2(hdl);
+    
+    free(p);
+    free(info);
+    free(a);
+    free(c);
+    
+    //printf("done\n");
+    return(0);
+}
+
+__device__ int Matrix_Fill(double *inMat, double value)
+{
+    for(int i=0;i <(int)(inMat[0]); i++)
+    	inMat[i+3]=value;
+    	
+    return(0);
+}
+
+__device__ int Vector_Fill(double *inVec, double value)
+{
+    return( Matrix_Fill (inVec, 0) );
+}
+
+__device__ int Matrix_Resize(double *inMat, int nRow, int nCol, bool reset)
+{
+    if( (double)(nRow*nCol) > inMat[0])
+    {
+        printf("New size exceed the space of inMat in Matrix_Resize.\n");
+        return(-1);
+    }
+    
+    inMat[1] = nRow*1.0;
+    inMat[2] = nCol*1.0;
+    
+    if(reset)
+       Matrix_Fill(inMat, 0.0);
+       
+    return(0);
+}
+
+__device__ int Vector_Resize(double *inVec, int length, bool reset)
+{
+    if( (double)length > inVec[0])
+        return(-1);
+        
+    inVec[1] = length*1.0;
+    inVec[2] = 1.0;
+    
+    if(reset)
+       Vector_Fill(inVec, 0.0);
+       
+    return(0);
+}
+
+
+__device__ int Vector_GetLength(double* inVec)
+{
+    return( (int)(inVec[1]) );
+}
+
+__device__ int Vector_sub_Vector(double* inVec1, double* inVec2, double* outVec)
+{
+    return( Matrix_sub_Matrix(inVec1, inVec2, outVec) );
+}
+
+__device__ int Vector_add_Vector(double* inVec1, double* inVec2, double* outVec)
+{
+    return( Matrix_add_Matrix(inVec1, inVec2, outVec) );
+}
+
+__device__ double Matrix_RowProd(double* inMat, int nRow1, int nRow2 )
+{
+    if( nRow1 < (int)inMat[1] && nRow2 < (int)inMat[1] )
+    {
+    	double sum=0.0;
+        
+        for(int i=0; i <inMat[2]; i++)
+        {
+           sum += _M( inMat, nRow1,i) * _M( inMat, nRow2, i );
+        }
+        return (sum);
+    }
+    else{
+        printf("Row index is out of matrix in Matrix_RowProd.\n");
+        return (-1);
+    }
+}
+
+__device__ double _GetDet(int n, double mat[12][12])
+{
+    int c, subi, i, j, subj;
+    double sum = 0;
+
+    double submat[12][12];  
+    if (n == 2) 
+    {
+        return( (mat[0][0] * mat[1][1]) - (mat[1][0] * mat[0][1]));
+    }
+    else
+    {  
+        for(c = 0; c < n; c++)
+        {  
+            subi = 0;  
+            for(i = 1; i < n; i++)
+            {  
+                subj = 0;
+                for(j = 0; j < n; j++)
+                {    
+                    if (j == c)
+                    {
+                        continue;
+                    }
+                    submat[subi][subj] = mat[i][j];
+                    subj++;
+                }
+                subi++;
+            }
+            sum = sum + (pow(-1.0 ,c) * mat[0][c] * _GetDet(n - 1 ,submat));
+        }
+    }
+    
+    return(sum);
+}
+
+__device__ int Matrix_GetDet(double* inMat, double* dvalue)
+{
+    if( inMat[1] != inMat[2] || inMat[1] > 12)
+        return(-1);
+        
+    double mat[12][12];
+	int n =(int)(inMat[1]);
+	
+	for(int i=0;i<n;i++)
+    {
+        for(int j=0;j<n;j++)
+        {
+            mat[i][j]= _M(inMat, i, j);
+        }
+    }
+    
+    *dvalue = _GetDet( n, mat );
+    return( 0 );
+}
+
+
+bool Compare_Matrix( double* inMat, CFmMatrix* pMat, double delt=1e-6 )
+{
+    if( inMat[1] == pMat->GetNumRows() &&
+        inMat[2] == pMat->GetNumCols() )
+    {
+        for(int i = 0; i < inMat[1]; i++)
+        for(int j = 0; j < inMat[2]; j++)
+        {
+             if( fabs(_M( inMat, i, j) - pMat->Get(i,j)) > delt )                   
+                 return(false);
+        }
+        return (true);
+    }
+    else{
+        return(false);
+    }
+}
+
+__host__ __device__ void Print_Matrix( double* inMat)
+{
+    printf("%p=>(%.1f, %.1f, %.1f)\n", inMat, inMat[0], inMat[1],inMat[2]);
+
+    for(int i = 0; i < inMat[1]; i++)
+    {
+        printf("[ ");
+        for(int j = 0; j < inMat[2]; j++)
+            printf("%.5f, ", _M(inMat, i, j) );
+        printf(" ]\n");
+    }
+}
+
+
+
+

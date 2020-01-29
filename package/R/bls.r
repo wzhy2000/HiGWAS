@@ -950,9 +950,9 @@ get_default_options<-function()
 				nMcmcIter = 2000,
 				fBurnInRound = 0.3,
 				fRhoTuning = 0.095,
-				fQval.add  = 0.025,  #0.05
-				fQval.dom  = 0.025,  #0.09
-				fgwas.cutoff = 0.05,
+				fQval.add  = 0.025,  # 0.05
+				fQval.dom  = 0.025,  # 0.09
+				fgwas.cutoff = 0,    # automatic set threshold
 				debug      = F )
 
 	return(options);

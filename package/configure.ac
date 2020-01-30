@@ -51,7 +51,7 @@ else
 fi
 
 COMPILE_CUDA="-I${CUDA_INC} -DUSECUDA -m${BITS}"
-LINKER="${NVCC} $(CUDA_INC)"
+LINKER="${NVCC} ${CUDA_INC}"
 CUDA_LIBS="-lcuda -lcublas -lcublas_device -lcudadevrt -arch=sm_50"
 
 fi
